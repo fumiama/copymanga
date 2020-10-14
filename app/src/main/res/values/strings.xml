@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">拷贝漫画</string>
+    <string name="web_home">https://copymanga.net</string>
+    <string name="web_home_www">https://www.copymanga.net</string>
+    <string name="web_comic_detail_pc">https://www.copymanga.net/comic</string>
+
+    <string name="pc_ua">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.75 Safari/537.36 Edg/86.0.622.38</string>
+
+    <string name="blocked_ad">已屏蔽其他网站页面</string>
 </resources>
