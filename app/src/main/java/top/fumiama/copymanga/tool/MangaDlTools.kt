@@ -1,7 +1,7 @@
 package top.fumiama.copymanga.tool
 
 import top.fumiama.copymanga.R
-import top.fumiama.copymanga.activity.MainActivity.Companion.wm
+import top.fumiama.copymanga.activity.DlActivity
 import top.fumiama.copymanga.data.ComicStructure
 import top.fumiama.copymanga.view.JSWebView
 import top.fumiama.copymanga.web.JSHidden
@@ -12,14 +12,16 @@ import java.util.zip.CheckedOutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
-class MangaDlTools {
+class MangaDlTools(activity: DlActivity) {
     var exit = false
-    private val p = PropertiesTools(File("${wm?.get()?.filesDir}/chapters.hash"))
+    private val da = WeakReference(activity)
+    private val d = da.get()
+    private val p = PropertiesTools(File("${d?.filesDir}/chapters.hash"))
     private var imgUrlsList: Array<Array<String>?>? = null
     private var chaptersCount = 0
     private val newWebViewHidden: JSWebView?
         get() {
-            val re = wm?.get()?.let { JSWebView(it, it.getString(R.string.pc_ua)) }
+            val re = d?.let { JSWebView(it, it.getString(R.string.pc_ua)) }
             re?.setWebViewClient("h.js")
             re?.loadJSInterface(JSHidden())
             return re

@@ -45,7 +45,7 @@ class DlActivity : Activity() {
     private var cdwnHeight = 0
     private var canDl = false
     private lateinit var toolsBox: ToolsBox
-    val mangaDlTools = MangaDlTools()
+    lateinit var mangaDlTools: MangaDlTools
 
 
     @ExperimentalStdlibApi
@@ -54,6 +54,7 @@ class DlActivity : Activity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dl)
         mh?.saveUrlsOnly = true
+        mangaDlTools = MangaDlTools(this)
         handler.sendEmptyMessage(-2)
     }
 

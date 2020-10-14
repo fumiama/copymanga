@@ -116,11 +116,9 @@ class ViewMangaActivity : Activity() {
     }
 
     private fun loadOneImg() {
-        Glide.with(this@ViewMangaActivity.applicationContext).load(
+        Glide.with(this@ViewMangaActivity).load(
             imgUrls[currentItem]
-        ).thumbnail(
-            Glide.with(this@ViewMangaActivity.applicationContext).load(R.drawable.bg_comment)
-        ).into(onei)
+        ).placeholder(R.drawable.bg_comment).into(onei)
         updateSeekBar()
     }
 
@@ -145,7 +143,7 @@ class ViewMangaActivity : Activity() {
         idtblr.setOnClickListener {
             if (idtblr.isChecked) p["r2l"] = "true"
             else p["r2l"] = "false"
-            Toast.makeText(this.applicationContext, "下次浏览生效", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "下次浏览生效", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -153,7 +151,7 @@ class ViewMangaActivity : Activity() {
         idtbvp.setOnClickListener {
             if (idtbvp.isChecked) p["noAnimation"] = "true"
             else p["noAnimation"] = "false"
-            Toast.makeText(this.applicationContext, "下次浏览生效", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "下次浏览生效", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -230,7 +228,7 @@ class ViewMangaActivity : Activity() {
             if (idtbfullscreen.isChecked) p["useFullScreen"] =
                 "true"
             else p["useFullScreen"] = "false"
-            Toast.makeText(this.applicationContext, "下次浏览生效", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "下次浏览生效", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -279,12 +277,7 @@ class ViewMangaActivity : Activity() {
             @SuppressLint("ClickableViewAccessibility", "SetTextI18n")
             override fun onBindViewHolder(holder: ViewData, position: Int) {
                 val pos = if (r2l) count - position - 1 else position
-                Glide.with(this@ViewMangaActivity.applicationContext).load(
-                    imgUrls[pos]
-                ).thumbnail(
-                    Glide.with(this@ViewMangaActivity.applicationContext)
-                        .load(R.drawable.bg_comment)
-                ).into(holder.itemView.onei)
+                Glide.with(this@ViewMangaActivity).load(imgUrls[pos]).placeholder(R.drawable.bg_comment).into(holder.itemView.onei)
             }
 
             override fun getItemCount(): Int {
