@@ -43,7 +43,7 @@ class ViewMangaActivity : Activity() {
     var r2l = true
     private var currentItem = 0
     private var notUseVP = true
-    private var q = 90
+    //private var q = 90
     var infoDrawerDelta = 0f
     lateinit var toolsBox: ToolsBox
     private lateinit var p: PropertiesTools
@@ -79,8 +79,8 @@ class ViewMangaActivity : Activity() {
         //toolsBox = ToolsBox(WeakReference(this))
         notUseVP = p["noAnimation"] == "true"
         handler = MyHandler(infcard, toolsBox)
-        if (p["quality"] == "null") p["quality"] = "90"
-        else q = p["quality"].toInt()
+        //if (p["quality"] == "null") p["quality"] = "90"
+        //else q = p["quality"].toInt()
         tt = TimeThread(handler, 22)
         tt.canDo = true
         tt.start()
@@ -148,6 +148,7 @@ class ViewMangaActivity : Activity() {
     }
 
     private fun prepareIdBtVP() {
+        idtbvp.isChecked = notUseVP
         idtbvp.setOnClickListener {
             if (idtbvp.isChecked) p["noAnimation"] = "true"
             else p["noAnimation"] = "false"
