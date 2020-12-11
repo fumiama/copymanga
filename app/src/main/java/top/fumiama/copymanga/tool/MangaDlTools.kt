@@ -1,11 +1,14 @@
 package top.fumiama.copymanga.tool
 
+import android.os.Looper
+import android.widget.Toast
 import top.fumiama.copymanga.R
 import top.fumiama.copymanga.activity.DlActivity
 import top.fumiama.copymanga.data.ComicStructure
 import top.fumiama.copymanga.view.JSWebView
 import top.fumiama.copymanga.web.JSHidden
 import java.io.File
+import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 import java.util.zip.CRC32
 import java.util.zip.CheckedOutputStream
@@ -60,8 +63,16 @@ class MangaDlTools(activity: DlActivity) {
             var succeed = true
             for (i in it.indices) {
                 zip.putNextEntry(ZipEntry("$i.webp"))
-                val s = dl.getHttpContent(it[i])?.let { zip.write(it); true } ?: false
-                if (!s) succeed = s
+                var tryTimes = 3
+                var s = false
+                while (!s && tryTimes-- > 0){
+                    s = dl.getHttpContent(it[i], d?.getString(R.string.web_home_www), d?.getString(R.string.pc_ua))?.let { zip.write(it); true } ?: false
+                    if (!s) {
+                        onDownloadedListener?.handleMessage(i + 1)
+                        sleep(2000)
+                    }
+                }
+                if(tryTimes == 0) succeed = false
                 onDownloadedListener?.handleMessage(s, i + 1)
                 zip.flush()
                 if (exit) break
@@ -76,6 +87,7 @@ class MangaDlTools(activity: DlActivity) {
     interface OnDownloadedListener {
         fun handleMessage(succeed: Boolean)
         fun handleMessage(succeed: Boolean, pageNow: Int)
+        fun handleMessage(pageNow: Int)
     }
 
     companion object {

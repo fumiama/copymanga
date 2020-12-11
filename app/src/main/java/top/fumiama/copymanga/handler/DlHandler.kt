@@ -2,6 +2,7 @@ package top.fumiama.copymanga.handler
 
 import android.annotation.SuppressLint
 import android.os.Handler
+import android.os.Looper
 import android.os.Message
 import android.widget.Toast
 import kotlinx.android.synthetic.main.widget_downloadbar.*
@@ -38,11 +39,13 @@ class DlHandler(activity: DlActivity) : Handler() {
             -1 -> {
                 d?.tbtnlist?.get(msg.arg1)?.setBackgroundResource(R.drawable.rndbg_error)
                 d!!.dldChapter--
+                //Looper.prepare()
                 Toast.makeText(
                     d,
                     "下载${d.tbtnlist[msg.arg1].textOn}失败",
                     Toast.LENGTH_SHORT
                 ).show()
+                //Looper.loop()
                 d.updateProgressBar()
             }
             4 -> {
@@ -74,17 +77,28 @@ class DlHandler(activity: DlActivity) : Handler() {
                         ?.getImgsCountByHash(d.tbtnUrlList[msg.arg1].substringAfterLast("/")) ?: 0
                 )
                 if (!(msg.obj as Boolean)) {
+                    //Looper.prepare()
                     Toast.makeText(
                         d,
                         "下载${d?.tbtnlist?.get(msg.arg1)?.textOn}的第${msg.arg2}页失败",
                         Toast.LENGTH_SHORT
                     ).show()
+                    //Looper.loop()
                 }
             }
             6 -> d?.tdwn?.text = "${d?.dldChapter}/${d?.checkedChapter}"
-            7 -> d?.deleteChapters(msg.obj as File, msg.arg1)
+            7 -> d?.deleteChapters()
             8 -> d?.cdwn?.setCardBackgroundColor(d.resources.getColor(R.color.colorBlue))
             9 -> d?.cdwn?.setCardBackgroundColor(d.resources.getColor(R.color.colorRed))
+            10 -> {
+                //Looper.prepare()
+                Toast.makeText(
+                    d,
+                    "下载${d?.tbtnlist?.get(msg.arg1)?.textOn}的第${msg.arg2}页失败，尝试重新下载...",
+                    Toast.LENGTH_SHORT
+                ).show()
+                //Looper.loop()
+            }
         }
     }
 }

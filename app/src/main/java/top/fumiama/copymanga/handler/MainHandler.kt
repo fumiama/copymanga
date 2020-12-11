@@ -19,6 +19,7 @@ import top.fumiama.copymanga.tool.MangaDlTools.Companion.wmdlt
 
 class MainHandler(looper: Looper):Handler(looper) {
     var saveUrlsOnly = false
+    var showDlList = false
     override fun handleMessage(msg: Message) {
         super.handleMessage(msg)
         when(msg.what){
@@ -27,6 +28,7 @@ class MainHandler(looper: Looper):Handler(looper) {
             3 -> updateLoadProgress(msg.arg1)
             4 -> setFab(msg.obj as String)
             5 -> hideFab()
+            6 -> setFab2DlList()
         }
     }
     private fun loadUrlInHiddenWebView(url: String){wm?.get()?.wh?.loadUrl(url)}
@@ -55,10 +57,16 @@ class MainHandler(looper: Looper):Handler(looper) {
             if(progress == 100) it.pw.postDelayed({it.pw.visibility = View.GONE}, 500)
         }
     }
+    private fun showFab() {wm?.get()?.fab?.visibility = View.VISIBLE}
+    private fun hideFab() {wm?.get()?.fab?.visibility = View.GONE}
     private fun setFab(content: String){
         //Log.d("MyMH", "Get chapter json: $content")
+        showDlList = false
         comicStructure = Gson().fromJson(content.reader(), Array<ComicStructure>::class.java)
-        wm?.get()?.fab?.visibility = View.VISIBLE
+        showFab()
     }
-    private fun hideFab() {wm?.get()?.fab?.visibility = View.GONE}
+    private fun setFab2DlList(){
+        showDlList = true
+        showFab()
+    }
 }

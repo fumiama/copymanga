@@ -3,9 +3,12 @@ package top.fumiama.copymanga.activity
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.Handler
 import android.os.Message
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -31,6 +34,8 @@ import java.io.File
 import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.zip.ZipFile
+import java.util.zip.ZipInputStream
 
 
 class ViewMangaActivity : Activity() {
@@ -47,6 +52,8 @@ class ViewMangaActivity : Activity() {
     var infoDrawerDelta = 0f
     lateinit var toolsBox: ToolsBox
     private lateinit var p: PropertiesTools
+    private var mangaZip = zipFile
+    private val dlZip2View = mangaZip != null
     var pageNum = 1
         get() {
             field = getPageNumber()
@@ -85,14 +92,15 @@ class ViewMangaActivity : Activity() {
         tt.canDo = true
         tt.start()
         ttitle.text = titleText
+        isearch.visibility = View.VISIBLE
         try {
-            count = imgUrls.size
+            count = if (mangaZip != null) countZipItems() else imgUrls.size
         } catch (e: Exception) {
             e.printStackTrace()
             toolsBox.toastError("分析图片url错误")
         }
         try {
-            prepareItems(count)
+            prepareItems()
         } catch (e: Exception) {
             e.printStackTrace()
             toolsBox.toastError("准备控件错误")
@@ -115,10 +123,28 @@ class ViewMangaActivity : Activity() {
         else if (notUseVP) currentItem = num - 1 else vp.currentItem = num - 1
     }
 
+    private fun getImgBitmap(position: Int): Bitmap? {
+        if (position >= count || position < 0) return null
+        else {
+            val zip = ZipFile(mangaZip)
+            //if (q == 100)
+            return BitmapFactory.decodeStream(zip.getInputStream(zip.getEntry("${position}.webp")))
+            /*else {
+                val out = ByteArrayOutputStream()
+                try {
+                    BitmapFactory.decodeStream(zip.getInputStream(zip.getEntry("${position}.jpg")))
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    return null
+                }?.compress(Bitmap.CompressFormat.JPEG, q, out)
+                return BitmapFactory.decodeStream(ByteArrayInputStream(out.toByteArray()))
+            }*/
+        }
+    }
+
     private fun loadOneImg() {
-        Glide.with(this@ViewMangaActivity).load(
-            imgUrls[currentItem]
-        ).placeholder(R.drawable.bg_comment).into(onei)
+        if(dlZip2View) onei.setImageBitmap(getImgBitmap(currentItem))
+        else Glide.with(this@ViewMangaActivity).load(imgUrls[currentItem]).placeholder(R.drawable.bg_comment).into(onei)
         updateSeekBar()
     }
 
@@ -128,9 +154,9 @@ class ViewMangaActivity : Activity() {
     }
 
     @SuppressLint("SetTextI18n")
-    private fun prepareItems(size: Int) {
+    private fun prepareItems() {
         prepareVP()
-        prepareInfoBar(size)
+        prepareInfoBar(count)
         if (notUseVP) loadOneImg() else prepareIdBtVH()
         toolsBox.dp2px(67)?.let { setIdPosition(it) }
         prepareIdBtFullScreen()
@@ -233,6 +259,28 @@ class ViewMangaActivity : Activity() {
         }
     }
 
+    private fun countZipItems(): Int {
+        var c = 0
+        try {
+            val exist = mangaZip?.exists() == true
+            if (!exist) return 0
+            else {
+                Log.d("Myvm", "zipf: $mangaZip")
+                val zip = ZipInputStream(mangaZip?.inputStream()?.buffered())
+                var entry = zip.nextEntry
+                while (entry != null) {
+                    if (!entry.isDirectory) c++
+                    entry = zip.nextEntry
+                }
+                zip.closeEntry()
+                zip.close()
+            }
+        } catch (e: Exception) {
+            toolsBox.toastError("读取zip错误!")
+        }
+        return c
+    }
+
     fun scrollBack() {
         pageNum--
     }
@@ -278,7 +326,11 @@ class ViewMangaActivity : Activity() {
             @SuppressLint("ClickableViewAccessibility", "SetTextI18n")
             override fun onBindViewHolder(holder: ViewData, position: Int) {
                 val pos = if (r2l) count - position - 1 else position
-                Glide.with(this@ViewMangaActivity).load(imgUrls[pos]).placeholder(R.drawable.bg_comment).into(holder.itemView.onei)
+                if(dlZip2View) getImgBitmap(pos)?.let {
+                    //Glide.with(this@ViewMangaActivity).load(it).placeholder(R.drawable.bg_comment).into(holder.itemView.onei)
+                    holder.itemView.onei.setImageBitmap(it)
+                }
+                else Glide.with(this@ViewMangaActivity).load(imgUrls[pos]).placeholder(R.drawable.bg_comment).timeout(10000).into(holder.itemView.onei)
             }
 
             override fun getItemCount(): Int {
@@ -359,8 +411,24 @@ class ViewMangaActivity : Activity() {
     companion object {
         var va: WeakReference<ViewMangaActivity>? = null
         var imgUrls = arrayOf<String>()
+        var zipFile: File? = null
+        get() {
+            val re = field
+            if(field != null) field = null
+            return re
+        }
         var titleText = "Null"
         var nextChapterUrl: String? = null
+            get() {
+                val re = field
+                if(field != null) field = null
+                return re
+            }
         var previousChapterUrl: String? = null
+            get() {
+                val re = field
+                if(field != null) field = null
+                return re
+            }
     }
 }

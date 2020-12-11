@@ -38,6 +38,7 @@ if (typeof (loaded) == "undefined") {
         if (url.endsWith("/index")) invoke.pinTitle();
         else if (url.indexOf("/comicContent/") > 0) setTimeout(function () { invoke.loadChapter() }, 1000);
         else if (url.indexOf("/details/comic/") > 0) GM.loadComic(url);
+        else if (url.indexOf("/personal") > 0) GM.enterProfile();
     }
     modify();
     invoke.urlChangeListener(modify);

@@ -42,7 +42,7 @@ class DlActivity : Activity() {
     var tbtnUrlList = arrayListOf<String>()
     private val handler = DlHandler(this)
     private var btnw = 0
-    private var cdwnHeight = 0
+    private var cdwnWidth = 0
     private var canDl = false
     private lateinit var toolsBox: ToolsBox
     lateinit var mangaDlTools: MangaDlTools
@@ -64,16 +64,14 @@ class DlActivity : Activity() {
         super.onDestroy()
     }
 
-    private fun showDlCard() {
+    private fun showDlCard(){
         //ObjectAnimator.ofFloat(csdwn, "alpha", 0.3f, 0.9f).setDuration(233).start()
-        ObjectAnimator.ofFloat(csdwn, "translationY", cdwnHeight.toFloat(), 0f).setDuration(233)
-            .start()
+        ObjectAnimator.ofFloat(csdwn, "translationX", cdwnWidth.toFloat() * 0.9f, 0f).setDuration(233).start()
     }
 
-    private fun hideDlCard() {
+    private fun hideDlCard(){
         //ObjectAnimator.ofFloat(csdwn, "alpha", 0.9f, 0.3f).setDuration(233).start()
-        ObjectAnimator.ofFloat(csdwn, "translationY", 0f, cdwnHeight.toFloat()).setDuration(233)
-            .start()
+        ObjectAnimator.ofFloat(csdwn, "translationX", 0f, cdwnWidth.toFloat() * 0.9f).setDuration(233).start()
     }
 
     private fun fillChapters() {
@@ -87,7 +85,11 @@ class DlActivity : Activity() {
         sleep(2333)
         for (i in tbtnlist.listIterator()) {
             if (i.isChecked) dlMethod(i)
-            if (!canDl) break
+            if (!canDl) {
+                checkedChapter -= dldChapter
+                dldChapter = 0
+                break
+            }
         }
         if (canDl) {
             haveDlStarted = false
@@ -107,34 +109,33 @@ class DlActivity : Activity() {
         csdwn.viewTreeObserver.addOnGlobalLayoutListener(object :
             ViewTreeObserver.OnGlobalLayoutListener {
             override fun onGlobalLayout() {
-                cdwnHeight = csdwn.height
-                Log.d("MyDl", "Get csdwn height: $cdwnHeight")
+                cdwnWidth = csdwn.width
                 csdwn.viewTreeObserver.removeOnGlobalLayoutListener(this)
             }
         })
         dllazys.onScrollListener = object : LazyScrollView.OnScrollListener {
-            override fun onBottom() {
-                if (csdwn.translationY > 0f) showDlCard()
-            }
+            override fun onBottom() {}
 
             override fun onScroll() {
                 if (csdwn.translationY == 0f) hideDlCard()
             }
 
-            override fun onTop() {
-                if (csdwn.translationY > 0f) showDlCard()
-            }
+            override fun onTop() {}
         }
         cdwn.setOnClickListener {
-            pdwn.progress = 0
-            if (canDl || checkedChapter == 0) canDl = false
+            if (csdwn.translationX != 0f) showDlCard()
+            else if (checkedChapter == 0) hideDlCard()
             else {
-                haveDlStarted = true
-                canDl = true
-                handler.sendEmptyMessage(9)
-                Toast.makeText(this, "准备下载...", Toast.LENGTH_SHORT).show()
-                fillChapters()
-                Thread { dlThead { downloadChapterPages(it) } }.start()
+                pdwn.progress = 0
+                if (canDl || checkedChapter == 0) canDl = false
+                else {
+                    haveDlStarted = true
+                    canDl = true
+                    handler.sendEmptyMessage(9)
+                    Toast.makeText(this, "准备下载...", Toast.LENGTH_SHORT).show()
+                    fillChapters()
+                    Thread { dlThead { downloadChapterPages(it) } }.start()
+                }
             }
         }
         cdwn.setOnLongClickListener {
@@ -177,13 +178,19 @@ class DlActivity : Activity() {
                     handler.obtainMessage(if (succeed) 1 else -1, tbtnlist.indexOf(i), 0)
                         .sendToTarget()
                 }
-
                 override fun handleMessage(succeed: Boolean, pageNow: Int) {
                     handler.obtainMessage(
                         5,
                         tbtnlist.indexOf(i),
                         pageNow,
                         succeed
+                    ).sendToTarget()
+                }
+                override fun handleMessage(pageNow: Int){
+                    handler.obtainMessage(
+                        10,
+                        tbtnlist.indexOf(i),
+                        pageNow
                     ).sendToTarget()
                 }
             }
@@ -231,13 +238,12 @@ class DlActivity : Activity() {
                     null,
                     "取消",
                     {
+                        if (checkedChapter == 0) {
+                            it.tbtn.isChecked = true
+                            tdwn.text = "$dldChapter/${++checkedChapter}"
+                        }
                         Thread {
-                            handler.obtainMessage(
-                                7,
-                                tbtnlist.indexOf(it.tbtn),
-                                0,
-                                zipf
-                            ).sendToTarget()
+                            handler.sendEmptyMessage(7)
                         }.start()
                     })
             }
@@ -245,11 +251,10 @@ class DlActivity : Activity() {
         }
     }
 
-    fun deleteChapters(zipf: File, index: Int) {
+    fun deleteChapters() {
         for (i in tbtnlist) {
             if (i.isChecked) {
-                val f =
-                    File("${getExternalFilesDir("")}/$comicName/${i.hint}/${i.textOn}.zip")
+                val f = File("${getExternalFilesDir("")}/$comicName/${i.hint}/${i.textOn}.zip")
                 if (f.exists()) {
                     deleteChapter(f, i)
                     checkedChapter--

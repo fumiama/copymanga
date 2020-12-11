@@ -22,4 +22,8 @@ class JS {
     fun hideFab(){
         Thread{mh?.sendEmptyMessage(5)}.start()
     }
+    @JavascriptInterface
+    fun enterProfile(){
+        Thread{mh?.sendEmptyMessage(6)}.start()
+    }
 }
