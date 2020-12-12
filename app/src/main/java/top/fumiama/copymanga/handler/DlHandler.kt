@@ -84,6 +84,9 @@ class DlHandler(activity: DlActivity) : Handler() {
                         Toast.LENGTH_SHORT
                     ).show()
                     //Looper.loop()
+                }else{
+                    val progressTxt = d?.tdwn?.text.toString()
+                    d?.tdwn?.text = "${progressTxt.substringBefore(" ")} 的第${msg.arg2}页"
                 }
             }
             6 -> d?.tdwn?.text = "${d?.dldChapter}/${d?.checkedChapter}"

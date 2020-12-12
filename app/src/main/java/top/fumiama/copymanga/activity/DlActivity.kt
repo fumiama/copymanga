@@ -4,10 +4,10 @@ import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
+import android.view.WindowManager
 import android.widget.Toast
 import android.widget.ToggleButton
 import kotlinx.android.synthetic.main.activity_dl.*
@@ -66,12 +66,16 @@ class DlActivity : Activity() {
 
     private fun showDlCard(){
         //ObjectAnimator.ofFloat(csdwn, "alpha", 0.3f, 0.9f).setDuration(233).start()
-        ObjectAnimator.ofFloat(csdwn, "translationX", cdwnWidth.toFloat() * 0.9f, 0f).setDuration(233).start()
+        ObjectAnimator.ofFloat(csdwn, "translationX", cdwnWidth.toFloat() * 0.9f, 0f).setDuration(
+            233
+        ).start()
     }
 
     private fun hideDlCard(){
         //ObjectAnimator.ofFloat(csdwn, "alpha", 0.9f, 0.3f).setDuration(233).start()
-        ObjectAnimator.ofFloat(csdwn, "translationX", 0f, cdwnWidth.toFloat() * 0.9f).setDuration(233).start()
+        ObjectAnimator.ofFloat(csdwn, "translationX", 0f, cdwnWidth.toFloat() * 0.9f).setDuration(
+            233
+        ).start()
     }
 
     private fun fillChapters() {
@@ -88,6 +92,7 @@ class DlActivity : Activity() {
             if (!canDl) {
                 checkedChapter -= dldChapter
                 dldChapter = 0
+                Toast.makeText(this, "当前章节下载完成后将会停止", Toast.LENGTH_SHORT).show()
                 break
             }
         }
@@ -117,7 +122,7 @@ class DlActivity : Activity() {
             override fun onBottom() {}
 
             override fun onScroll() {
-                if (csdwn.translationY == 0f) hideDlCard()
+                if (csdwn.translationX == 0f) hideDlCard()
             }
 
             override fun onTop() {}

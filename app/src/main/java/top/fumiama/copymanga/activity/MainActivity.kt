@@ -51,9 +51,10 @@ class MainActivity: Activity() {
     }
 
     fun onFabClicked(v: View){
+        DlListActivity.currentDir = getExternalFilesDir("")
         startActivity(
             Intent(this, (if(mh?.showDlList == true) DlListActivity::class else DlActivity::class).java)
-                .putExtra("title", "./我的下载")
+                .putExtra("title", "我的下载")
         )
     }
 
