@@ -46,6 +46,7 @@ class DlActivity : Activity() {
     private var canDl = false
     private lateinit var toolsBox: ToolsBox
     lateinit var mangaDlTools: MangaDlTools
+    var multiSelect = false
 
 
     @ExperimentalStdlibApi
@@ -92,7 +93,6 @@ class DlActivity : Activity() {
             if (!canDl) {
                 checkedChapter -= dldChapter
                 dldChapter = 0
-                Toast.makeText(this, "当前章节下载完成后将会停止", Toast.LENGTH_SHORT).show()
                 break
             }
         }
@@ -100,7 +100,7 @@ class DlActivity : Activity() {
             haveDlStarted = false
             canDl = false
         }
-        handler.sendEmptyMessage(8)
+        handler.sendEmptyMessage(8)     //set dl card color to blue
     }
 
     @ExperimentalStdlibApi
@@ -120,11 +120,7 @@ class DlActivity : Activity() {
         })
         dllazys.onScrollListener = object : LazyScrollView.OnScrollListener {
             override fun onBottom() {}
-
-            override fun onScroll() {
-                if (csdwn.translationX == 0f) hideDlCard()
-            }
-
+            override fun onScroll() { if (csdwn.translationX == 0f) hideDlCard() }
             override fun onTop() {}
         }
         cdwn.setOnClickListener {
@@ -136,7 +132,7 @@ class DlActivity : Activity() {
                 else {
                     haveDlStarted = true
                     canDl = true
-                    handler.sendEmptyMessage(9)
+                    handler.sendEmptyMessage(9)     //set dl card color to red
                     Toast.makeText(this, "准备下载...", Toast.LENGTH_SHORT).show()
                     fillChapters()
                     Thread { dlThead { downloadChapterPages(it) } }.start()
@@ -147,7 +143,13 @@ class DlActivity : Activity() {
             Thread { handler.sendEmptyMessage(4) }.start()
             return@setOnLongClickListener true
         }
+        isearch.setOnClickListener { showMultiSelectInfo() }
         analyzeStructure()
+    }
+
+    private fun showMultiSelectInfo() {
+        toolsBox.buildInfo("进入多选模式？", "确定后，长按下载条可选中全部漫画，而不仅限于未下载者。",
+            "确定", null, "取消", { multiSelect = true })
     }
 
     private fun analyzeStructure() {
@@ -226,6 +228,7 @@ class DlActivity : Activity() {
         if (zipf.exists()) {
             tbv.tbtn.setBackgroundResource(R.drawable.rndbg_checked)
             tbv.tbtn.isChecked = false
+            tbv.tbtn.freezesText = true
         }
         ltbtn.ltbtn.addView(tbv)
         ltbtn.invalidate()

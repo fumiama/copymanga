@@ -93,7 +93,7 @@ class ViewMangaActivity : Activity() {
         tt.canDo = true
         tt.start()
         ttitle.text = titleText
-        isearch.visibility = View.VISIBLE
+        //isearch.visibility = View.VISIBLE
         try {
             count = if (mangaZip != null) countZipItems() else imgUrls.size
         } catch (e: Exception) {

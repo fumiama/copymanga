@@ -72,7 +72,7 @@ class MangaDlTools(activity: DlActivity) {
                         sleep(2000)
                     }
                 }
-                if(tryTimes == 0) succeed = false
+                if(!s && tryTimes <= 0) succeed = false
                 onDownloadedListener?.handleMessage(s, i + 1)
                 zip.flush()
                 if (exit) break
