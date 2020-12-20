@@ -54,7 +54,7 @@ class ViewMangaActivity : Activity() {
     lateinit var toolsBox: ToolsBox
     private lateinit var p: PropertiesTools
     private var mangaZip = zipFile
-    private val dlZip2View = mangaZip != null
+    val dlZip2View = mangaZip != null
     var pageNum = 1
         get() {
             field = getPageNumber()
@@ -424,5 +424,8 @@ class ViewMangaActivity : Activity() {
         var titleText = "Null"
         var nextChapterUrl: String? = null
         var previousChapterUrl: String? = null
+        var zipPosition = 0
+        var zipList: Array<out String>? = null
+        var cd: File? = null
     }
 }

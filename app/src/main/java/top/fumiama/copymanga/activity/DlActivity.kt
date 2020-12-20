@@ -4,6 +4,7 @@ import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.os.Bundle
+import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
@@ -40,7 +41,7 @@ class DlActivity : Activity() {
     private lateinit var ltbtn: View
     var tbtnlist: List<ToggleButton> = arrayListOf()
     var tbtnUrlList = arrayListOf<String>()
-    private val handler = DlHandler(this)
+    private val handler = DlHandler(this, Looper.myLooper()!!)
     private var btnw = 0
     private var cdwnWidth = 0
     private var canDl = false
@@ -87,7 +88,7 @@ class DlActivity : Activity() {
     }
 
     private fun dlThead(dlMethod: (i: ToggleButton) -> Unit) {
-        sleep(2333)
+        sleep(100000)
         for (i in tbtnlist.listIterator()) {
             if (i.isChecked) dlMethod(i)
             if (!canDl) {
@@ -133,14 +134,14 @@ class DlActivity : Activity() {
                     haveDlStarted = true
                     canDl = true
                     handler.sendEmptyMessage(9)     //set dl card color to red
-                    Toast.makeText(this, "准备下载...", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "十秒后开始下载...", Toast.LENGTH_SHORT).show()
                     fillChapters()
                     Thread { dlThead { downloadChapterPages(it) } }.start()
                 }
             }
         }
         cdwn.setOnLongClickListener {
-            Thread { handler.sendEmptyMessage(4) }.start()
+            handler.sendEmptyMessage(4)
             return@setOnLongClickListener true
         }
         isearch.setOnClickListener { showMultiSelectInfo() }
@@ -250,9 +251,7 @@ class DlActivity : Activity() {
                             it.tbtn.isChecked = true
                             tdwn.text = "$dldChapter/${++checkedChapter}"
                         }
-                        Thread {
-                            handler.sendEmptyMessage(7)
-                        }.start()
+                        handler.sendEmptyMessage(7)
                     })
             }
             true

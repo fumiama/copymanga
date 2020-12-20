@@ -5,10 +5,12 @@ import android.app.AlertDialog
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.util.Log
 import android.widget.Toast
 import top.fumiama.copymanga.R
 import java.lang.ref.WeakReference
 import java.util.*
+import java.util.regex.Pattern
 import kotlin.math.sqrt
 
 class ToolsBox(w: WeakReference<Any>) {
