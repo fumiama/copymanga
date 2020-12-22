@@ -13,15 +13,9 @@ class DlLHandler(looper: Looper, activity: DlListActivity): Handler(looper) {
     override fun handleMessage(msg: Message) {
         super.handleMessage(msg)
         when(msg.what){
-            1 -> load { dll.get()?.checkDir(msg.obj as File) }
-            2 -> load { dll.get()?.rmrf(msg.obj as File) }
-            3 -> load { dll.get()?.scanFile(msg.obj as File) }
+            1 -> dll.get()?.checkDir(msg.obj as File)
+            2 -> dll.get()?.rmrf(msg.obj as File)
+            3 -> dll.get()?.scanFile(msg.obj as File)
         }
-    }
-
-    private fun load(func:()->Unit){
-        dll.get()?.showLoading()
-        func()
-        dll.get()?.hideLoading()
     }
 }

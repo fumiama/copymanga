@@ -18,46 +18,49 @@ import java.util.regex.Pattern
 import java.util.zip.ZipInputStream
 
 class DlListActivity:Activity() {
-    var nullZipDirStr = emptyArray<String>()
-    var handler: DlLHandler? = null
-    var loadingDialog: Dialog? = null
+    private var nullZipDirStr = emptyArray<String>()
+    private var handler: DlLHandler? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dlist)
         ttitle.text = intent.getStringExtra("title")
-        loadingDialog = Dialog(this)
-        loadingDialog?.setContentView(R.layout.dialog_loading)
         handler = DlLHandler(Looper.myLooper()!!, this)
         handler?.obtainMessage(3, currentDir)?.sendToTarget()       //call scanFile
     }
 
     fun scanFile(cd: File?){
-        cd?.list()?.sortedArrayWith { o1, o2 ->
+        val isRoot = cd == getExternalFilesDir("")
+        val jsonFile = File(cd, "info.bin")
+        if(isRoot || !jsonFile.exists()) cd?.list()?.sortedArrayWith { o1, o2 ->
             if(o1.endsWith(".zip") && o2.endsWith(".zip")) (10000*getFloat(o1) - 10000*getFloat(o2) + 0.5).toInt()
             else o1[0] - o2[0]
         }?.let {
             mylv.adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, it)
             mylv.setOnItemClickListener { _, _, position, _ ->
                 val chosenFile = File(cd, it[position])
+                val chosenJson = File(chosenFile, "info.bin")
                 //Toast.makeText(this, "进入$chosenFile", Toast.LENGTH_SHORT).show()
-                if (chosenFile.isDirectory) {
-                    currentDir = chosenFile
-                    startActivity(
-                        Intent(
-                            this,
-                            DlListActivity::class.java
-                        ).putExtra("title", it[position])
-                    )
-                }
-                else{
-                    Toast.makeText(this, "加载中...", Toast.LENGTH_SHORT).show()
-                    ViewMangaActivity.zipFile = chosenFile
-                    ViewMangaActivity.titleText = it[position]
-                    ViewMangaActivity.zipPosition = position
-                    ViewMangaActivity.zipList = it
-                    ViewMangaActivity.cd = cd
-                    startActivity(Intent(this, ViewMangaActivity::class.java))
+                when {
+                    chosenJson.exists() -> callDownloadActivity(chosenJson)
+                    chosenFile.isDirectory -> {
+                        currentDir = chosenFile
+                        startActivity(
+                            Intent(
+                                this,
+                                DlListActivity::class.java
+                            ).putExtra("title", it[position])
+                        )
+                    }
+                    chosenFile.name.endsWith(".zip") -> {
+                        Toast.makeText(this, "加载中...", Toast.LENGTH_SHORT).show()
+                        ViewMangaActivity.zipFile = chosenFile
+                        ViewMangaActivity.titleText = it[position]
+                        ViewMangaActivity.zipPosition = position
+                        ViewMangaActivity.zipList = it
+                        ViewMangaActivity.cd = cd
+                        startActivity(Intent(this, ViewMangaActivity::class.java))
+                    }
                 }
             }
             mylv.setOnItemLongClickListener { _, _, position, _ ->
@@ -91,9 +94,11 @@ class DlListActivity:Activity() {
         else Toast.makeText(this, "未发现错误", Toast.LENGTH_SHORT).show()
     }
 
-    fun showLoading() = loadingDialog?.show()
-
-    fun hideLoading() = loadingDialog?.hide()
+    private fun callDownloadActivity(jsonFile: File){
+        DlActivity.json = jsonFile.readText()
+        DlActivity.comicName = jsonFile.parentFile?.name?:"Null"
+        startActivity(Intent(this, DlActivity::class.java))
+    }
 
     private fun findNullWebpZipFileInDir(f: File){
         if (f.isDirectory) f.listFiles()?.let {
@@ -156,7 +161,7 @@ class DlListActivity:Activity() {
             while (matcher.find()) newString.append(matcher.group())
         }
         //Log.d("MyDLL2", newString.toString().toFloat().toString())
-        return newString.toString().toFloat()
+        return if(newString.isEmpty()) 0f else newString.toString().toFloat()
     }
 
     companion object{

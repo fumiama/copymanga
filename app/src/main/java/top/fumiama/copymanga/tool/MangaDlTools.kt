@@ -1,7 +1,5 @@
 package top.fumiama.copymanga.tool
 
-import android.os.Looper
-import android.widget.Toast
 import top.fumiama.copymanga.R
 import top.fumiama.copymanga.activity.DlActivity
 import top.fumiama.copymanga.data.ComicStructure
@@ -92,6 +90,5 @@ class MangaDlTools(activity: DlActivity) {
 
     companion object {
         var wmdlt: WeakReference<MangaDlTools>? = null
-        var comicStructure: Array<ComicStructure>? = null
     }
 }

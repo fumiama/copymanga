@@ -16,6 +16,8 @@ class DlHandler(activity: DlActivity, looper: Looper) : Handler(looper) {
     private val da = WeakReference(activity)
     private val d 
         get() = da.get()
+    private var size = 0
+    private var refreshSize = true
 
     @ExperimentalStdlibApi
     @SuppressLint("SetTextI18n")
@@ -70,13 +72,13 @@ class DlHandler(activity: DlActivity, looper: Looper) : Handler(looper) {
                 d?.tdwn?.text = "${d?.dldChapter}/${d?.checkedChapter}"
             }
             5 -> {
-                val size = d?.tbtnUrlList?.get(msg.arg1)?.let { wmdlt?.get()?.getImgsCountByHash(it.substringAfterLast("/")) }?:0
+                setSize(msg.arg2, msg.arg1)
                 d?.updateProgressBar(msg.arg2, size)
                 if (!(msg.obj as Boolean)) {
                     Toast.makeText(d, "下载${d?.tbtnlist?.get(msg.arg1)?.textOn}的第${msg.arg2}页失败", Toast.LENGTH_SHORT).show()
                 }else{
                     val progressTxt = d?.tdwn?.text.toString()
-                    d?.tdwn?.text = "${progressTxt.substringBefore(" ")} 的${msg.arg2}/${size}页"
+                    d?.tdwn?.text = "${progressTxt.substringBefore(' ')} 的 ${msg.arg2}/${size} 页"
                 }
             }
             6 -> d?.tdwn?.text = "${d?.dldChapter}/${d?.checkedChapter}"
@@ -85,5 +87,11 @@ class DlHandler(activity: DlActivity, looper: Looper) : Handler(looper) {
             9 -> d?.resources?.getColor(R.color.colorRed)?.let { d?.cdwn?.setCardBackgroundColor(it) }
             10 -> Toast.makeText(d, "下载${d?.tbtnlist?.get(msg.arg1)?.textOn}的第${msg.arg2}页失败，尝试重新下载...", Toast.LENGTH_SHORT).show()
         }
+    }
+    private fun setSize(pageNow: Int, tbtnNo: Int){
+        if(refreshSize || size == 0) {
+            size = d?.tbtnUrlList?.get(tbtnNo)?.let { wmdlt?.get()?.getImgsCountByHash(it.substringAfterLast("/")) }?:0
+            refreshSize = false
+        }else if(pageNow == size) refreshSize = true
     }
 }

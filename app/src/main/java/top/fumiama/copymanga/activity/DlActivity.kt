@@ -3,14 +3,15 @@ package top.fumiama.copymanga.activity
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
-import android.view.WindowManager
 import android.widget.Toast
 import android.widget.ToggleButton
+import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_dl.*
 import kotlinx.android.synthetic.main.button_tbutton.view.*
 import kotlinx.android.synthetic.main.line_caption.view.*
@@ -19,15 +20,16 @@ import kotlinx.android.synthetic.main.widget_downloadbar.*
 import kotlinx.android.synthetic.main.widget_titlebar.*
 import top.fumiama.copymanga.R
 import top.fumiama.copymanga.activity.MainActivity.Companion.mh
+import top.fumiama.copymanga.data.ComicStructure
 import top.fumiama.copymanga.handler.DlHandler
 import top.fumiama.copymanga.tool.MangaDlTools
-import top.fumiama.copymanga.tool.MangaDlTools.Companion.comicStructure
 import top.fumiama.copymanga.tool.MangaDlTools.Companion.wmdlt
 import top.fumiama.copymanga.tool.ToolsBox
 import top.fumiama.copymanga.view.LazyScrollView
 import java.io.File
 import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
+import java.util.zip.ZipFile
 
 
 class DlActivity : Activity() {
@@ -48,6 +50,7 @@ class DlActivity : Activity() {
     private lateinit var toolsBox: ToolsBox
     lateinit var mangaDlTools: MangaDlTools
     var multiSelect = false
+    private var zipArrayList: Array<String> = arrayOf()
 
 
     @ExperimentalStdlibApi
@@ -57,7 +60,7 @@ class DlActivity : Activity() {
         setContentView(R.layout.activity_dl)
         mh?.saveUrlsOnly = true
         mangaDlTools = MangaDlTools(this)
-        handler.sendEmptyMessage(-2)
+        handler.sendEmptyMessage(-2)        //setLayouts
     }
 
     override fun onDestroy() {
@@ -88,7 +91,7 @@ class DlActivity : Activity() {
     }
 
     private fun dlThead(dlMethod: (i: ToggleButton) -> Unit) {
-        sleep(100000)
+        sleep(10000)
         for (i in tbtnlist.listIterator()) {
             if (i.isChecked) dlMethod(i)
             if (!canDl) {
@@ -149,12 +152,12 @@ class DlActivity : Activity() {
     }
 
     private fun showMultiSelectInfo() {
-        toolsBox.buildInfo("进入多选模式？", "确定后，长按下载条可选中全部漫画，而不仅限于未下载者。",
+        toolsBox.buildInfo("进入多选模式？", "确定后，长按下载条可选中全部漫画，而不仅限于未下载者；点击已下载漫画可进行选择。",
             "确定", null, "取消", { multiSelect = true })
     }
 
     private fun analyzeStructure() {
-        comicStructure?.let {
+        Gson().fromJson(json?.reader(), Array<ComicStructure>::class.java)?.let {
             for (group in it) {
                 val tc = layoutInflater.inflate(R.layout.line_caption, ldwn, false)
                 tc.tcptn.text = group.name
@@ -176,6 +179,10 @@ class DlActivity : Activity() {
                 for (chapter in group.chapters) addTbtn(chapter.name, chapter.url, group.name)
             }
         }
+        val mangaHome = File("${getExternalFilesDir("")}/$comicName")
+        val jsonFile = File(mangaHome, "info.bin")
+        if(!mangaHome.exists()) mangaHome.mkdirs()
+        json?.let { jsonFile.writeText(it) }
     }
 
     @ExperimentalStdlibApi
@@ -220,6 +227,8 @@ class DlActivity : Activity() {
         tbtnlist += tbv.tbtn
         tbtncnt++
         tbtnUrlList.add(url)
+        val zipPosition = zipArrayList.size
+        zipArrayList += "$title.zip"
         tbv.tbtn.textOff = title
         tbv.tbtn.textOn = title
         tbv.tbtn.text = title
@@ -234,10 +243,16 @@ class DlActivity : Activity() {
         ltbtn.ltbtn.addView(tbv)
         ltbtn.invalidate()
         tbv.tbtn.setOnClickListener {
+            val normalAct = (multiSelect && zipf.exists()) || !zipf.exists()
             if (zipf.exists() && !it.tbtn.isChecked) it.tbtn.setBackgroundResource(R.drawable.rndbg_checked)
-            else it.tbtn.setBackgroundResource(R.drawable.toggle_button)
-            if (it.tbtn.isChecked) tdwn.text = "$dldChapter/${++checkedChapter}"
-            else tdwn.text = "$dldChapter/${--checkedChapter}"
+            else if(normalAct) it.tbtn.setBackgroundResource(R.drawable.toggle_button)
+            if(normalAct){
+                if (it.tbtn.isChecked) tdwn.text = "$dldChapter/${++checkedChapter}"
+                else tdwn.text = "$dldChapter/${--checkedChapter}"
+            }else if(it.tbtn.isChecked){
+                it.tbtn.isChecked = false
+                callVM(title, zipf, zipPosition)
+            }
         }
         tbv.tbtn.setOnLongClickListener {
             if (zipf.exists()) {
@@ -271,6 +286,15 @@ class DlActivity : Activity() {
         handler.sendEmptyMessage(6)
     }
 
+    private fun callVM(titleText: String, zipFile: File, zipPosition:Int){
+        ViewMangaActivity.titleText = titleText
+        ViewMangaActivity.zipFile = zipFile
+        ViewMangaActivity.zipList = zipArrayList
+        ViewMangaActivity.zipPosition = zipPosition
+        ViewMangaActivity.cd = zipFile.parentFile
+        startActivity(Intent(this, ViewMangaActivity::class.java))
+    }
+
     private fun deleteChapter(f: File, v: ToggleButton) {
         f.delete()
         v.setBackgroundResource(R.drawable.toggle_button)
@@ -301,5 +325,6 @@ class DlActivity : Activity() {
 
     companion object {
         var comicName = "Null"
+        var json: String? = null
     }
 }

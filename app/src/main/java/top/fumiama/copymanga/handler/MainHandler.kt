@@ -5,16 +5,11 @@ import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
-import android.util.Log
 import android.view.View
-import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_main.*
-import top.fumiama.copymanga.activity.DlActivity
+import top.fumiama.copymanga.activity.DlActivity.Companion.json
 import top.fumiama.copymanga.activity.MainActivity.Companion.wm
 import top.fumiama.copymanga.activity.ViewMangaActivity
-import top.fumiama.copymanga.data.ComicStructure
-import top.fumiama.copymanga.tool.MangaDlTools
-import top.fumiama.copymanga.tool.MangaDlTools.Companion.comicStructure
 import top.fumiama.copymanga.tool.MangaDlTools.Companion.wmdlt
 
 class MainHandler(looper: Looper):Handler(looper) {
@@ -62,7 +57,7 @@ class MainHandler(looper: Looper):Handler(looper) {
     private fun setFab(content: String){
         //Log.d("MyMH", "Get chapter json: $content")
         showDlList = false
-        comicStructure = Gson().fromJson(content.reader(), Array<ComicStructure>::class.java)
+        json = content
         showFab()
     }
     private fun setFab2DlList(){

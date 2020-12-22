@@ -1,6 +1,7 @@
 package top.fumiama.copymanga.tool
 
 import android.content.Intent
+import android.util.Log
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
 import top.fumiama.copymanga.activity.MainActivity.Companion.wm
@@ -42,7 +43,7 @@ class PagesManager(w: WeakReference<ViewMangaActivity>) {
                 if (if(goNext)isEndR else isEndL){
                     ViewMangaActivity.zipPosition = newZipPosition
                     ViewMangaActivity.titleText = ViewMangaActivity.zipList?.get(newZipPosition) ?: "null"
-                    ViewMangaActivity.zipFile = ViewMangaActivity.zipList?.let { File(ViewMangaActivity.cd, ViewMangaActivity.titleText) }
+                    ViewMangaActivity.zipFile = File(ViewMangaActivity.cd, ViewMangaActivity.titleText)
                     v.startActivity(Intent(v, ViewMangaActivity::class.java))
                     v.tt.canDo = false
                     v.finish()

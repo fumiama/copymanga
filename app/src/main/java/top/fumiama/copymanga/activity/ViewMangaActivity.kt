@@ -94,17 +94,21 @@ class ViewMangaActivity : Activity() {
         tt.start()
         ttitle.text = titleText
         //isearch.visibility = View.VISIBLE
-        try {
-            count = if (mangaZip != null) countZipItems() else imgUrls.size
-        } catch (e: Exception) {
-            e.printStackTrace()
-            toolsBox.toastError("分析图片url错误")
-        }
-        try {
-            prepareItems()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            toolsBox.toastError("准备控件错误")
+        Log.d("MyVM", "dlZip2View: $dlZip2View, mangaZip: $mangaZip")
+        if(dlZip2View && mangaZip?.exists() != true) toolsBox.toastError("已经到头了~")
+        else {
+            try {
+                count = if (dlZip2View) countZipItems() else imgUrls.size
+            } catch (e: Exception) {
+                e.printStackTrace()
+                toolsBox.toastError("分析图片url错误")
+            }
+            try {
+                prepareItems()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                toolsBox.toastError("准备控件错误")
+            }
         }
     }
 
