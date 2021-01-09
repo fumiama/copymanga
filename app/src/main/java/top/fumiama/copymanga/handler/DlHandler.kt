@@ -48,7 +48,7 @@ class DlHandler(activity: DlActivity, looper: Looper) : Handler(looper) {
                 d?.pdwn?.progress = 0
                 val selectDownloaded = d?.multiSelect?:false
                 if (d?.haveSElectAll == true) {
-                    d?.tbtnlist?.listIterator()?.forEach { i ->
+                    d?.tbtnlist?.forEach { i ->
                         if(i.freezesText) i.setBackgroundResource(R.drawable.rndbg_checked) else i.setBackgroundResource(R.drawable.toggle_button)
                         i.isChecked = false
                     }
@@ -62,7 +62,7 @@ class DlHandler(activity: DlActivity, looper: Looper) : Handler(looper) {
                             i.isChecked = true
                             it.checkedChapter++
                         }
-                        for (i in it.tbtnlist.listIterator()) {
+                        for (i in it.tbtnlist) {
                             if(selectDownloaded) checkBtn(i, it)
                             else if(!i.freezesText) checkBtn(i, it)
                         }
@@ -90,7 +90,7 @@ class DlHandler(activity: DlActivity, looper: Looper) : Handler(looper) {
     }
     private fun setSize(pageNow: Int, tbtnNo: Int){
         if(refreshSize || size == 0) {
-            size = d?.tbtnUrlList?.get(tbtnNo)?.let { wmdlt?.get()?.getImgsCountByHash(it.substringAfterLast("/")) }?:0
+            size = d?.tbtnlist?.get(tbtnNo)?.hash?.let { wmdlt?.get()?.getImgsCountByHash(it) }?:0
             refreshSize = false
         }else if(pageNow == size) refreshSize = true
     }

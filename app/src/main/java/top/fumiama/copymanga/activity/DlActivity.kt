@@ -25,6 +25,7 @@ import top.fumiama.copymanga.handler.DlHandler
 import top.fumiama.copymanga.tool.MangaDlTools
 import top.fumiama.copymanga.tool.MangaDlTools.Companion.wmdlt
 import top.fumiama.copymanga.tool.ToolsBox
+import top.fumiama.copymanga.view.ChapterToggleButton
 import top.fumiama.copymanga.view.LazyScrollView
 import java.io.File
 import java.lang.Thread.sleep
@@ -41,17 +42,14 @@ class DlActivity : Activity() {
     var haveDlStarted = false
     private var btnNumPerRow = 4
     private lateinit var ltbtn: View
-    var tbtnlist: List<ToggleButton> = arrayListOf()
-    var tbtnUrlList = arrayListOf<String>()
+    var tbtnlist: Array<ChapterToggleButton> = arrayOf()
     private val handler = DlHandler(this, Looper.myLooper()!!)
     private var btnw = 0
     private var cdwnWidth = 0
     private var canDl = false
     private lateinit var toolsBox: ToolsBox
-    lateinit var mangaDlTools: MangaDlTools
+    private lateinit var mangaDlTools: MangaDlTools
     var multiSelect = false
-    private var zipArrayList: Array<String> = arrayOf()
-
 
     @ExperimentalStdlibApi
     @SuppressLint("SetTextI18n")
@@ -85,14 +83,14 @@ class DlActivity : Activity() {
 
     private fun fillChapters() {
         mangaDlTools.allocateChapterUrls(checkedChapter)
-        for (i in tbtnlist.indices) {
-            if (tbtnlist[i].isChecked) mangaDlTools.dlChapterUrl(tbtnUrlList[i])
+        for (i in tbtnlist) {
+            if (i.isChecked) mangaDlTools.dlChapterUrl(i.url.toString())
         }
     }
 
-    private fun dlThead(dlMethod: (i: ToggleButton) -> Unit) {
+    private fun dlThread(dlMethod: (i: ChapterToggleButton) -> Unit) {
         sleep(10000)
-        for (i in tbtnlist.listIterator()) {
+        for (i in tbtnlist) {
             if (i.isChecked) dlMethod(i)
             if (!canDl) {
                 checkedChapter -= dldChapter
@@ -139,7 +137,7 @@ class DlActivity : Activity() {
                     handler.sendEmptyMessage(9)     //set dl card color to red
                     Toast.makeText(this, "十秒后开始下载...", Toast.LENGTH_SHORT).show()
                     fillChapters()
-                    Thread { dlThead { downloadChapterPages(it) } }.start()
+                    Thread { dlThread { downloadChapterPages(it) } }.start()
                 }
             }
         }
@@ -157,6 +155,7 @@ class DlActivity : Activity() {
     }
 
     private fun analyzeStructure() {
+        ViewMangaActivity.zipList = arrayOf()
         Gson().fromJson(json?.reader(), Array<ComicStructure>::class.java)?.let {
             for (group in it) {
                 val tc = layoutInflater.inflate(R.layout.line_caption, ldwn, false)
@@ -182,21 +181,21 @@ class DlActivity : Activity() {
         val mangaHome = File("${getExternalFilesDir("")}/$comicName")
         val jsonFile = File(mangaHome, "info.bin")
         if(!mangaHome.exists()) mangaHome.mkdirs()
-        json?.let { jsonFile.writeText(it) }
+        if(!(jsonFile.exists() && intent.getBooleanExtra("callFromDlList", false))) json?.let { jsonFile.writeText(it) }
     }
 
     @ExperimentalStdlibApi
-    private fun downloadChapterPages(i: ToggleButton) {
+    private fun downloadChapterPages(i: ChapterToggleButton) {
         mangaDlTools.onDownloadedListener =
             object : MangaDlTools.OnDownloadedListener {
                 override fun handleMessage(succeed: Boolean) {
-                    handler.obtainMessage(if (succeed) 1 else -1, tbtnlist.indexOf(i), 0)
+                    handler.obtainMessage(if (succeed) 1 else -1, i.index, 0)
                         .sendToTarget()
                 }
                 override fun handleMessage(succeed: Boolean, pageNow: Int) {
                     handler.obtainMessage(
                         5,
-                        tbtnlist.indexOf(i),
+                        i.index,
                         pageNow,
                         succeed
                     ).sendToTarget()
@@ -204,15 +203,17 @@ class DlActivity : Activity() {
                 override fun handleMessage(pageNow: Int){
                     handler.obtainMessage(
                         10,
-                        tbtnlist.indexOf(i),
+                        i.index,
                         pageNow
                     ).sendToTarget()
                 }
             }
-        mangaDlTools.dlChapterAndPackIntoZip(
-            File("${getExternalFilesDir("")}/$comicName/${i.hint}/${i.textOn}.zip"),
-            tbtnUrlList[tbtnlist.indexOf(i)].substringAfterLast("/")
-        )
+        i.hash?.let {
+            mangaDlTools.dlChapterAndPackIntoZip(
+                File("${getExternalFilesDir("")}/$comicName/${i.hint}/${i.textOn}.zip"),
+                it
+            )
+        }
     }
 
     @SuppressLint("SetTextI18n")
@@ -224,11 +225,12 @@ class DlActivity : Activity() {
             isNewTitle = false
         }
         val tbv = layoutInflater.inflate(R.layout.button_tbutton, ltbtn.ltbtn, false)
+        tbv.tbtn.index = tbtnlist.size
         tbtnlist += tbv.tbtn
+        tbv.tbtn.url = url
         tbtncnt++
-        tbtnUrlList.add(url)
-        val zipPosition = zipArrayList.size
-        zipArrayList += "$title.zip"
+        val zipPosition = ViewMangaActivity.zipList?.size
+        ViewMangaActivity.zipList = ViewMangaActivity.zipList?.plus("$title.zip")
         tbv.tbtn.textOff = title
         tbv.tbtn.textOn = title
         tbv.tbtn.text = title
@@ -251,7 +253,7 @@ class DlActivity : Activity() {
                 else tdwn.text = "$dldChapter/${--checkedChapter}"
             }else if(it.tbtn.isChecked){
                 it.tbtn.isChecked = false
-                callVM(title, zipf, zipPosition)
+                zipPosition?.let { callVM(title, zipf, it) }
             }
         }
         tbv.tbtn.setOnLongClickListener {
@@ -289,7 +291,7 @@ class DlActivity : Activity() {
     private fun callVM(titleText: String, zipFile: File, zipPosition:Int){
         ViewMangaActivity.titleText = titleText
         ViewMangaActivity.zipFile = zipFile
-        ViewMangaActivity.zipList = zipArrayList
+        //ViewMangaActivity.zipList = zipArrayList
         ViewMangaActivity.zipPosition = zipPosition
         ViewMangaActivity.cd = zipFile.parentFile
         startActivity(Intent(this, ViewMangaActivity::class.java))

@@ -5,10 +5,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.os.Build
-import android.os.Bundle
-import android.os.Handler
-import android.os.Message
+import android.os.*
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -105,6 +102,13 @@ class ViewMangaActivity : Activity() {
             }
             try {
                 prepareItems()
+                if(pn > 0) {
+                    pageNum = pn
+                    pn = -1
+                }else if(pn == -2){
+                    pageNum = count
+                    pn = -1
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
                 toolsBox.toastError("准备控件错误")
@@ -152,7 +156,11 @@ class ViewMangaActivity : Activity() {
 
     private fun loadOneImg() {
         if(dlZip2View) onei.setImageBitmap(getImgBitmap(currentItem))
-        else Glide.with(this@ViewMangaActivity).load(imgUrls[currentItem]).placeholder(R.drawable.bg_comment).into(onei)
+        else Glide.with(this@ViewMangaActivity)
+            .load(imgUrls[currentItem])
+            .placeholder(R.drawable.ic_dl)
+            .dontAnimate()
+            .into(onei)
         updateSeekBar()
     }
 
@@ -338,7 +346,7 @@ class ViewMangaActivity : Activity() {
                     //Glide.with(this@ViewMangaActivity).load(it).placeholder(R.drawable.bg_comment).into(holder.itemView.onei)
                     holder.itemView.onei.setImageBitmap(it)
                 }
-                else Glide.with(this@ViewMangaActivity).load(imgUrls[pos]).placeholder(R.drawable.bg_comment).timeout(10000).into(holder.itemView.onei)
+                else Glide.with(this@ViewMangaActivity).load(imgUrls[pos]).placeholder(R.drawable.ic_dl).dontAnimate().timeout(10000).into(holder.itemView.onei)
             }
 
             override fun getItemCount(): Int {
@@ -377,7 +385,7 @@ class ViewMangaActivity : Activity() {
     class MyHandler(
         private val infcard: View,
         private val toolsBox: ToolsBox
-    ) : Handler() {
+    ) : Handler(Looper.myLooper()!!) {
         private var infcShowed = false
         private var delta = -1f
             get() {
@@ -429,7 +437,8 @@ class ViewMangaActivity : Activity() {
         var nextChapterUrl: String? = null
         var previousChapterUrl: String? = null
         var zipPosition = 0
-        var zipList: Array<out String>? = null
+        var zipList: Array<String>? = null
         var cd: File? = null
+        var pn = -1
     }
 }

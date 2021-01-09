@@ -26,7 +26,7 @@ class MainActivity: Activity() {
         setContentView(R.layout.activity_main)
 
         wm = WeakReference(this)
-        mh = MainHandler(Looper.getMainLooper())
+        mh = MainHandler(Looper.myLooper()!!)
         toolsBox = ToolsBox(wm as WeakReference<Any>)
         toolsBox?.netinfo?.let {
             if(it == "无网络" || it == "错误"){

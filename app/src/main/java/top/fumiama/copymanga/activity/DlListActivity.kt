@@ -57,7 +57,7 @@ class DlListActivity:Activity() {
                         ViewMangaActivity.zipFile = chosenFile
                         ViewMangaActivity.titleText = it[position]
                         ViewMangaActivity.zipPosition = position
-                        ViewMangaActivity.zipList = it
+                        ViewMangaActivity.zipList = it as Array<String>
                         ViewMangaActivity.cd = cd
                         startActivity(Intent(this, ViewMangaActivity::class.java))
                     }
@@ -66,8 +66,8 @@ class DlListActivity:Activity() {
             mylv.setOnItemLongClickListener { _, _, position, _ ->
                 val chosenFile = File(cd, it[position])
                 AlertDialog.Builder(this)
-                    .setIcon(R.drawable.ic_launcher_foreground).setMessage("是否在此执行删除/查错?")
-                    .setTitle("提示").setPositiveButton(android.R.string.ok){ _, _ ->
+                    .setIcon(R.drawable.ic_launcher_foreground).setMessage("在此执行删除/查错?")
+                    .setTitle("提示").setPositiveButton("删除"){ _, _ ->
                         if(chosenFile.exists()) handler?.obtainMessage(2, chosenFile)?.sendToTarget()       //call rmrf
                         handler?.obtainMessage(3, cd)?.sendToTarget()       //call scanFile
                     }.setNegativeButton(android.R.string.cancel){_, _ ->}
@@ -97,7 +97,10 @@ class DlListActivity:Activity() {
     private fun callDownloadActivity(jsonFile: File){
         DlActivity.json = jsonFile.readText()
         DlActivity.comicName = jsonFile.parentFile?.name?:"Null"
-        startActivity(Intent(this, DlActivity::class.java))
+        startActivity(
+            Intent(this, DlActivity::class.java)
+                .putExtra("callFromDlList", true)
+        )
     }
 
     private fun findNullWebpZipFileInDir(f: File){

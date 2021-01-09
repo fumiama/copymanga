@@ -94,17 +94,17 @@ class ScaleImageView : ImageView {
      * 外部变换矩阵记录了图片手势操作的最终结果,是相对于图片fit center状态的变换.
      * 默认值为单位矩阵,此时图片为fit center状态.
      *
-      @param matrix 用于填充结果的对象
-      @return 如果传了matrix参数则将matrix填充后返回,否则new一个填充返回
+    @param matrix 用于填充结果的对象
+    @return 如果传了matrix参数则将matrix填充后返回,否则new一个填充返回
 
     fun getOuterMatrix(matrix: Matrix?): Matrix {
-        var matrix = matrix
-        if (matrix == null) {
-            matrix = Matrix(mOuterMatrix)
-        } else {
-            matrix.set(mOuterMatrix)
-        }
-        return matrix
+    var matrix = matrix
+    if (matrix == null) {
+    matrix = Matrix(mOuterMatrix)
+    } else {
+    matrix.set(mOuterMatrix)
+    }
+    return matrix
     }*/
 
     /**
@@ -117,34 +117,44 @@ class ScaleImageView : ImageView {
      * @return 如果传了matrix参数则将matrix填充后返回,否则new一个填充返回
      */
     private fun getInnerMatrix(matrix: Matrix?): Matrix {
-        var matrix = matrix
-        if (matrix == null) {
-            matrix = Matrix()
-        } else {
-            matrix.reset()
+        val m = matrix?:Matrix().let {
+            it.reset()
+            it
         }
         if (isReady) {
+            val imgX = drawable.intrinsicWidth.toFloat()
+            val imgY = drawable.intrinsicHeight.toFloat()
             //原图大小
-            val tempSrc = MathUtils.rectFTake(
-                0f,
-                0f,
-                drawable.intrinsicWidth.toFloat(),
-                drawable.intrinsicHeight.toFloat()
-            )
+            val tempSrc = rectFTake(0f, 0f, imgX, imgY)
+            //layoutParams.height = (imgY / imgX * width + 0.5).toInt()
+            //invalidate()
             //控件大小
-            val tempDst = MathUtils.rectFTake(
-                0f,
-                0f,
-                width.toFloat(),
-                height.toFloat()
-            )
+            val tempDst = rectFTake(0f, 0f, width.toFloat(), height.toFloat())
             //计算fit center矩阵
-            matrix.setRectToRect(tempSrc, tempDst, Matrix.ScaleToFit.CENTER)
+            m.setRectToRect(tempSrc, tempDst, Matrix.ScaleToFit.CENTER)
             //释放临时对象
-            MathUtils.rectFGiven(tempDst)
-            MathUtils.rectFGiven(tempSrc)
+            rectFGiven(tempDst)
+            rectFGiven(tempSrc)
         }
-        return matrix
+        return m
+    }
+
+    fun setHeight2FitImgWidth(){
+        matrix.reset()
+        val imgX = drawable.intrinsicWidth.toFloat()
+        val imgY = drawable.intrinsicHeight.toFloat()
+        //Log.d("MySIV", "ix: $imgX, iy: $imgY, w: $width, h: $height")
+        //原图大小
+        val tempSrc = rectFTake(0f, 0f, imgX, imgY)
+        layoutParams.height = (imgY / imgX * width + 0.5).toInt()
+        invalidate()
+        //控件大小
+        val tempDst = rectFTake(0f, 0f, width.toFloat(), height.toFloat())
+        //计算fit center矩阵
+        matrix.setRectToRect(tempSrc, tempDst, Matrix.ScaleToFit.CENTER)
+        //释放临时对象
+        rectFGiven(tempDst)
+        rectFGiven(tempSrc)
     }
 
     /**
@@ -161,11 +171,10 @@ class ScaleImageView : ImageView {
      */
     private fun getCurrentImageMatrix(matrix: Matrix): Matrix {
         //获取内部变换矩阵
-        var matrix = matrix
-        matrix = getInnerMatrix(matrix)
+        val m = getInnerMatrix(matrix)
         //乘上外部变换矩阵
-        matrix.postConcat(mOuterMatrix)
-        return matrix
+        m.postConcat(mOuterMatrix)
+        return m
     }
 
     /**
@@ -179,26 +188,20 @@ class ScaleImageView : ImageView {
      * @see .getCurrentImageMatrix
      */
     private fun getImageBound(rectF: RectF?): RectF {
-        var rectF = rectF
-        if (rectF == null) {
-            rectF = RectF()
-        } else {
-            rectF.setEmpty()
-        }
-        return if (!isReady) {
-            rectF
-        } else {
+        var rf = rectF
+        if (rf == null) rf = RectF() else rf.setEmpty()
+        if (isReady) {
             //申请一个空matrix
-            val matrix = MathUtils.matrixTake()
+            val matrix = matrixTake()
             //获取当前总变换矩阵
             getCurrentImageMatrix(matrix)
             //对原图矩形进行变换得到当前显示矩形
-            rectF[0f, 0f, drawable.intrinsicWidth.toFloat()] = drawable.intrinsicHeight.toFloat()
-            matrix.mapRect(rectF)
+            rf[0f, 0f, drawable.intrinsicWidth.toFloat()] = drawable.intrinsicHeight.toFloat()
+            matrix.mapRect(rf)
             //释放临时matrix
-            MathUtils.matrixGiven(matrix)
-            rectF
+            matrixGiven(matrix)
         }
+        return rf
     }
 
     /**
@@ -207,11 +210,11 @@ class ScaleImageView : ImageView {
      * @return 返回当前的mask对象副本,如果当前没有设置mask则返回null
 
     val mask: RectF?
-        get() = if (mMask != null) {
-            RectF(mMask)
-        } else {
-            null
-        }*/
+    get() = if (mMask != null) {
+    RectF(mMask)
+    } else {
+    null
+    }*/
 
     /**
      * 与ViewPager结合的时候使用
@@ -259,29 +262,29 @@ class ScaleImageView : ImageView {
      * 调用此方法会停止正在进行中的手势以及手势动画.
      * 当duration为0时,outerMatrix值会被立即设置而不会启动动画.
      *
-      @param endMatrix 动画目标矩阵
-      @param duration 动画持续时间
+    @param endMatrix 动画目标矩阵
+    @param duration 动画持续时间
      *
-      @see .getOuterMatrix
+    @see .getOuterMatrix
 
     fun outerMatrixTo(endMatrix: Matrix?, duration: Long) {
-        if (endMatrix == null) {
-            return
-        }
-        //将手势设置为PINCH_MODE_FREE将停止后续手势的触发
-        pinchMode = PINCH_MODE_FREE
-        //停止所有正在进行的动画
-        cancelAllAnimator()
-        //如果时间不合法立即执行结果
-        if (duration <= 0) {
-            mOuterMatrix.set(endMatrix)
-            dispatchOuterMatrixChanged()
-            invalidate()
-        } else {
-            //创建矩阵变化动画
-            mScaleAnimator = ScaleAnimator(mOuterMatrix, endMatrix, duration)
-            mScaleAnimator!!.start()
-        }
+    if (endMatrix == null) {
+    return
+    }
+    //将手势设置为PINCH_MODE_FREE将停止后续手势的触发
+    pinchMode = PINCH_MODE_FREE
+    //停止所有正在进行的动画
+    cancelAllAnimator()
+    //如果时间不合法立即执行结果
+    if (duration <= 0) {
+    mOuterMatrix.set(endMatrix)
+    dispatchOuterMatrixChanged()
+    invalidate()
+    } else {
+    //创建矩阵变化动画
+    mScaleAnimator = ScaleAnimator(mOuterMatrix, endMatrix, duration)
+    mScaleAnimator!!.start()
+    }
     }*/
 
     /**
@@ -291,32 +294,32 @@ class ScaleImageView : ImageView {
      * 当前mask为null时,则不执行动画立即设置为目标mask.
      * 当duration为0时,立即将当前mask设置为目标mask,不会执行动画.
      *
-      @param mask 动画目标mask
-      @param duration 动画持续时间
+    @param mask 动画目标mask
+    @param duration 动画持续时间
      *
-      @see .getMask
+    @see .getMask
 
     fun zoomMaskTo(mask: RectF?, duration: Long) {
-        if (mask == null) {
-            return
-        }
-        //停止mask动画
-        if (mMaskAnimator != null) {
-            mMaskAnimator!!.cancel()
-            mMaskAnimator = null
-        }
-        //如果duration为0或者之前没有设置过mask,不执行动画,立即设置
-        if (duration <= 0 || mMask == null) {
-            if (mMask == null) {
-                mMask = RectF()
-            }
-            mMask!!.set(mask)
-            invalidate()
-        } else {
-            //执行mask动画
-            mMaskAnimator = MaskAnimator(mMask!!, mask, duration)
-            mMaskAnimator!!.start()
-        }
+    if (mask == null) {
+    return
+    }
+    //停止mask动画
+    if (mMaskAnimator != null) {
+    mMaskAnimator!!.cancel()
+    mMaskAnimator = null
+    }
+    //如果duration为0或者之前没有设置过mask,不执行动画,立即设置
+    if (duration <= 0 || mMask == null) {
+    if (mMask == null) {
+    mMask = RectF()
+    }
+    mMask!!.set(mask)
+    invalidate()
+    } else {
+    //执行mask动画
+    mMaskAnimator = MaskAnimator(mMask!!, mask, duration)
+    mMaskAnimator!!.start()
+    }
     }*/
 
     /**
@@ -326,24 +329,24 @@ class ScaleImageView : ImageView {
      * 但不清空drawable,以及事件绑定相关数据.
 
     fun reset() {
-        //重置位置到fit
-        mOuterMatrix.reset()
-        dispatchOuterMatrixChanged()
-        //清空mask
-        mMask = null
-        //停止所有手势
-        pinchMode = PINCH_MODE_FREE
-        mLastMovePoint[0f] = 0f
-        mScaleCenter[0f] = 0f
-        mScaleBase = 0f
-        //停止所有动画
-        if (mMaskAnimator != null) {
-            mMaskAnimator!!.cancel()
-            mMaskAnimator = null
-        }
-        cancelAllAnimator()
-        //重绘
-        invalidate()
+    //重置位置到fit
+    mOuterMatrix.reset()
+    dispatchOuterMatrixChanged()
+    //清空mask
+    mMask = null
+    //停止所有手势
+    pinchMode = PINCH_MODE_FREE
+    mLastMovePoint[0f] = 0f
+    mScaleCenter[0f] = 0f
+    mScaleBase = 0f
+    //停止所有动画
+    if (mMaskAnimator != null) {
+    mMaskAnimator!!.cancel()
+    mMaskAnimator = null
+    }
+    cancelAllAnimator()
+    //重绘
+    invalidate()
     }*/
     ////////////////////////////////对外广播事件////////////////////////////////
     /**
@@ -396,64 +399,64 @@ class ScaleImageView : ImageView {
     /**
      * 添加外部矩阵变化监听
      *
-      @param listener
+    @param listener
 
     fun addOuterMatrixChangedListener(listener: OuterMatrixChangedListener?) {
-        if (listener == null) {
-            return
-        }
-        //如果监听列表没有被修改锁定直接将监听添加到监听列表
-        if (mDispatchOuterMatrixChangedLock == 0) {
-            if (mOuterMatrixChangedListeners == null) {
-                mOuterMatrixChangedListeners =
-                    ArrayList()
-            }
-            mOuterMatrixChangedListeners!!.add(listener)
-        } else {
-            //如果监听列表修改被锁定,那么尝试在监听列表副本上添加
-            //监听列表副本将会在锁定被解除时替换到监听列表里
-            if (mOuterMatrixChangedListenersCopy == null) {
-                mOuterMatrixChangedListenersCopy = if (mOuterMatrixChangedListeners != null) {
-                    ArrayList(
-                        mOuterMatrixChangedListeners!!
-                    )
-                } else {
-                    ArrayList()
-                }
-            }
-            mOuterMatrixChangedListenersCopy!!.add(listener)
-        }
+    if (listener == null) {
+    return
+    }
+    //如果监听列表没有被修改锁定直接将监听添加到监听列表
+    if (mDispatchOuterMatrixChangedLock == 0) {
+    if (mOuterMatrixChangedListeners == null) {
+    mOuterMatrixChangedListeners =
+    ArrayList()
+    }
+    mOuterMatrixChangedListeners!!.add(listener)
+    } else {
+    //如果监听列表修改被锁定,那么尝试在监听列表副本上添加
+    //监听列表副本将会在锁定被解除时替换到监听列表里
+    if (mOuterMatrixChangedListenersCopy == null) {
+    mOuterMatrixChangedListenersCopy = if (mOuterMatrixChangedListeners != null) {
+    ArrayList(
+    mOuterMatrixChangedListeners!!
+    )
+    } else {
+    ArrayList()
+    }
+    }
+    mOuterMatrixChangedListenersCopy!!.add(listener)
+    }
     }*/
 
     /**
      * 删除外部矩阵变化监听
      *
-      @param listener
+    @param listener
 
     fun removeOuterMatrixChangedListener(listener: OuterMatrixChangedListener?) {
-        if (listener == null) {
-            return
-        }
-        //如果监听列表没有被修改锁定直接在监听列表数据结构上修改
-        if (mDispatchOuterMatrixChangedLock == 0) {
-            if (mOuterMatrixChangedListeners != null) {
-                mOuterMatrixChangedListeners!!.remove(listener)
-            }
-        } else {
-            //如果监听列表被修改锁定,那么就在其副本上修改
-            //其副本将会在锁定解除时替换回监听列表
-            if (mOuterMatrixChangedListenersCopy == null) {
-                if (mOuterMatrixChangedListeners != null) {
-                    mOuterMatrixChangedListenersCopy =
-                        ArrayList(
-                            mOuterMatrixChangedListeners!!
-                        )
-                }
-            }
-            if (mOuterMatrixChangedListenersCopy != null) {
-                mOuterMatrixChangedListenersCopy!!.remove(listener)
-            }
-        }
+    if (listener == null) {
+    return
+    }
+    //如果监听列表没有被修改锁定直接在监听列表数据结构上修改
+    if (mDispatchOuterMatrixChangedLock == 0) {
+    if (mOuterMatrixChangedListeners != null) {
+    mOuterMatrixChangedListeners!!.remove(listener)
+    }
+    } else {
+    //如果监听列表被修改锁定,那么就在其副本上修改
+    //其副本将会在锁定解除时替换回监听列表
+    if (mOuterMatrixChangedListenersCopy == null) {
+    if (mOuterMatrixChangedListeners != null) {
+    mOuterMatrixChangedListenersCopy =
+    ArrayList(
+    mOuterMatrixChangedListeners!!
+    )
+    }
+    }
+    if (mOuterMatrixChangedListenersCopy != null) {
+    mOuterMatrixChangedListenersCopy!!.remove(listener)
+    }
+    }
     }*/
 
     /**
@@ -508,11 +511,9 @@ class ScaleImageView : ImageView {
         outerScale: Float
     ): Float {
         val currentScale = innerScale * outerScale
-        return if (currentScale < maxScale) {
-            maxScale
-        } else {
-            innerScale
-        }
+        Log.d("MySIV", "current scale: $currentScale, max scale: $maxScale")
+        return if (currentScale < maxScale * 0.9f) maxScale
+        else innerScale
     }
 
     ////////////////////////////////初始化////////////////////////////////
@@ -520,10 +521,7 @@ class ScaleImageView : ImageView {
         initView()
     }
 
-    constructor(context: Context?, attrs: AttributeSet?) : super(
-        context,
-        attrs
-    ) {
+    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs) {
         initView()
     }
 
@@ -548,9 +546,9 @@ class ScaleImageView : ImageView {
         try {
             //在绘制前设置变换矩阵
             if (isReady) {
-                val matrix = MathUtils.matrixTake()
+                val matrix = matrixTake()
                 imageMatrix = getCurrentImageMatrix(matrix)
-                MathUtils.matrixGiven(matrix)
+                matrixGiven(matrix)
             }
             //对图像做遮罩处理
             if (mMask != null) {
@@ -563,7 +561,7 @@ class ScaleImageView : ImageView {
             }
         }catch (e:Exception){
             e.printStackTrace()
-            ViewMangaActivity.va?.get()?.toolsBox?.toastError("图片加载错误", false)
+            ViewMangaActivity.va?.get()?.toolsBox?.toastError("图片加载错误，请尝试下载后使用较低图片质量查看", false)
         }
     }
     ////////////////////////////////有效性判断////////////////////////////////
@@ -576,75 +574,6 @@ class ScaleImageView : ImageView {
      */
     private val isReady: Boolean
         get() = drawable != null && drawable.intrinsicWidth > 0 && drawable.intrinsicHeight > 0 && width > 0 && height > 0
-    ////////////////////////////////mask动画处理////////////////////////////////
-    /**
-     * mask修改的动画
-     *
-     * 和图片的动画相互独立.
-     *
-      @see .zoomMaskTo
-     */
-    //private var mMaskAnimator: MaskAnimator? = null
-
-    /**
-     * mask变换动画
-     *
-     * 将mask从一个rect动画到另外一个rect
-
-    private inner class MaskAnimator(start: RectF, end: RectF, duration: Long) :
-        ValueAnimator(), AnimatorUpdateListener {
-        /**
-         * 开始mask
-         */
-        private val mStart = FloatArray(4)
-
-        /**
-         * 结束mask
-         */
-        private val mEnd = FloatArray(4)
-
-        /**
-         * 中间结果mask
-         */
-        private val mResult = FloatArray(4)
-        override fun onAnimationUpdate(animation: ValueAnimator) {
-            //获取动画进度,0-1范围
-            val value = animation.animatedValue as Float
-            //根据进度对起点终点之间做插值
-            for (i in 0..3) {
-                mResult[i] = mStart[i] + (mEnd[i] - mStart[i]) * value
-            }
-            //期间mask有可能被置空了,所以判断一下
-            if (mMask == null) {
-                mMask = RectF()
-            }
-            //设置新的mask并绘制
-            mMask!![mResult[0], mResult[1], mResult[2]] = mResult[3]
-            invalidate()
-        }
-
-        /**
-         * 创建mask变换动画
-         *
-          @param start 动画起始状态
-          @param end 动画终点状态
-          @param duration 动画持续时间
-         */
-        init {
-            setFloatValues(0f, 1f)
-            setDuration(duration)
-            addUpdateListener(this)
-            //将起点终点拷贝到数组方便计算
-            mStart[0] = start.left
-            mStart[1] = start.top
-            mStart[2] = start.right
-            mStart[3] = start.bottom
-            mEnd[0] = end.left
-            mEnd[1] = end.top
-            mEnd[2] = end.right
-            mEnd[3] = end.bottom
-        }
-    }*/
     ////////////////////////////////手势动画处理////////////////////////////////
     /**
      * 在单指模式下:
@@ -654,10 +583,10 @@ class ScaleImageView : ImageView {
      * 记录两个手指的中点,作为和mScaleCenter绑定的点.
      * 这个绑定可以保证mScaleCenter无论如何都会跟随这个中点.
      *
-      @see .mScaleCenter
+    @see .mScaleCenter
      *
-      @see .scale
-      @see .scaleEnd
+    @see .scale
+    @see .scaleEnd
      */
     private val mLastMovePoint = PointF()
 
@@ -745,7 +674,7 @@ class ScaleImageView : ImageView {
             }
 
             var v :WeakReference<ViewMangaActivity>? = null
-            var pm: PagesManager? = null
+            var pm:PagesManager? = null
             override fun onSingleTapConfirmed(event: MotionEvent): Boolean {
                 if(v == null) {
                     v = ViewMangaActivity.va
@@ -766,14 +695,14 @@ class ScaleImageView : ImageView {
             }
         })
     private val isBig: Boolean
-        get() = MathUtils.getMatrixScale(mOuterMatrix)[0] > 1f
+        get() = getMatrixScale(mOuterMatrix)[0] > 1f
 
     @ExperimentalStdlibApi
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         super.onTouchEvent(event)
         val action = event.action and MotionEvent.ACTION_MASK
-        Log.d("MySi", "Outer Scale: ${MathUtils.getMatrixScale(mOuterMatrix)[0]}")
+        Log.d("MySi", "Outer Scale: ${getMatrixScale(mOuterMatrix)[0]}")
         //最后一个点抬起或者取消，结束所有模式
         if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
             //如果之前是缩放模式,还需要触发一下缩放结束动画
@@ -829,14 +758,14 @@ class ScaleImageView : ImageView {
                     //在缩放模式下移动
                 } else if (pinchMode == PINCH_MODE_SCALE && event.pointerCount > 1) {
                     //两个缩放点间的距离
-                    val distance = MathUtils.getDistance(
+                    val distance = getDistance(
                         event.getX(0),
                         event.getY(0),
                         event.getX(1),
                         event.getY(1)
                     )
                     //保存缩放点中点
-                    val lineCenter = MathUtils.getCenterPoint(
+                    val lineCenter = getCenterPoint(
                         event.getX(0),
                         event.getY(0),
                         event.getX(1),
@@ -869,7 +798,7 @@ class ScaleImageView : ImageView {
             return false
         }
         //原图方框
-        val bound = MathUtils.rectFTake()
+        val bound = rectFTake()
         getImageBound(bound)
         //控件大小
         val displayWidth = width.toFloat()
@@ -927,7 +856,7 @@ class ScaleImageView : ImageView {
             //触发重绘
             //检查是否有变化
         }
-        MathUtils.rectFGiven(bound)
+        rectFGiven(bound)
         //应用移动变换
         mOuterMatrix.postTranslate(xDiff, yDiff)
         dispatchOuterMatrixChanged()
@@ -959,13 +888,13 @@ class ScaleImageView : ImageView {
         //但是有可能外部设定了不规范的值.
         //但是后续的scale操作会将xy不等的缩放值纠正,改成和x方向相同
         mScaleBase =
-            MathUtils.getMatrixScale(mOuterMatrix)[0] / MathUtils.getDistance(x1, y1, x2, y2)
+            getMatrixScale(mOuterMatrix)[0] / getDistance(x1, y1, x2, y2)
         //两手指的中点在屏幕上落在了图片的某个点上,图片上的这个点在经过总矩阵变换后和手指中点相同
         //现在我们需要得到图片上这个点在图片是fit center状态下在屏幕上的位置
         //因为后续的计算都是基于图片是fit center状态下进行变换
         //所以需要把两手指中点除以外层变换矩阵得到mScaleCenter
-        val center = MathUtils.inverseMatrixPoint(
-            MathUtils.getCenterPoint(
+        val center = inverseMatrixPoint(
+            getCenterPoint(
                 x1,
                 y1,
                 x2,
@@ -998,14 +927,14 @@ class ScaleImageView : ImageView {
         }
         //计算图片从fit center状态到目标状态的缩放比例
         val scale = scaleBase * distance
-        val matrix = MathUtils.matrixTake()
+        val matrix = matrixTake()
         //按照图片缩放中心缩放，并且让缩放中心在缩放点中点上
         matrix.postScale(scale, scale, scaleCenter.x, scaleCenter.y)
         //让图片的缩放中点跟随手指缩放中点
         matrix.postTranslate(lineCenter.x - scaleCenter.x, lineCenter.y - scaleCenter.y)
         //应用变换
         mOuterMatrix.set(matrix)
-        MathUtils.matrixGiven(matrix)
+        matrixGiven(matrix)
         dispatchOuterMatrixChanged()
         //重绘
         invalidate()
@@ -1029,11 +958,11 @@ class ScaleImageView : ImageView {
             return
         }
         //获取第一层变换矩阵
-        val innerMatrix = MathUtils.matrixTake()
+        val innerMatrix = matrixTake()
         getInnerMatrix(innerMatrix)
         //当前总的缩放比例
-        val innerScale = MathUtils.getMatrixScale(innerMatrix)[0]
-        val outerScale = MathUtils.getMatrixScale(mOuterMatrix)[0]
+        val innerScale = getMatrixScale(innerMatrix)[0]
+        val outerScale = getMatrixScale(mOuterMatrix)[0]
         val currentScale = innerScale * outerScale
         //控件大小
         val displayWidth = width.toFloat()
@@ -1043,6 +972,7 @@ class ScaleImageView : ImageView {
         //接下来要放大的大小
         var nextScale = calculateNextScale(innerScale, outerScale)
         //如果接下来放大大于最大值或者小于fit center值，则取边界
+        Log.d("MySIV", "Next scale: $nextScale, Max scale: $maxScale, Inner scale: $innerScale")
         if (nextScale > maxScale) {
             nextScale = maxScale
         }
@@ -1050,15 +980,15 @@ class ScaleImageView : ImageView {
             nextScale = innerScale
         }
         //开始计算缩放动画的结果矩阵
-        val animEnd = MathUtils.matrixTake(mOuterMatrix)
+        val animEnd = matrixTake(mOuterMatrix)
         //计算还需缩放的倍数
         animEnd.postScale(nextScale / currentScale, nextScale / currentScale, x, y)
         //将放大点移动到控件中心
         animEnd.postTranslate(displayWidth / 2f - x, displayHeight / 2f - y)
         //得到放大之后的图片方框
-        val testMatrix = MathUtils.matrixTake(innerMatrix)
+        val testMatrix = matrixTake(innerMatrix)
         testMatrix.postConcat(animEnd)
-        val testBound = MathUtils.rectFTake(
+        val testBound = rectFTake(
             0f,
             0f,
             drawable.intrinsicWidth.toFloat(),
@@ -1106,10 +1036,10 @@ class ScaleImageView : ImageView {
         mScaleAnimator = ScaleAnimator(mOuterMatrix, animEnd)
         mScaleAnimator!!.start()
         //清理临时变量
-        MathUtils.rectFGiven(testBound)
-        MathUtils.matrixGiven(testMatrix)
-        MathUtils.matrixGiven(animEnd)
-        MathUtils.matrixGiven(innerMatrix)
+        rectFGiven(testBound)
+        matrixGiven(testMatrix)
+        matrixGiven(animEnd)
+        matrixGiven(innerMatrix)
     }
 
     /**
@@ -1125,13 +1055,13 @@ class ScaleImageView : ImageView {
         //是否修正了位置
         var change = false
         //获取图片整体的变换矩阵
-        val currentMatrix = MathUtils.matrixTake()
+        val currentMatrix = matrixTake()
         getCurrentImageMatrix(currentMatrix)
         //整体缩放比例
         val currentScale =
-            MathUtils.getMatrixScale(currentMatrix)[0]
+            getMatrixScale(currentMatrix)[0]
         //第二层缩放比例
-        val outerScale = MathUtils.getMatrixScale(mOuterMatrix)[0]
+        val outerScale = getMatrixScale(mOuterMatrix)[0]
         //控件大小
         val displayWidth = width.toFloat()
         val displayHeight = height.toFloat()
@@ -1155,9 +1085,9 @@ class ScaleImageView : ImageView {
             change = true
         }
         //尝试根据缩放点进行缩放修正
-        val testMatrix = MathUtils.matrixTake(currentMatrix)
+        val testMatrix = matrixTake(currentMatrix)
         testMatrix.postScale(scalePost, scalePost, mLastMovePoint.x, mLastMovePoint.y)
-        val testBound = MathUtils.rectFTake(
+        val testBound = rectFTake(
             0f,
             0f,
             drawable.intrinsicWidth.toFloat(),
@@ -1215,7 +1145,7 @@ class ScaleImageView : ImageView {
         //只有有执行修正才执行动画
         if (change) {
             //计算结束矩阵
-            val animEnd = MathUtils.matrixTake(mOuterMatrix)
+            val animEnd = matrixTake(mOuterMatrix)
             animEnd.postScale(scalePost, scalePost, mLastMovePoint.x, mLastMovePoint.y)
             animEnd.postTranslate(postX, postY)
             //清理当前可能正在执行的动画
@@ -1224,12 +1154,12 @@ class ScaleImageView : ImageView {
             mScaleAnimator = ScaleAnimator(mOuterMatrix, animEnd)
             mScaleAnimator!!.start()
             //清理临时变量
-            MathUtils.matrixGiven(animEnd)
+            matrixGiven(animEnd)
         }
         //清理临时变量
-        MathUtils.rectFGiven(testBound)
-        MathUtils.matrixGiven(testMatrix)
-        MathUtils.matrixGiven(currentMatrix)
+        rectFGiven(testBound)
+        matrixGiven(testMatrix)
+        matrixGiven(currentMatrix)
     }
 
     /**
@@ -1288,7 +1218,7 @@ class ScaleImageView : ImageView {
             mVector[0] *= FLING_DAMPING_FACTOR
             mVector[1] *= FLING_DAMPING_FACTOR
             //速度太小或者不能移动了就结束
-            if (!result || MathUtils.getDistance(
+            if (!result || getDistance(
                     0f,
                     0f,
                     mVector[0],
@@ -1304,8 +1234,8 @@ class ScaleImageView : ImageView {
          *
          * 参数单位为 像素/帧
          *
-          @param vectorX 速度向量
-          @param vectorY 速度向量
+        @param vectorX 速度向量
+        @param vectorY 速度向量
          */
         init {
             setFloatValues(0f, 1f)
@@ -1366,8 +1296,8 @@ class ScaleImageView : ImageView {
          *
          * 从一个矩阵变换到另外一个矩阵
          *
-          @param start 开始矩阵
-          @param end 结束矩阵
+        @param start 开始矩阵
+        @param end 结束矩阵
          */
         init {
             setFloatValues(0f, 1f)
@@ -1457,7 +1387,7 @@ class ScaleImageView : ImageView {
         /**
          * 创建一个对象池
          *
-          @param size 对象池最大容量
+        @param size 对象池最大容量
          */
         init {
             mQueue = LinkedList()
@@ -1496,7 +1426,7 @@ class ScaleImageView : ImageView {
     /**
      * 数学计算工具类
      */
-    object MathUtils {
+    companion object {
         /**
          * 矩阵对象池
          */
@@ -1505,9 +1435,7 @@ class ScaleImageView : ImageView {
         /**
          * 获取矩阵对象
          */
-        fun matrixTake(): Matrix {
-            return mMatrixPool.take()!!
-        }
+        fun matrixTake() = mMatrixPool.take()!!
 
         /**
          * 获取某个矩阵的copy
@@ -1557,11 +1485,11 @@ class ScaleImageView : ImageView {
          * 获取某个矩形的副本
 
         fun rectFTake(rectF: RectF?): RectF {
-            val result = mRectFPool.take()!!
-            if (rectF != null) {
-                result.set(rectF)
-            }
-            return result
+        val result = mRectFPool.take()!!
+        if (rectF != null) {
+        result.set(rectF)
+        }
+        return result
         }*/
 
         /**
@@ -1653,192 +1581,6 @@ class ScaleImageView : ImageView {
                 FloatArray(2)
             }
         }
-
-        /**
-         * 计算两个矩形之间的变换矩阵
-         *
-         * unknownMatrix.mapRect(to, from)
-         * 已知from矩形和to矩形,求unknownMatrix
-         *
-          @param from
-          @param to
-          @param result unknownMatrix
-
-        fun calculateRectTranslateMatrix(
-            from: RectF?,
-            to: RectF?,
-            result: Matrix?
-        ) {
-            if (from == null || to == null || result == null) {
-                return
-            }
-            if (from.width() == 0f || from.height() == 0f) {
-                return
-            }
-            result.reset()
-            result.postTranslate(-from.left, -from.top)
-            result.postScale(to.width() / from.width(), to.height() / from.height())
-            result.postTranslate(to.left, to.top)
-        }*/
-
-        /**
-         * 计算图片在某个ImageView中的显示矩形
-         *
-          @param container ImageView的Rect
-          @param srcWidth 图片的宽度
-          @param srcHeight 图片的高度
-          @param scaleType 图片在ImageView中的ScaleType
-          @param result 图片应该在ImageView中展示的矩形
-
-        fun calculateScaledRectInContainer(
-            container: RectF?,
-            srcWidth: Float,
-            srcHeight: Float,
-            scaleType: ScaleType?,
-            result: RectF?
-        ) {
-            var scaleType = scaleType
-            if (container == null || result == null) {
-                return
-            }
-            if (srcWidth == 0f || srcHeight == 0f) {
-                return
-            }
-            //默认scaleType为fit center
-            if (scaleType == null) {
-                scaleType = ScaleType.FIT_CENTER
-            }
-            result.setEmpty()
-            if (ScaleType.FIT_XY == scaleType) {
-                result.set(container)
-            } else if (ScaleType.CENTER == scaleType) {
-                val matrix = matrixTake()
-                val rect = rectFTake(0f, 0f, srcWidth, srcHeight)
-                matrix.setTranslate(
-                    (container.width() - srcWidth) * 0.5f,
-                    (container.height() - srcHeight) * 0.5f
-                )
-                matrix.mapRect(result, rect)
-                rectFGiven(rect)
-                matrixGiven(matrix)
-                result.left += container.left
-                result.right += container.left
-                result.top += container.top
-                result.bottom += container.top
-            } else if (ScaleType.CENTER_CROP == scaleType) {
-                val matrix = matrixTake()
-                val rect = rectFTake(0f, 0f, srcWidth, srcHeight)
-                val scale: Float
-                var dx = 0f
-                var dy = 0f
-                if (srcWidth * container.height() > container.width() * srcHeight) {
-                    scale = container.height() / srcHeight
-                    dx = (container.width() - srcWidth * scale) * 0.5f
-                } else {
-                    scale = container.width() / srcWidth
-                    dy = (container.height() - srcHeight * scale) * 0.5f
-                }
-                matrix.setScale(scale, scale)
-                matrix.postTranslate(dx, dy)
-                matrix.mapRect(result, rect)
-                rectFGiven(rect)
-                matrixGiven(matrix)
-                result.left += container.left
-                result.right += container.left
-                result.top += container.top
-                result.bottom += container.top
-            } else if (ScaleType.CENTER_INSIDE == scaleType) {
-                val matrix = matrixTake()
-                val rect = rectFTake(0f, 0f, srcWidth, srcHeight)
-                val scale: Float
-                val dx: Float
-                val dy: Float
-                scale = if (srcWidth <= container.width() && srcHeight <= container.height()) {
-                    1f
-                } else {
-                    Math.min(
-                        container.width() / srcWidth,
-                        container.height() / srcHeight
-                    )
-                }
-                dx = (container.width() - srcWidth * scale) * 0.5f
-                dy = (container.height() - srcHeight * scale) * 0.5f
-                matrix.setScale(scale, scale)
-                matrix.postTranslate(dx, dy)
-                matrix.mapRect(result, rect)
-                rectFGiven(rect)
-                matrixGiven(matrix)
-                result.left += container.left
-                result.right += container.left
-                result.top += container.top
-                result.bottom += container.top
-            } else if (ScaleType.FIT_CENTER == scaleType) {
-                val matrix = matrixTake()
-                val rect = rectFTake(0f, 0f, srcWidth, srcHeight)
-                val tempSrc = rectFTake(0f, 0f, srcWidth, srcHeight)
-                val tempDst = rectFTake(
-                    0f,
-                    0f,
-                    container.width(),
-                    container.height()
-                )
-                matrix.setRectToRect(tempSrc, tempDst, Matrix.ScaleToFit.CENTER)
-                matrix.mapRect(result, rect)
-                rectFGiven(tempDst)
-                rectFGiven(tempSrc)
-                rectFGiven(rect)
-                matrixGiven(matrix)
-                result.left += container.left
-                result.right += container.left
-                result.top += container.top
-                result.bottom += container.top
-            } else if (ScaleType.FIT_START == scaleType) {
-                val matrix = matrixTake()
-                val rect = rectFTake(0f, 0f, srcWidth, srcHeight)
-                val tempSrc = rectFTake(0f, 0f, srcWidth, srcHeight)
-                val tempDst = rectFTake(
-                    0f,
-                    0f,
-                    container.width(),
-                    container.height()
-                )
-                matrix.setRectToRect(tempSrc, tempDst, Matrix.ScaleToFit.START)
-                matrix.mapRect(result, rect)
-                rectFGiven(tempDst)
-                rectFGiven(tempSrc)
-                rectFGiven(rect)
-                matrixGiven(matrix)
-                result.left += container.left
-                result.right += container.left
-                result.top += container.top
-                result.bottom += container.top
-            } else if (ScaleType.FIT_END == scaleType) {
-                val matrix = matrixTake()
-                val rect = rectFTake(0f, 0f, srcWidth, srcHeight)
-                val tempSrc = rectFTake(0f, 0f, srcWidth, srcHeight)
-                val tempDst = rectFTake(
-                    0f,
-                    0f,
-                    container.width(),
-                    container.height()
-                )
-                matrix.setRectToRect(tempSrc, tempDst, Matrix.ScaleToFit.END)
-                matrix.mapRect(result, rect)
-                rectFGiven(tempDst)
-                rectFGiven(tempSrc)
-                rectFGiven(rect)
-                matrixGiven(matrix)
-                result.left += container.left
-                result.right += container.left
-                result.top += container.top
-                result.bottom += container.top
-            } else {
-                result.set(container)
-            }
-        }*/
-    }
-
-    companion object {
         ////////////////////////////////配置参数////////////////////////////////
         /**
          * 图片缩放动画时间

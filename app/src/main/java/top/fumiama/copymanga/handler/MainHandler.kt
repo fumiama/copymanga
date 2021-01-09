@@ -28,9 +28,9 @@ class MainHandler(looper: Looper):Handler(looper) {
     }
     private fun loadUrlInHiddenWebView(url: String){wm?.get()?.wh?.loadUrl(url)}
     private fun callViewManga(content: String){
-        val listChapter = content.split("\n")
+        val listChapter = content.split('\n')
         if(!saveUrlsOnly) {
-            ViewMangaActivity.titleText = listChapter[0].substringBeforeLast(" ")
+            ViewMangaActivity.titleText = listChapter[0].substringBeforeLast(' ')
             ViewMangaActivity.nextChapterUrl = listChapter[1].let { if(it == "null") null else it }
             ViewMangaActivity.previousChapterUrl = listChapter[2].let { if(it == "null") null else it }
             ViewMangaActivity.imgUrls = arrayOf()
@@ -39,7 +39,7 @@ class MainHandler(looper: Looper):Handler(looper) {
         } else{
             var imgs = arrayOf<String>()
             for(i in 3 until listChapter.size) imgs += listChapter[i]
-            wmdlt?.get()?.setChapterImgs(listChapter[0].substringAfterLast(" "), imgs)
+            wmdlt?.get()?.setChapterImgs(listChapter[0].substringAfterLast(' '), imgs)
         }
     }
     private fun updateLoadProgress(progress: Int){

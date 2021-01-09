@@ -1,7 +1,6 @@
 package top.fumiama.copymanga.tool
 
 import android.content.Intent
-import android.util.Log
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
 import top.fumiama.copymanga.activity.MainActivity.Companion.wm
@@ -21,9 +20,6 @@ class PagesManager(w: WeakReference<ViewMangaActivity>) {
     private fun judgeNext() = v?.pageNum?:0 < v?.count?:0
     @ExperimentalStdlibApi
     private fun toPage(goNext:Boolean){
-        val chapterUrl = if(goNext) ViewMangaActivity.nextChapterUrl else ViewMangaActivity.previousChapterUrl
-        val newZipPosition = ViewMangaActivity.zipPosition + (if(goNext) 1 else -1)
-        val hint = if(goNext) "下" else "上"
         if (v?.clicked == false) {
             if (if(goNext)judgeNext() else judgePrevious()) {
                 if(goNext) {
@@ -33,33 +29,42 @@ class PagesManager(w: WeakReference<ViewMangaActivity>) {
                     v.scrollBack()
                     isEndL = false
                 }
-            } else if (chapterUrl != null) {
-                if (if(goNext)isEndR else isEndL) {
-                    wm?.get()?.w?.loadUrl("javascript:invoke.clickClass(\"comicControlBottomTopClick\",${if(goNext)1 else 0});")
-                    v.tt.canDo = false
-                    v.finish()
-                } else doubleTapToast(hint, goNext)
-            } else if(v.dlZip2View && newZipPosition >= 0 && newZipPosition < ViewMangaActivity.zipList?.size?:0){
-                if (if(goNext)isEndR else isEndL){
-                    ViewMangaActivity.zipPosition = newZipPosition
-                    ViewMangaActivity.titleText = ViewMangaActivity.zipList?.get(newZipPosition) ?: "null"
-                    ViewMangaActivity.zipFile = File(ViewMangaActivity.cd, ViewMangaActivity.titleText)
-                    v.startActivity(Intent(v, ViewMangaActivity::class.java))
-                    v.tt.canDo = false
-                    v.finish()
-                }else doubleTapToast(hint, goNext)
+            } else {
+                val chapterUrl = if(goNext) ViewMangaActivity.nextChapterUrl else ViewMangaActivity.previousChapterUrl
+                if (chapterUrl != null) {
+                    if (if(goNext)isEndR else isEndL) {
+                        if(!goNext) ViewMangaActivity.pn = -2
+                        wm?.get()?.w?.loadUrl("javascript:invoke.clickClass(\"comicControlBottomTopClick\",${if(goNext)1 else 0});")
+                        v.tt.canDo = false
+                        v.finish()
+                    } else doubleTapToast(goNext)
+                } else {
+                    val newZipPosition = ViewMangaActivity.zipPosition + (if(goNext) 1 else -1)
+                    if(v.dlZip2View && newZipPosition >= 0 && newZipPosition < ViewMangaActivity.zipList?.size?:0){
+                        if (if(goNext)isEndR else isEndL){
+                            if(!goNext) ViewMangaActivity.pn = -2
+                            ViewMangaActivity.zipPosition = newZipPosition
+                            ViewMangaActivity.titleText = ViewMangaActivity.zipList?.get(newZipPosition) ?: "null"
+                            ViewMangaActivity.zipFile = File(ViewMangaActivity.cd, ViewMangaActivity.titleText)
+                            v.startActivity(Intent(v, ViewMangaActivity::class.java))
+                            v.tt.canDo = false
+                            v.finish()
+                        }else doubleTapToast(goNext)
+                    }
+                    else Toast.makeText(
+                        v.applicationContext,
+                        "已经到头了~",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
-            else Toast.makeText(
-                v.applicationContext,
-                "已经到头了~",
-                Toast.LENGTH_SHORT
-            ).show()
         } else v?.hideObjs()
     }
     fun manageInfo(){
         if (v?.clicked == false) v.showObjs() else v?.hideObjs()
     }
-    private fun doubleTapToast(hint: String, goNext: Boolean){
+    private fun doubleTapToast(goNext: Boolean){
+        val hint = if(goNext) "下" else "上"
         Toast.makeText(
             v?.applicationContext,
             "再次按下加载${hint}一章",
