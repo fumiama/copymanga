@@ -16,7 +16,7 @@
     <item android:state_pressed="false">
         <shape android:shape="rectangle" >
             <!-- 填充的颜色 -->
-            <solid android:color="#FFFFFF" />
+            <solid android:color="?attr/colorSurface" />
             <!-- 设置按钮的四个角为弧形 -->
             <!-- android:radius 弧形的半径 -->
             <corners android:radius="16dip" />

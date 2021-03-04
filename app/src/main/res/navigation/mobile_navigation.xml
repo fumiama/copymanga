@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/nav_home">
+
+    <fragment
+        android:id="@+id/nav_home"
+        android:name="top.fumiama.copymanga.ui.home.HomeFragment"
+        android:label="@string/menu_home"
+        tools:layout="@layout/fragment_home" >
+        <action
+            android:id="@+id/action_nav_home_to_nav_latest"
+            app:destination="@id/nav_latest"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_out_left_exit"
+            app:popExitAnim="@anim/slide_in_right_exit" />
+        <action
+            android:id="@+id/action_nav_home_to_nav_book"
+            app:destination="@id/nav_book"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_out_left_exit"
+            app:popExitAnim="@anim/slide_in_right_exit" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_sort"
+        android:name="top.fumiama.copymanga.ui.sort.SortFragment"
+        android:label="@string/menu_sort"
+        tools:layout="@layout/fragment_sort" >
+        <action
+            android:id="@+id/action_nav_sort_to_nav_book"
+            app:destination="@id/nav_book"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_out_left_exit"
+            app:popExitAnim="@anim/slide_in_right_exit"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_rank"
+        android:name="top.fumiama.copymanga.ui.rank.RankFragment"
+        android:label="@string/menu_rank"
+        tools:layout="@layout/fragment_rank" >
+        <action
+            android:id="@+id/action_nav_rank_to_nav_book"
+            app:destination="@id/nav_book"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_out_left_exit"
+            app:popExitAnim="@anim/slide_in_right_exit"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_sub"
+        android:name="top.fumiama.copymanga.ui.sub.SubFragment"
+        android:label="@string/menu_sub"
+        tools:layout="@layout/fragment_sub" />
+
+    <fragment
+        android:id="@+id/nav_history"
+        android:name="top.fumiama.copymanga.ui.history.HistoryFragment"
+        android:label="@string/menu_history"
+        tools:layout="@layout/fragment_history" />
+
+    <fragment
+        android:id="@+id/nav_download"
+        android:name="top.fumiama.copymanga.ui.download.DownloadFragment"
+        android:label="@string/menu_download"
+        tools:layout="@layout/fragment_download" >
+        <action
+            android:id="@+id/action_nav_download_to_nav_group"
+            app:destination="@id/nav_group"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_out_left_exit"
+            app:popExitAnim="@anim/slide_in_right_exit"/>
+        <action
+            android:id="@+id/action_nav_download_self"
+            app:destination="@id/nav_download"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_out_left_exit"
+            app:popExitAnim="@anim/slide_in_right_exit"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_latest"
+        android:name="top.fumiama.copymanga.ui.latest.LatestFragment"
+        android:label="@string/page_latest"
+        tools:layout="@layout/line_lazybooklines" >
+        <action
+            android:id="@+id/action_nav_latest_to_nav_book"
+            app:destination="@id/nav_book"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_out_left_exit"
+            app:popExitAnim="@anim/slide_in_right_exit"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_settings"
+        android:name="top.fumiama.copymanga.ui.settings.SettingsFragment"
+        android:label="@string/action_settings"
+        tools:layout="@layout/fragment_settings" >
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_book"
+        android:name="top.fumiama.copymanga.ui.book.BookFragment"
+        android:label="@string/page_book"
+        tools:layout="@layout/fragment_book" >
+        <action
+            android:id="@+id/action_nav_book_to_nav_chapter"
+            app:destination="@id/nav_chapter"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_out_left_exit"
+            app:popExitAnim="@anim/slide_in_right_exit"/>
+        <action
+            android:id="@+id/action_nav_book_to_nav_group"
+            app:destination="@id/nav_group"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_out_left_exit"
+            app:popExitAnim="@anim/slide_in_right_exit"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_chapter"
+        android:name="top.fumiama.copymanga.ui.chapter.ChapterFragment"
+        android:label="@string/page_chapter"
+        tools:layout="@layout/fragment_chapters" >
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_group"
+        android:name="top.fumiama.copymanga.ui.comicdl.ComicDlFragment"
+        android:label="@string/page_group"
+        tools:layout="@layout/fragment_dlcomic" >
+        <action
+            android:id="@+id/action_nav_group_to_nav_book"
+            app:destination="@id/nav_book"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_out_left_exit"
+            app:popExitAnim="@anim/slide_in_right_exit"/>
+    </fragment>
+</navigation>

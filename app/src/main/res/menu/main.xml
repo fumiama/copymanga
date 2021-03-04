@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_download"
+        android:icon="@drawable/ic_menu_download"
+        android:orderInCategory="100"
+        android:title="@string/action_download"
+        android:visible="false"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_info"
+        android:onClick="showAbout"
+        android:orderInCategory="200"
+        android:title="@string/action_info"
+        app:showAsAction="never" />
+</menu>

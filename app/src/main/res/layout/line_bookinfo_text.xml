@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/bitime"
+        android:layout_width="@dimen/icon_size_small"
+        android:layout_height="@dimen/icon_size_small"
+        android:background="@drawable/ic_time"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/bttime"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/bisub" />
+
+    <ImageView
+        android:id="@+id/bisub"
+        android:layout_width="@dimen/icon_size_small"
+        android:layout_height="@dimen/icon_size_small"
+        android:layout_marginBottom="@dimen/nav_header_vertical_spacing"
+        android:background="@drawable/ic_list"
+        app:layout_constraintBottom_toTopOf="@+id/bitime"
+        app:layout_constraintEnd_toStartOf="@+id/btsub"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/bihit" />
+
+    <TextView
+        android:id="@+id/bttag"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/nav_header_vertical_spacing"
+        android:textColor="?attr/colorOnSurface"
+        app:layout_constraintBottom_toBottomOf="@+id/bitag"
+        app:layout_constraintStart_toEndOf="@+id/bitag"
+        app:layout_constraintTop_toTopOf="@+id/bitag" />
+
+    <TextView
+        android:id="@+id/btauth"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/nav_header_vertical_spacing"
+        android:textColor="?attr/colorOnSurface"
+        app:layout_constraintBottom_toBottomOf="@+id/biauth"
+        app:layout_constraintStart_toEndOf="@+id/biauth"
+        app:layout_constraintTop_toTopOf="@+id/biauth" />
+
+    <TextView
+        android:id="@+id/bthit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/nav_header_vertical_spacing"
+        android:textColor="?attr/colorOnSurface"
+        app:layout_constraintBottom_toBottomOf="@+id/bihit"
+        app:layout_constraintStart_toEndOf="@+id/bihit"
+        app:layout_constraintTop_toTopOf="@+id/bihit" />
+
+    <ImageView
+        android:id="@+id/bitag"
+        android:layout_width="@dimen/icon_size_small"
+        android:layout_height="@dimen/icon_size_small"
+        android:layout_marginBottom="@dimen/nav_header_vertical_spacing"
+        android:background="@drawable/ic_list"
+        app:layout_constraintBottom_toTopOf="@+id/bihit"
+        app:layout_constraintEnd_toStartOf="@+id/bttag"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/biauth" />
+
+    <TextView
+        android:id="@+id/bttime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/nav_header_vertical_spacing"
+        android:textColor="?attr/colorOnSurface"
+        app:layout_constraintBottom_toBottomOf="@+id/bitime"
+        app:layout_constraintStart_toEndOf="@+id/bitime"
+        app:layout_constraintTop_toTopOf="@+id/bitime" />
+
+    <ImageView
+        android:id="@+id/bihit"
+        android:layout_width="@dimen/icon_size_small"
+        android:layout_height="@dimen/icon_size_small"
+        android:layout_marginBottom="@dimen/nav_header_vertical_spacing"
+        android:background="@drawable/ic_list"
+        app:layout_constraintBottom_toTopOf="@+id/bisub"
+        app:layout_constraintEnd_toStartOf="@+id/bthit"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/bitag" />
+
+    <TextView
+        android:id="@+id/btsub"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/nav_header_vertical_spacing"
+        android:textColor="?attr/colorOnSurface"
+        app:layout_constraintBottom_toBottomOf="@+id/bisub"
+        app:layout_constraintStart_toEndOf="@+id/bisub"
+        app:layout_constraintTop_toTopOf="@+id/bisub" />
+
+    <ImageView
+        android:id="@+id/biauth"
+        android:layout_width="@dimen/icon_size_small"
+        android:layout_height="@dimen/icon_size_small"
+        android:layout_marginBottom="@dimen/nav_header_vertical_spacing"
+        android:background="@drawable/ic_author"
+        app:layout_constraintBottom_toTopOf="@+id/bitag"
+        app:layout_constraintEnd_toStartOf="@+id/btauth"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

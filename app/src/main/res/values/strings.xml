@@ -1,10 +1,66 @@
 <resources>
     <string name="app_name">拷贝漫画</string>
-    <string name="web_home">https://copymanga.net</string>
-    <string name="web_home_www">https://www.copymanga.net</string>
-    <string name="web_comic_detail_pc">https://www.copymanga.net/comic</string>
+    <string name="action_settings">设定</string>
+    <string name="action_info">关于</string>
+    <string name="action_download">下载</string>
+
+    <string name="menu_home">主页</string>
+    <string name="menu_sort">分类</string>
+    <string name="menu_rank">排行</string>
+    <string name="app_description">©2021源文雨@CoolApk\n本应用为拷贝漫画的第三方客户端，数据均来源于网络，作者不对其中所呈现的任何内容负责。</string>
+    <string name="menu_history">浏览历史</string>
+    <string name="menu_sub">我的订阅</string>
+    <string name="menu_download">我的下载</string>
+    <string name="page_latest">最近更新</string>
+    <string name="page_book">图书详情</string>
+    <string name="page_chapter">章节内容</string>
+    <string name="page_group">漫画下载</string>
+
+    <string name="navTextInfo">illust: Hiten(490219)</string>
+    <string name="navTextInfoInputHint">请设定提示文字内容</string>
+    <string name="clearHeadImgMsg">清除设定的图片?</string>
+
+    <string name="permissionDenied">权限被拒绝</string>
+    <string name="noLogin">未登录</string>
+    <string name="load_home_error">"加载主页控件出错"</string>
+    <string name="text_null">N/A</string>
+    <string name="null_book">获取图书信息失败</string>
+    <string name="web_error">网络错误</string>
+
+    <string name="mainPageApiUrl">https://api.copymanga.com/api/v3/h5/homeIndex</string>
+    <string name="referUrl">"https://api.copymanga.com"</string>
+    <string name="recentUpdateApiUrl">https://nnv3api.dmzj1.com/novel/recentUpdate/%1$d.json</string>
+    <string name="rankApiUrl">https://nnv3api.dmzj1.com/novel/rank/%1$d/%2$d/%3$d.json</string>
+    <string name="filterApiUrl">https://api.copymanga.com/api/v3/h5/filterIndex/comic/tags</string>
+    <string name="sortApiUrl">https://api.copymanga.com/api/v3/comics?limit=21&amp;offset=%1$d&amp;ordering=%2$s&amp;theme=%3$s</string>
+    <string name="bookInfoApiUrl">https://api.copymanga.com/api/v3/comic2/%1$s</string>
+    <string name="groupInfoApiUrl">https://api.copymanga.com/api/v3/comic/%1$s/group/%2$s/chapters</string>
+    <string name="chapterInfoApiUrl">https://api.copymanga.com/api/v3/comic/%1$s/chapter2/%2$s</string>
+    <string name="chapterTxtUrl">https://nnv3api.dmzj1.com/novel/download/%1$d_%2$d_%3$d.txt</string>
+
+    <string name="complete">已完结</string>
+
+    <string name="TRANSPORT_WIFI">WIFI</string>
+    <string name="TRANSPORT_CELLULAR">移动网络</string>
+    <string name="TRANSPORT_BLUETOOTH">蓝牙</string>
+    <string name="TRANSPORT_ETHERNET">以太网</string>
+    <string name="TRANSPORT_LOWPAN">LOWPAN</string>
+    <string name="TRANSPORT_NULL">无网络</string>
 
     <string name="pc_ua">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.75 Safari/537.36 Edg/86.0.622.38</string>
 
-    <string name="blocked_ad">已屏蔽其他网站页面</string>
+    <string name="menu_update_time">更新时间</string>
+    <string name="menu_hot">热度</string>
+
+    <string name="button_sub">加入书架</string>
+    <string name="button_start">开始阅读</string>
+
+    <string name="text_format_hit">热度 %1$d</string>
+    <string name="text_format_stat">状态 %1$s</string>
+
+    <string name="topics_series">专题系列</string>
+    <string name="manga_rec">漫画推荐</string>
+    <string name="rank_list">排行榜 ☟日周月 ☛冠亚季</string>
+    <string name="hot_list">热门更新</string>
+    <string name="new_list">全新上架</string>
 </resources>

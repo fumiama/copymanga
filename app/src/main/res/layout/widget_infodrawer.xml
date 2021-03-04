@@ -31,7 +31,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
                 android:text="加载中..."
-                android:textColor="#000000"
+                android:textColor="?attr/colorOnSurface"
                 app:layout_constraintBottom_toTopOf="@+id/idtbvh"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

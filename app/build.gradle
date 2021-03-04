@@ -4,20 +4,6 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'AndResGuard'
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion "30.0.2"
-
-    defaultConfig {
-        applicationId "top.fumiama.copymanga"
-        minSdkVersion 23
-        targetSdkVersion 30
-        versionCode 10
-        versionName '1.3.2'
-        resConfigs "zh", "zh-rCN"
-
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-    }
-
     signingConfigs {
         release {
             storeFile file('../../../OneDrive/swc/developer/android_key/open_key')
@@ -27,6 +13,26 @@ android {
             v1SigningEnabled true
             v2SigningEnabled true
         }
+        /*winrelease {
+            storeFile file('C:/Users/spayi/OneDrive/swc/developer/android_key/open_key')
+            storePassword 'fumiama'
+            keyAlias 'default'
+            keyPassword 'fumiama'
+            v1SigningEnabled true
+            v2SigningEnabled true
+        }*/
+    }
+    compileSdkVersion 30
+
+    defaultConfig {
+        applicationId 'top.fumiama.copymanga'
+        minSdkVersion 23
+        targetSdkVersion 30
+        versionCode 12
+        versionName '2.0.beta'
+        resConfigs "zh", "zh-rCN"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -36,11 +42,33 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
         }
-        /*debug{
+        /*winrelease {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.winrelease
+        }
+        debug{
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.winrelease
         }*/
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+    bundle{
+        density{
+            enableSplit = true
+        }
+        language{
+            enableSplit = false
+        }
     }
 }
 
@@ -48,18 +76,26 @@ dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'androidx.core:core-ktx:1.3.2'
-    //implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'com.google.android.material:material:1.3.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
-    implementation 'androidx.cardview:cardview:1.0.0'
-    implementation 'androidx.viewpager2:viewpager2:1.0.0'
-    //implementation 'com.google.android.material:material:1.2.1'
-    testImplementation 'junit:junit:4.13.1'
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.3.3'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.3.3'
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.3.3'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.3.3'
+    testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
-    implementation 'com.github.bumptech.glide:glide:4.11.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
+    implementation 'com.afollestad.material-dialogs:input:3.3.0'
+    implementation 'com.github.yalantis:ucrop:2.2.6'
+    implementation 'com.to.aboomy:pager2banner:1.0.1'
+    implementation 'com.github.bumptech.glide:glide:4.12.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
     implementation 'com.google.code.gson:gson:2.8.6'
-    //implementation 'com.liaoinstan.springview:library:1.7.0'
+    implementation 'com.github.vovaksenov99:OverscrollableScrollView:1.0'
+    implementation 'com.liaoinstan.springview:library:1.7.0'
+    implementation 'com.github.zawadz88.materialpopupmenu:material-popup-menu:4.0.1'
 }
 
 andResGuard {
@@ -67,14 +103,15 @@ andResGuard {
     mappingFile = null
     use7zip = true
     useSign = true
-    // 打开这个开关，会keep住所有资源的原始路径，只混淆资源的名字
+    // It will keep the origin path of your resources when it's true
     keepRoot = false
-    // 设置这个值，会把arsc name列混淆成相同的名字，减少string常量池的大小
+    // If set, name column in arsc those need to proguard will be kept to this value
     fixedResName = "arg"
-    // 打开这个开关会合并所有哈希值相同的资源，但请不要过度依赖这个功能去除去冗余资源
+    // It will merge the duplicated resources, but don't rely on this feature too much.
+    // it's always better to remove duplicated resource from repo
     mergeDuplicatedRes = true
     whiteList = [
-            // for your icon
+            // your icon
             "R.drawable.icon",
             // for fabric
             "R.string.com.crashlytics.*",
@@ -92,20 +129,10 @@ andResGuard {
             "*.jpg",
             "*.jpeg",
             "*.gif",
+            "resources.arsc"
     ]
     sevenzip {
         artifact = 'com.tencent.mm:SevenZip:1.2.20'
         //path = "/usr/local/bin/7za"
     }
-
-    /**
-     * 可选： 如果不设置则会默认覆盖assemble输出的apk
-     **/
-    // finalApkBackupPath = "${project.rootDir}/final.apk"
-
-    /**
-     * 可选: 指定v1签名时生成jar文件的摘要算法
-     * 默认值为“SHA-1”
-     **/
-    // digestalg = "SHA-256"
 }

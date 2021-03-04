@@ -27,9 +27,26 @@
   **[] $VALUES;
   public *;
 }
--keep class com.bumptech.glide.load.data.ParcelFileDescriptorRewinder$InternalRewinder {
+-keep class com.bumptech.glide.load.data.ParcelFileDescriptorRewinder.InternalRewinder$** {
   *** rewind();
 }
+
+-assumenosideeffects class android.util.Log {
+    public static *** d(...);
+    public static *** e(...);
+    public static *** i(...);
+    public static *** v(...);
+    public static *** println(...);
+    public static *** w(...);
+    public static *** wtf(...);
+}
+
+-keep class com.to.aboomy.pager2banner.* {*;}
+-keep class androidx.viewpager2.widget.* {*;}
+
+-dontwarn com.yalantis.ucrop**
+-keep class com.yalantis.ucrop** { *; }
+-keep interface com.yalantis.ucrop** { *; }
 
 ##---------------Begin: proguard configuration for Gson  ----------
 # Gson uses generic type information stored in a class file when working with fields. Proguard
@@ -44,7 +61,7 @@
 #-keep class com.google.gson.stream.** { *; }
 
 # Application classes that will be serialized/deserialized over Gson
--keep public class top.fumiama.copymanga.data.* { *; }
+-keep class top.fumiama.dmzjxs.json.*{ *; }
 
 # Prevent proguard from stripping interface information from TypeAdapter, TypeAdapterFactory,
 # JsonSerializer, JsonDeserializer instances (so they can be used in @JsonAdapter)
@@ -59,13 +76,3 @@
 }
 
 ##---------------End: proguard configuration for Gson  ----------
-
--assumenosideeffects class android.util.Log {
-    public static *** d(...);
-    public static *** e(...);
-    public static *** i(...);
-    public static *** v(...);
-    public static *** println(...);
-    public static *** w(...);
-    public static *** wtf(...);
-}

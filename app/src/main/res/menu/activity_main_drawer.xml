@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group
+        android:id="@+id/menugroup_main"
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_home"
+            android:icon="@drawable/ic_menu_home"
+            android:title="@string/menu_home" />
+        <item
+            android:id="@+id/nav_sort"
+            android:icon="@drawable/ic_menu_sort"
+            android:title="@string/menu_sort" />
+        <item
+            android:id="@+id/nav_rank"
+            android:icon="@drawable/ic_menu_rank"
+            android:title="@string/menu_rank" />
+    </group>
+    <group
+        android:id="@+id/menugroup_my"
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_sub"
+            android:icon="@drawable/ic_menu_sub"
+            android:title="@string/menu_sub" />
+        <item
+            android:id="@+id/nav_history"
+            android:icon="@drawable/ic_menu_history"
+            android:title="@string/menu_history" />
+    </group>
+    <group
+        android:id="@+id/menugroup_dl"
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_download"
+            android:icon="@drawable/ic_menu_download"
+            android:title="@string/menu_download" />
+    </group>
+    <group
+        android:id="@+id/menugroup_settings"
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_settings"
+            android:icon="@drawable/ic_settings"
+            android:title="@string/action_settings" />
+    </group>
+</menu>
