@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:viewBindingIgnore="true"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -39,7 +41,7 @@
                 app:layout_constraintVertical_bias="0.0" />
 
             <ToggleButton
-                android:id="@+id/idtbfullscreen"
+                android:id="@+id/idtbvolturn"
                 android:layout_width="0dp"
                 android:layout_height="48dp"
                 android:layout_marginStart="8dp"
@@ -47,8 +49,8 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginBottom="8dp"
                 android:background="@drawable/toggle_button"
-                android:textOff="全屏开"
-                android:textOn="全屏关"
+                android:textOff="音量翻页关"
+                android:textOn="音量翻页开"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/idtbvh"
                 app:layout_constraintStart_toStartOf="parent"
@@ -64,8 +66,8 @@
                 android:textOff="横向"
                 android:textOn="竖向"
                 app:layout_constraintEnd_toStartOf="@id/idtbvp"
-                app:layout_constraintStart_toEndOf="@+id/idtbfullscreen"
-                app:layout_constraintTop_toTopOf="@+id/idtbfullscreen" />
+                app:layout_constraintStart_toEndOf="@+id/idtbvolturn"
+                app:layout_constraintTop_toTopOf="@+id/idtbvolturn" />
 
             <ToggleButton
                 android:id="@+id/idtbvp"
@@ -77,7 +79,7 @@
                 android:textOn="动画关"
                 app:layout_constraintEnd_toStartOf="@+id/idtblr"
                 app:layout_constraintStart_toEndOf="@id/idtbvh"
-                app:layout_constraintTop_toTopOf="@+id/idtbfullscreen" />
+                app:layout_constraintTop_toTopOf="@+id/idtbvolturn" />
 
             <ToggleButton
                 android:id="@+id/idtblr"
@@ -89,7 +91,7 @@
                 android:textOn="←后 前→"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/idtbvp"
-                app:layout_constraintTop_toTopOf="@+id/idtbfullscreen" />
+                app:layout_constraintTop_toTopOf="@+id/idtbvolturn" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
 </androidx.constraintlayout.widget.ConstraintLayout>

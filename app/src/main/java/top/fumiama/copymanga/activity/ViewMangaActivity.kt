@@ -7,6 +7,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.*
 import android.util.Log
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,6 +26,7 @@ import kotlinx.android.synthetic.main.widget_titlebar.*
 import kotlinx.android.synthetic.main.widget_viewmangainfo.*
 import top.fumiama.copymanga.R
 import top.fumiama.copymanga.activity.MainActivity.Companion.wm
+import top.fumiama.copymanga.databinding.ActivityViewmangaBinding
 import top.fumiama.copymanga.handler.TimeThread
 import top.fumiama.copymanga.tool.PropertiesTools
 import top.fumiama.copymanga.tool.ToolsBox
@@ -35,23 +37,23 @@ import java.util.*
 import java.util.zip.ZipFile
 import java.util.zip.ZipInputStream
 
-
 class ViewMangaActivity : Activity() {
-    var count = 0
     lateinit var handler: Handler
     lateinit var tt: TimeThread
+    lateinit var toolsBox: ToolsBox
+
+    var count = 0
     var clicked = false
-    private var isInSeek = false
-    private var useFullScreen = false
     var r2l = true
+    var infoDrawerDelta = 0f
+
+    private lateinit var p: PropertiesTools
+    private var isInSeek = false
     private var currentItem = 0
     private var notUseVP = true
-    //private var q = 90
-    var infoDrawerDelta = 0f
-    lateinit var toolsBox: ToolsBox
-    private lateinit var p: PropertiesTools
     private var mangaZip = zipFile
     val dlZip2View = mangaZip != null
+    private val volTurnPage get() = p["volturn"] == "true"
     var pageNum = 1
         get() {
             field = getPageNumber()
@@ -75,22 +77,18 @@ class ViewMangaActivity : Activity() {
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_viewmanga)
+        val binding = ActivityViewmangaBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         toolsBox = ToolsBox(WeakReference(this))
         va = WeakReference(this)
         p = PropertiesTools(File("$filesDir/settings.properties"))
-        useFullScreen = p["useFullScreen"] != "true"
         r2l = p["r2l"] == "true"
-        //toolsBox = ToolsBox(WeakReference(this))
         notUseVP = p["noAnimation"] == "true"
         handler = MyHandler(infcard, toolsBox)
-        //if (p["quality"] == "null") p["quality"] = "90"
-        //else q = p["quality"].toInt()
         tt = TimeThread(handler, 22)
         tt.canDo = true
         tt.start()
         ttitle.text = titleText
-        //isearch.visibility = View.VISIBLE
         Log.d("MyVM", "dlZip2View: $dlZip2View, mangaZip: $mangaZip")
         if(dlZip2View && mangaZip?.exists() != true) toolsBox.toastError("已经到头了~")
         else {
@@ -118,11 +116,25 @@ class ViewMangaActivity : Activity() {
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        if (useFullScreen) {
-            window.decorView.systemUiVisibility =
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) window.setDecorFitsSystemWindows(false)
+        window.decorView.systemUiVisibility =
+            View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) window.setDecorFitsSystemWindows(false)
+    }
+
+    @ExperimentalStdlibApi
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        var flag = false
+        if(volTurnPage) when(keyCode) {
+            KeyEvent.KEYCODE_VOLUME_UP -> {
+                scrollBack()
+                flag = true
+            }
+            KeyEvent.KEYCODE_VOLUME_DOWN -> {
+                scrollForward()
+                flag = true
+            }
         }
+        return if(flag) true else super.onKeyDown(keyCode, event)
     }
 
     private fun getPageNumber(): Int {
@@ -139,18 +151,7 @@ class ViewMangaActivity : Activity() {
         if (position >= count || position < 0) return null
         else {
             val zip = ZipFile(mangaZip)
-            //if (q == 100)
             return BitmapFactory.decodeStream(zip.getInputStream(zip.getEntry("${position}.webp")))
-            /*else {
-                val out = ByteArrayOutputStream()
-                try {
-                    BitmapFactory.decodeStream(zip.getInputStream(zip.getEntry("${position}.jpg")))
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    return null
-                }?.compress(Bitmap.CompressFormat.JPEG, q, out)
-                return BitmapFactory.decodeStream(ByteArrayInputStream(out.toByteArray()))
-            }*/
         }
     }
 
@@ -175,7 +176,7 @@ class ViewMangaActivity : Activity() {
         prepareInfoBar(count)
         if (notUseVP) loadOneImg() else prepareIdBtVH()
         toolsBox.dp2px(67)?.let { setIdPosition(it) }
-        prepareIdBtFullScreen()
+        prepareIdBtVolTurn()
         prepareIdBtVP()
         prepareIdBtLR()
     }
@@ -220,7 +221,6 @@ class ViewMangaActivity : Activity() {
         if (!isInSeek) hideObjs()
         updateSeekText()
         updateSeekProgress()
-        sendProgress()
     }
 
     @SuppressLint("SetTextI18n")
@@ -265,13 +265,11 @@ class ViewMangaActivity : Activity() {
         }
     }
 
-    private fun prepareIdBtFullScreen() {
-        idtbfullscreen.isChecked = !useFullScreen
-        idtbfullscreen.setOnClickListener {
-            if (idtbfullscreen.isChecked) p["useFullScreen"] =
-                "true"
-            else p["useFullScreen"] = "false"
-            Toast.makeText(this, "下次浏览生效", Toast.LENGTH_SHORT).show()
+    private fun prepareIdBtVolTurn() {
+        idtbvolturn.isChecked = volTurnPage
+        idtbvolturn.setOnClickListener {
+            if (idtbvolturn.isChecked) p["volturn"] = "true"
+            else p["volturn"] = "false"
         }
     }
 
@@ -303,10 +301,6 @@ class ViewMangaActivity : Activity() {
 
     fun scrollForward() {
         pageNum++
-    }
-
-    private fun sendProgress() {
-
     }
 
     @SuppressLint("SetTextI18n")

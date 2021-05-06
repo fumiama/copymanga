@@ -3,13 +3,17 @@ package top.fumiama.copymanga.activity
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.os.Looper
 import android.view.View
+import android.webkit.ValueCallback
 import android.webkit.WebView
 import kotlinx.android.synthetic.main.activity_main.*
 import top.fumiama.copymanga.R
+import top.fumiama.copymanga.databinding.ActivityMainBinding
 import top.fumiama.copymanga.handler.MainHandler
+import top.fumiama.copymanga.tool.SetDraggable
 import top.fumiama.copymanga.tool.ToolsBox
 import top.fumiama.copymanga.view.JSWebView
 import top.fumiama.copymanga.web.JS
@@ -19,11 +23,13 @@ import java.lang.ref.WeakReference
 
 class MainActivity: Activity() {
     var wh: JSWebView? = null
-    var toolsBox: ToolsBox? = null
+    var uploadMessageAboveL: ValueCallback<Array<Uri>>? = null
+    private var toolsBox: ToolsBox? = null
     @SuppressLint("JavascriptInterface")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        val binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         wm = WeakReference(this)
         mh = MainHandler(Looper.myLooper()!!)
@@ -43,11 +49,47 @@ class MainActivity: Activity() {
                 wh?.loadJSInterface(JSHidden())
             }
         }
+        SetDraggable().with(this).onto(fab)
     }
 
     override fun onBackPressed() {
         if(w.canGoBack()) w.goBack()
         else super.onBackPressed()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == FILE_CHOOSER_RESULT_CODE) {  //处理返回的图片，并进行上传
+            if (uploadMessageAboveL == null) return
+            else {
+                if(resultCode == RESULT_OK) {
+                    data?.apply {
+                        if(uploadMessageAboveL != null) {
+                            onActivityResultAboveL(requestCode, resultCode, this)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun onActivityResultAboveL(requestCode: Int, resultCode: Int, intent: Intent) {
+        if (requestCode != FILE_CHOOSER_RESULT_CODE || uploadMessageAboveL == null) return
+        else {
+            if (resultCode == RESULT_OK) {
+                intent.clipData?.apply {
+                    var results = arrayOf<Uri>()
+                    for(i in 0..itemCount) {
+                        val item = getItemAt(i)
+                        results += item.uri
+                    }
+                    intent.dataString?.apply {
+                        uploadMessageAboveL?.onReceiveValue(results)
+                        uploadMessageAboveL = null
+                    }
+                }
+            }
+        }
     }
 
     fun onFabClicked(v: View){
@@ -58,7 +100,16 @@ class MainActivity: Activity() {
         )
     }
 
+    fun openImageChooserActivity() {
+        //调用自己的图库
+        val i = Intent(Intent.ACTION_GET_CONTENT)
+        i.addCategory(Intent.CATEGORY_OPENABLE)
+        i.type = "image/*"
+        startActivityForResult(Intent.createChooser(i, "Image Chooser"), FILE_CHOOSER_RESULT_CODE)
+    }
+
     companion object{
+        const val FILE_CHOOSER_RESULT_CODE = 1
         var wm: WeakReference<MainActivity>? = null
         var mh: MainHandler? = null
     }

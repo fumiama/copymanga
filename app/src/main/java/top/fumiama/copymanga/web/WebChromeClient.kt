@@ -1,10 +1,10 @@
 package top.fumiama.copymanga.web
 
-import android.webkit.JsPromptResult
-import android.webkit.JsResult
+import android.net.Uri
+import android.webkit.*
 import android.webkit.WebChromeClient
-import android.webkit.WebView
 import top.fumiama.copymanga.activity.MainActivity.Companion.mh
+import top.fumiama.copymanga.activity.MainActivity.Companion.wm
 
 class WebChromeClient:WebChromeClient() {
     override fun onProgressChanged(view: WebView?, newProgress: Int) {
@@ -41,6 +41,18 @@ class WebChromeClient:WebChromeClient() {
         result: JsResult?
     ): Boolean {
         result?.confirm()
+        return true
+    }
+
+    override fun onShowFileChooser(
+        webView: WebView?,
+        filePathCallback: ValueCallback<Array<Uri>>?,
+        fileChooserParams: FileChooserParams?
+    ): Boolean {
+        wm?.get()?.apply {
+            uploadMessageAboveL = filePathCallback
+            openImageChooserActivity()
+        }
         return true
     }
 }

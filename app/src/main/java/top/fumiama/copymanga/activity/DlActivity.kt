@@ -21,6 +21,7 @@ import kotlinx.android.synthetic.main.widget_titlebar.*
 import top.fumiama.copymanga.R
 import top.fumiama.copymanga.activity.MainActivity.Companion.mh
 import top.fumiama.copymanga.data.ComicStructure
+import top.fumiama.copymanga.databinding.ActivityDlBinding
 import top.fumiama.copymanga.handler.DlHandler
 import top.fumiama.copymanga.tool.MangaDlTools
 import top.fumiama.copymanga.tool.MangaDlTools.Companion.wmdlt
@@ -30,8 +31,6 @@ import top.fumiama.copymanga.view.LazyScrollView
 import java.io.File
 import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
-import java.util.zip.ZipFile
-
 
 class DlActivity : Activity() {
     private var tbtncnt = 0
@@ -55,7 +54,8 @@ class DlActivity : Activity() {
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_dl)
+        val binding = ActivityDlBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         mh?.saveUrlsOnly = true
         mangaDlTools = MangaDlTools(this)
         handler.sendEmptyMessage(-2)        //setLayouts

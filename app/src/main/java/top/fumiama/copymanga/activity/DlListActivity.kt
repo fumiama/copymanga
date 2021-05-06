@@ -2,16 +2,15 @@ package top.fumiama.copymanga.activity
 
 import android.app.Activity
 import android.app.AlertDialog
-import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
 import android.os.Looper
-import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_dlist.*
 import kotlinx.android.synthetic.main.widget_titlebar.*
 import top.fumiama.copymanga.R
+import top.fumiama.copymanga.databinding.ActivityDlistBinding
 import top.fumiama.copymanga.handler.DlLHandler
 import java.io.File
 import java.util.regex.Pattern
@@ -23,7 +22,8 @@ class DlListActivity:Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_dlist)
+        val binding = ActivityDlistBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         ttitle.text = intent.getStringExtra("title")
         handler = DlLHandler(Looper.myLooper()!!, this)
         handler?.obtainMessage(3, currentDir)?.sendToTarget()       //call scanFile

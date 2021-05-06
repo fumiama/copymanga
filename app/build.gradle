@@ -11,8 +11,8 @@ android {
         applicationId "top.fumiama.copymanga"
         minSdkVersion 23
         targetSdkVersion 30
-        versionCode 10
-        versionName '1.3.2'
+        versionCode 11
+        versionName '1.3.3'
         resConfigs "zh", "zh-rCN"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -42,6 +42,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }*/
     }
+
+    viewBinding {
+        enabled = true
+    }
 }
 
 dependencies {
@@ -53,11 +57,11 @@ dependencies {
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.viewpager2:viewpager2:1.0.0'
     //implementation 'com.google.android.material:material:1.2.1'
-    testImplementation 'junit:junit:4.13.1'
+    testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
-    implementation 'com.github.bumptech.glide:glide:4.11.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
+    implementation 'com.github.bumptech.glide:glide:4.12.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
     implementation 'com.google.code.gson:gson:2.8.6'
     //implementation 'com.liaoinstan.springview:library:1.7.0'
 }
@@ -94,8 +98,8 @@ andResGuard {
             "*.gif",
     ]
     sevenzip {
-        artifact = 'com.tencent.mm:SevenZip:1.2.20'
-        //path = "/usr/local/bin/7za"
+        //artifact = 'com.tencent.mm:SevenZip:1.2.21'
+        path = "7za"
     }
 
     /**

@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "artifactType": {
+    "type": "APK",
+    "kind": "Directory"
+  },
+  "applicationId": "top.fumiama.copymanga",
+  "variantName": "release",
+  "elements": [
+    {
+      "type": "SINGLE",
+      "filters": [],
+      "versionCode": 11,
+      "versionName": "1.3.3",
+      "outputFile": "app-release.apk"
+    }
+  ]
+}

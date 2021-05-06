@@ -1,8 +1,8 @@
 javascript:
 if (typeof (loaded) == "undefined"){
     var loaded = true;
-    function scanChapters(chapter){
-        var chapterList = chapter.getElementsByClassName("table-all")[0].getElementsByTagName("a");
+    function scanChapters(chapter) {
+        var chapterList = chapter.getElementsByClassName("tab-pane fade show active")[0].getElementsByTagName("ul")[0].getElementsByTagName("a");
         var chapterArr = Array();
         for(var i = 0; i < chapterList.length; i++){
             chapterArr.push(JSON.constructor());
@@ -11,7 +11,7 @@ if (typeof (loaded) == "undefined"){
         }
         return chapterArr;
     }
-    function modify(){
+    function modify() {
         var url = location.href;
         if(url.indexOf("/chapter/")>0){
             var imglist = document.getElementsByClassName("container-fluid comicContent")[0].getElementsByTagName("li");
@@ -22,7 +22,7 @@ if (typeof (loaded) == "undefined"){
             var liststr = document.title.split(" - ")[1] + " " + location.href.substring(location.href.lastIndexOf("/")+1) + "\n" + nextChapter + "\n" + prevChapter;
             for(var i = 0; i < imglist.length; i++) liststr += "\n" + imglist[i].getElementsByTagName("img")[0].dataset.src;
             GM.loadChapter(liststr);
-        }else {
+        } else {
             var json = Array();
             var chapters = document.getElementsByClassName("upLoop")[0].children;
             var newObj = null;
