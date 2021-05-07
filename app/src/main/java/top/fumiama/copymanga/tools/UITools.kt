@@ -5,6 +5,7 @@ import android.app.AlertDialog
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.view.View
 import android.widget.Toast
 import top.fumiama.dmzj.copymanga.R
 import java.lang.ref.WeakReference
@@ -53,6 +54,26 @@ class UITools(that: Context?, w: WeakReference<Activity>? = null) {
         txtN?.let { info.setNeutralButton(it) { _, _ -> neutral?.let { it() } } }
         info.show()
     }
+    fun buildAlertWithView(
+        title: String,
+        view: View,
+        txtOk: String? = null,
+        txtN: String? = null,
+        txtCancel: String? = null,
+        ok: (() -> Unit)? = null,
+        neutral: (() -> Unit)? = null,
+        cancel: (() -> Unit)? = null
+    ): AlertDialog {
+        val info = AlertDialog.Builder(zis)
+        info.setIcon(R.drawable.ic_launcher_foreground)
+        info.setTitle(title)
+
+        info.setView(view)
+        txtOk?.let { info.setPositiveButton(it) { _, _ -> ok?.let { it() } } }
+        txtCancel?.let { info.setNegativeButton(it) { _, _ -> cancel?.let { it() } } }
+        txtN?.let { info.setNeutralButton(it) { _, _ -> neutral?.let { it() } } }
+        return info.show()
+    }
     fun dp2px(dp:Int):Int?{
         return zis?.resources?.displayMetrics?.density?.let { (dp * it + 0.5).toInt()}
     }
@@ -85,4 +106,14 @@ class UITools(that: Context?, w: WeakReference<Activity>? = null) {
         val totalWidth = ((zis?.resources?.displayMetrics?.widthPixels?:1080)-marginPx)/numPerRow
         return listOf(numPerRow, w, totalWidth)
     }
+    fun toHexStr(byteArray: ByteArray) =
+        with(StringBuilder()) {
+            byteArray.forEach {
+                val hex = it.toInt() and (0xFF)
+                val hexStr = Integer.toHexString(hex)
+                if (hexStr.length == 1) append("0").append(hexStr)
+                else append(hexStr)
+            }
+            toString()
+        }
 }

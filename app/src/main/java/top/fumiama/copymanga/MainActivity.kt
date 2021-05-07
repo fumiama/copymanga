@@ -34,7 +34,9 @@ import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.nav_header_main.*
 import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.tools.PropertiesTools
+import top.fumiama.copymanga.tools.UITools
 import top.fumiama.copymanga.ui.download.DownloadFragment
+import top.fumiama.copymanga.update.Update
 import java.io.File
 import java.io.FileInputStream
 import java.lang.ref.WeakReference
@@ -88,6 +90,7 @@ class MainActivity : AppCompatActivity() {
             override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
             override fun onDrawerStateChanged(newState: Int) {}
         })
+        checkUpdate(false)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -228,6 +231,11 @@ class MainActivity : AppCompatActivity() {
             )
         )
 
+    private fun checkUpdate(ignoreSkip: Boolean) {
+        Thread{
+            Update.checkUpdate(this, p, UITools(this), ignoreSkip)
+        }.start()
+    }
 
     fun showAbout(item: MenuItem) {
         val dl = android.app.AlertDialog.Builder(this)
@@ -235,6 +243,9 @@ class MainActivity : AppCompatActivity() {
         dl.setTitle(R.string.action_info)
         dl.setIcon(R.mipmap.ic_launcher)
         dl.setPositiveButton(android.R.string.ok) { _, _ -> }
+        dl.setNeutralButton(R.string.check_update) {_, _ ->
+            checkUpdate(true)
+        }
         dl.show()
     }
 

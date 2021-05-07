@@ -61,12 +61,16 @@ class BookFragment:NoBackRefreshFragment(R.layout.fragment_book) {
         val groups = bookHandler.book?.results?.groups
         var keys = arrayOf<String>()
         var gpws = arrayOf<String>()
+        var cnts = intArrayOf()
         groups?.values?.forEach {
             keys += it.name
             gpws += it.path_word
+            cnts += it.count
+            Log.d("MyBF", "Add caption: ${it.name} @ ${it.path_word} of ${it.count}")
         }
         bundle.putStringArray("group", gpws)
         bundle.putStringArray("groupNames", keys)
+        bundle.putIntArray("count", cnts)
         rootView?.let { Navigation.findNavController(it).navigate(R.id.action_nav_book_to_nav_group, bundle) }
     }
 }

@@ -10,6 +10,7 @@ import android.view.View
 import com.google.gson.Gson
 import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
+import top.fumiama.copymanga.json.ChapterStructure
 import top.fumiama.copymanga.json.VolumeStructure
 import top.fumiama.copymanga.template.AutoDownloadThread
 import top.fumiama.copymanga.template.NoBackRefreshFragment
@@ -32,7 +33,8 @@ class ComicDlFragment:NoBackRefreshFragment(R.layout.fragment_dlcomic) {
                 }
                 else -> initComicData(
                     arguments?.getString("path"),
-                    arguments?.getStringArray("group")
+                    arguments?.getStringArray("group"),
+                    arguments?.getIntArray("count")
                 )
             }
         }
@@ -44,7 +46,7 @@ class ComicDlFragment:NoBackRefreshFragment(R.layout.fragment_dlcomic) {
         mainWeakReference?.get()?.menuMain?.let { setMenuInvisible(it) }
     }*/
 
-    fun start2load(volumes: Array<VolumeStructure>, isFromFile: Boolean = false, groupArray: Array<String>? =null){
+    private fun start2load(volumes: Array<VolumeStructure>, isFromFile: Boolean = false, groupArray: Array<String>? =null){
         handler = ComicDlHandler(Looper.myLooper()!!,
             WeakReference(this),
             volumes,
@@ -85,21 +87,42 @@ class ComicDlFragment:NoBackRefreshFragment(R.layout.fragment_dlcomic) {
         menu.findItem(R.id.action_download)?.isVisible = false
     }*/
 
-    private fun initComicData(pw: String?, gpws: Array<String>?) {
-        var volumes = arrayOf<VolumeStructure>()
-        val waitHandler = WaitHandler(WeakReference(this))
+    private fun initComicData(pw: String?, gpws: Array<String>?, counts: IntArray?) {
+        var volumes = emptyArray<VolumeStructure>()
         if (gpws != null) {
-            gpws.forEach { gpw ->
+            gpws.forEachIndexed { i, gpw ->
                 Log.d("MyCDF", "下载:$gpw")
-                CMApi.getApiUrl(R.string.groupInfoApiUrl, pw, gpw)?.let {
-                    AutoDownloadThread(it) { result ->
-                        //Log.d("MyCDF", "返回:${result?.decodeToString()}")
-                        volumes += Gson().fromJson(
-                            result?.decodeToString(),
-                            VolumeStructure::class.java
-                        )
-                    }.start()
-                }
+                var offset = 0
+                val re = arrayOfNulls<VolumeStructure>(counts?.get(i)?:1)
+                do {
+                    counts?.set(i, counts[i] - 100)
+                    CMApi.getApiUrl(R.string.groupInfoApiUrl, pw, gpw, offset)?.let {
+                        AutoDownloadThread(it) { result ->
+                            //Log.d("MyCDF", "返回:${result?.decodeToString()}")
+                            val r = Gson().fromJson(result?.decodeToString(), VolumeStructure::class.java)
+                            re[r.results.offset / 100] = r
+                        }.start()
+                        offset += 100
+                    }
+                } while ((counts?.get(i) ?: 0) > 0)
+                Thread {
+                    var c = 0
+                    while (c++ < 80) {
+                        sleep(100)
+                        if(re.all { it != null }) break
+                    }
+                    if(re.size > 1) {
+                        val r = re[0]
+                        var s = emptyArray<ChapterStructure>()
+                        re.forEach {
+                            it?.results?.list?.forEach {
+                                s += it
+                            }
+                        }
+                        r?.results?.list = s
+                        r?.apply { volumes += this }
+                    } else re[0]?.apply { volumes += this }
+                }.start()
             }
             Thread {
                 var c = 0
@@ -109,7 +132,9 @@ class ComicDlFragment:NoBackRefreshFragment(R.layout.fragment_dlcomic) {
                     c++
                 }
                 if (volumes.size == gpws.size) {
-                    waitHandler.obtainMessage(0, volumes).sendToTarget()
+                    mainWeakReference?.get()?.runOnUiThread {
+                        start2load(volumes)
+                    }
                 }
             }.start()
         }
@@ -120,15 +145,6 @@ class ComicDlFragment:NoBackRefreshFragment(R.layout.fragment_dlcomic) {
             WeakReference(this),
             arguments?.getString("name")?:"null")
         handler?.startLoad()
-    }
-
-    class WaitHandler(private val that: WeakReference<ComicDlFragment>): Handler(Looper.myLooper()!!){
-        override fun handleMessage(msg: Message) {
-            super.handleMessage(msg)
-            when(msg.what){
-                0 -> that.get()?.start2load(msg.obj as Array<VolumeStructure>)
-            }
-        }
     }
 
     companion object {
