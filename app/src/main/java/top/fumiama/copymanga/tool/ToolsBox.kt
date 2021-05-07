@@ -40,6 +40,7 @@ class ToolsBox(w: WeakReference<Any>) {
                     it.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> return@let "蓝牙"
                     it.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> return@let "以太网"
                     it.hasTransport(NetworkCapabilities.TRANSPORT_LOWPAN) -> return@let "LOWPAN"
+                    it.hasTransport(NetworkCapabilities.TRANSPORT_VPN) -> return@let "VPN"
                     else -> return@let "无网络"
                 }
             } ?: "错误"

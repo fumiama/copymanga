@@ -35,7 +35,7 @@ class MainActivity: Activity() {
         mh = MainHandler(Looper.myLooper()!!)
         toolsBox = ToolsBox(wm as WeakReference<Any>)
         toolsBox?.netinfo?.let {
-            if(it == "无网络" || it == "错误"){
+            if(it == "无网络" || it == "错误") {
                 Thread{mh?.sendEmptyMessage(6)}.start()
             }else{
                 WebView.setWebContentsDebuggingEnabled(true)
