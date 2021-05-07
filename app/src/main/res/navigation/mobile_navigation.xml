@@ -24,11 +24,39 @@
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_out_left_exit"
             app:popExitAnim="@anim/slide_in_right_exit" />
+        <action
+            android:id="@+id/action_nav_home_to_nav_topic"
+            app:destination="@id/nav_topic"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_out_left_exit"
+            app:popExitAnim="@anim/slide_in_right_exit"/>
+        <action
+            android:id="@+id/action_nav_home_to_nav_recommend"
+            app:destination="@id/nav_recommend"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_out_left_exit"
+            app:popExitAnim="@anim/slide_in_right_exit"/>
+        <action
+            android:id="@+id/action_nav_home_to_nav_newest"
+            app:destination="@id/nav_newest"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_out_left_exit"
+            app:popExitAnim="@anim/slide_in_right_exit"/>
+        <action
+            android:id="@+id/action_nav_home_to_nav_finish"
+            app:destination="@id/nav_finish"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_out_left_exit"
+            app:popExitAnim="@anim/slide_in_right_exit"/>
     </fragment>
 
     <fragment
         android:id="@+id/nav_sort"
-        android:name="top.fumiama.copymanga.ui.sort.SortFragment"
+        android:name="top.fumiama.copymanga.ui.cardflow.sort.SortFragment"
         android:label="@string/menu_sort"
         tools:layout="@layout/fragment_sort" >
         <action
@@ -134,6 +162,62 @@
         android:name="top.fumiama.copymanga.ui.chapter.ChapterFragment"
         android:label="@string/page_chapter"
         tools:layout="@layout/fragment_chapters" >
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_topic"
+        android:name="top.fumiama.copymanga.ui.cardflow.topic.TopicFragment"
+        android:label="@string/page_topic"
+        tools:layout="@layout/fragment_topic" >
+        <action
+            android:id="@+id/action_nav_topic_to_nav_book"
+            app:destination="@id/nav_book"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_out_left_exit"
+            app:popExitAnim="@anim/slide_in_right_exit"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_recommend"
+        android:name="top.fumiama.copymanga.ui.cardflow.recommend.RecFragment"
+        android:label="@string/manga_rec"
+        tools:layout="@layout/fragment_recommend" >
+        <action
+            android:id="@+id/action_nav_recommend_to_nav_book"
+            app:destination="@id/nav_book"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_out_left_exit"
+            app:popExitAnim="@anim/slide_in_right_exit"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_newest"
+        android:name="top.fumiama.copymanga.ui.cardflow.newest.NewestFragment"
+        android:label="@string/new_list"
+        tools:layout="@layout/fragment_newest" >
+        <action
+            android:id="@+id/action_nav_newest_to_nav_book"
+            app:destination="@id/nav_book"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_out_left_exit"
+            app:popExitAnim="@anim/slide_in_right_exit"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_finish"
+        android:name="top.fumiama.copymanga.ui.cardflow.finish.FinishFragment"
+        android:label="@string/complete"
+        tools:layout="@layout/fragment_newest" >
+        <action
+            android:id="@+id/action_nav_finish_to_nav_book"
+            app:destination="@id/nav_book"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_out_left_exit"
+            app:popExitAnim="@anim/slide_in_right_exit"/>
     </fragment>
 
     <fragment

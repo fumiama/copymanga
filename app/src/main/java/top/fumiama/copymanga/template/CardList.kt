@@ -48,17 +48,19 @@ class CardList(
             recycleOneRow(it)
         }
     }
-
     private fun recycleOneRow(v:View?){
-        if(index < 20) rows[index] = v
-        else{
+        val relativeIndex = index++ % 20
+        if(rows[relativeIndex] == null) rows[relativeIndex] = v
+        else {
+            val victim = rows[relativeIndex]
             mainWeakReference?.get()?.runOnUiThread {
-                that?.mydll?.removeView(rows[index % 20])
-                //zis.mys?.scrollY = zis.mys?.scrollY?.minus(cardHeight + 16)?:0
+                that?.apply {
+                    mydll?.removeView(victim)
+                    mys?.scrollY = that.mys?.scrollY?.minus(cardHeight + 16)?:0
+                }
             }
-            rows[index % 20] = v
+            rows[relativeIndex] = v
         }
-        index++
     }
 
     @ExperimentalStdlibApi

@@ -110,7 +110,7 @@ class HomeHandler(that: WeakReference<HomeFragment>) :AutoDownloadHandler(
                 newComic.path_word = topic.path_word
                 comics += newComic
             }
-            if(comics.size == 3) allocateLine(homeF?.getString(R.string.topics_series)?:"", R.drawable.img_hot_serial, comics)
+            if(comics.size == 3) allocateLine(homeF?.getString(R.string.topics_series)?:"", R.drawable.img_hot_serial, comics, isTopic = true)
         }
     }
 
@@ -121,7 +121,9 @@ class HomeHandler(that: WeakReference<HomeFragment>) :AutoDownloadHandler(
                 if(i > 2) break
                 comics += rec.comic
             }
-            if(comics.size == 3) allocateLine(homeF?.getString(R.string.manga_rec)?:"", R.drawable.img_master_work, comics)
+            if(comics.size == 3) allocateLine(homeF?.getString(R.string.manga_rec)?:"", R.drawable.img_master_work, comics) {
+                homeF?.rootView?.apply { Navigation.findNavController(this).navigate(R.id.action_nav_home_to_nav_recommend) }
+            }
         }
     }
 
@@ -166,7 +168,9 @@ class HomeHandler(that: WeakReference<HomeFragment>) :AutoDownloadHandler(
                 if(i > 8) break
                 comics += rec.comic
             }
-            if(comics.size == 9) allocateLine(homeF?.getString(R.string.new_list)?:"", R.drawable.img_latest_pub, comics)
+            if(comics.size == 9) allocateLine(homeF?.getString(R.string.new_list)?:"", R.drawable.img_latest_pub, comics) {
+                homeF?.rootView?.apply { Navigation.findNavController(this).navigate(R.id.action_nav_home_to_nav_newest) }
+            }
         }
     }
 
@@ -177,7 +181,9 @@ class HomeHandler(that: WeakReference<HomeFragment>) :AutoDownloadHandler(
                 if(i > 5) break
                 comics += rec
             }
-            if(comics.size == 6) allocateLine(homeF?.getString(R.string.complete)?:"", R.drawable.img_novel_eye, comics, true)
+            if(comics.size == 6) allocateLine(homeF?.getString(R.string.complete)?:"", R.drawable.img_novel_eye, comics, true) {
+                homeF?.rootView?.apply { Navigation.findNavController(this).navigate(R.id.action_nav_home_to_nav_finish) }
+            }
         }
     }
 
@@ -237,7 +243,7 @@ class HomeHandler(that: WeakReference<HomeFragment>) :AutoDownloadHandler(
         }
     }
 
-    private fun allocateLine(title: String, iconResId: Int, comics: Array<ComicStructure>, finish: Boolean = false): Int{
+    private fun allocateLine(title: String, iconResId: Int, comics: Array<ComicStructure>, finish: Boolean = false, isTopic: Boolean = false, onClick: (() -> Unit)? = null): Int{
         val p = indexLines.size
         val c = comics.size / 3
         homeF?.layoutInflater?.inflate(
@@ -246,12 +252,13 @@ class HomeHandler(that: WeakReference<HomeFragment>) :AutoDownloadHandler(
                 2 -> R.layout.line_2bookline
                 3 -> R.layout.line_3bookline
                 else -> return -1
-            }, homeF.fhl, false)?.let {
-            scanCards(it, comics, finish)
-            it.rttitle.text = title
-            it.ir.setImageResource(iconResId)
-            setLineHeight(it, c)
-            indexLines += it
+            }, homeF.fhl, false)?.apply {
+            scanCards(this, comics, finish, isTopic)
+            rttitle.text = title
+            ir.setImageResource(iconResId)
+            setLineHeight(this, c)
+            if(onClick != null) setOnClickListener { onClick() }
+            indexLines += this
         }
         return p
     }
@@ -279,7 +286,7 @@ class HomeHandler(that: WeakReference<HomeFragment>) :AutoDownloadHandler(
         }
     }*/
 
-    private fun scanCards(v: View, comics: Array<ComicStructure>, finish: Boolean = false){
+    private fun scanCards(v: View, comics: Array<ComicStructure>, finish: Boolean, isTopic: Boolean){
         var id = v.rc1.id
         var card = v.findViewById<ConstraintLayout>(id)
         for (data in comics){
@@ -288,13 +295,14 @@ class HomeHandler(that: WeakReference<HomeFragment>) :AutoDownloadHandler(
                 data.path_word,
                 data.name,
                 data.cover,
-                finish
+                finish,
+                isTopic
             )
             card = v.findViewById(++id)
         }
     }
 
-    private fun setCards(cv: CardView, pw: String, name: String, img: String, isFinal: Boolean = false) {
+    private fun setCards(cv: CardView, pw: String, name: String, img: String, isFinal: Boolean, isTopic: Boolean) {
         cv.tic.text = name
         homeF?.let {
             Glide.with(it).load(GlideUrl(img, CMApi.myGlideHeaders)).timeout(10000).into(cv.imic)
@@ -303,7 +311,7 @@ class HomeHandler(that: WeakReference<HomeFragment>) :AutoDownloadHandler(
         cv.setOnClickListener {
             val bundle = Bundle()
             bundle.putString("path", pw)
-            homeF?.rootView?.let { Navigation.findNavController(it).navigate(R.id.action_nav_home_to_nav_book, bundle) }
+            homeF?.rootView?.let { Navigation.findNavController(it).navigate(if(isTopic) R.id.action_nav_home_to_nav_topic else R.id.action_nav_home_to_nav_book, bundle) }
         }
     }
 

@@ -1,4 +1,4 @@
-package top.fumiama.copymanga.ui.sort
+package top.fumiama.copymanga.ui.cardflow.sort
 
 import android.animation.ObjectAnimator
 import android.view.View

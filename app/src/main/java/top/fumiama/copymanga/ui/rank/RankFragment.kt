@@ -5,7 +5,6 @@ import androidx.fragment.app.Fragment
 import com.github.zawadz88.materialpopupmenu.popupMenu
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.anchor_popular.view.*
-import kotlinx.android.synthetic.main.line_rank.*
 import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.json.FilterStructure
 import top.fumiama.copymanga.template.InfoCardLoader

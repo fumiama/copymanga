@@ -100,18 +100,18 @@ class BookHandler(that: WeakReference<BookFragment>, path: String)
     }
 
     private fun setCover(){
-        that?.let {
-            it.fbl.addView(fbibinfo)
-            val load = Glide.with(it).load(
+        that?.apply {
+            fbl.addView(fbibinfo)
+            val load = Glide.with(this).load(
                 GlideUrl(book?.results?.comic?.cover, CMApi.myGlideHeaders)
             ).timeout(10000)
-            load.into(it.imic)
-            it.context?.let { it1 -> GlideBlurTransformation(it1) }
+            load.into(imic)
+            context?.let { it1 -> GlideBlurTransformation(it1) }
                 ?.let { it2 -> RequestOptions.bitmapTransform(it2) }
-                ?.let { it3 -> load.apply(it3).into(it.lbibg) }
-            it.imf.visibility = View.GONE
+                ?.let { it3 -> load.apply(it3).into(lbibg) }
+            imf.visibility = View.GONE
+            fbl.addView(divider)
         }
-        that?.fbl?.addView(divider)
     }
 
     private fun getThemeSeq(authors: Array<ThemeStructure>): CharSequence{

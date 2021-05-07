@@ -11,25 +11,25 @@
         android:layout_marginTop="@dimen/nav_header_vertical_spacing"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/line_rank_class" />
+        app:layout_constraintTop_toBottomOf="@+id/line_finish_pop" />
 
     <include
-        android:id="@+id/line_rank_class"
+        android:id="@+id/line_finish_pop"
         layout="@layout/anchor_popular"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/line_rank_pop"
+        app:layout_constraintEnd_toStartOf="@+id/line_finish_time"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <include
-        android:id="@+id/line_rank_pop"
+        android:id="@+id/line_finish_time"
         layout="@layout/anchor_popular"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/line_rank_class"
+        app:layout_constraintStart_toEndOf="@+id/line_finish_pop"
         app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

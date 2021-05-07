@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="top.fumiama.copymanga.ui.sort.SortFragment">
+    tools:context="top.fumiama.copymanga.ui.cardflow.sort.SortFragment">
 
     <include
         android:id="@+id/fslai"

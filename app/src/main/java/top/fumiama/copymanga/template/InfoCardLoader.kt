@@ -8,12 +8,13 @@ import androidx.navigation.Navigation
 import com.google.gson.Gson
 import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.json.BookListStructure
+import top.fumiama.copymanga.json.TypeBookListStructure
 import top.fumiama.copymanga.tools.DownloadTools
 import java.io.File
 import java.lang.ref.WeakReference
 
 @ExperimentalStdlibApi
-open class InfoCardLoader(inflateRes:Int, private val navId:Int): MangaPagesFragmentTemplate(inflateRes) {
+open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isTypeBook: Boolean = false): MangaPagesFragmentTemplate(inflateRes) {
     private val subUrl get() = getApiUrl()
 
     init {
@@ -24,13 +25,27 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int): MangaPagesFrag
                         page = 0
                         isRefresh = false
                     }
-                    val bookList = Gson().fromJson(it?.decodeToString(), BookListStructure::class.java)
-                    bookList?.let {
-                        if(it.code == 200) it.results.list?.forEach{ book ->
-                            cardList.addCard(book.name, null, book.cover, book.path_word, null, null, false)
+                    if(isTypeBook) {
+                        val bookList = Gson().fromJson(it?.decodeToString(), TypeBookListStructure::class.java)
+                        bookList?.apply {
+                            if(results.offset < results.total) {
+                                if(code == 200) results.list.forEach { book ->
+                                    cardList.addCard(book.comic.name, null, book.comic.cover, book.comic.path_word, null, null, false)
+                                }
+                            }
+                            page++
+                        }
+                    } else {
+                        val bookList = Gson().fromJson(it?.decodeToString(), BookListStructure::class.java)
+                        bookList?.apply {
+                            if(results.offset < results.total) {
+                                if(code == 200) results.list.forEach{ book ->
+                                    cardList.addCard(book.name, null, book.cover, book.path_word, null, null, false)
+                                }
+                            }
+                            page++
                         }
                     }
-                    page++
                     onLoadFinish()
                 }.start()
             }

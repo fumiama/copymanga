@@ -15,6 +15,7 @@
     <string name="page_book">图书详情</string>
     <string name="page_chapter">章节内容</string>
     <string name="page_group">漫画下载</string>
+    <string name="page_topic">专题系列</string>
     <string name="check_update">检查更新</string>
 
     <string name="navTextInfo">illust: Hiten(490219)</string>
@@ -38,6 +39,11 @@
     <string name="groupInfoApiUrl">https://api.copymanga.com/api/v3/comic/%1$s/group/%2$s/chapters?limit=100&amp;offset=%3$d</string>
     <string name="chapterInfoApiUrl">https://api.copymanga.com/api/v3/comic/%1$s/chapter2/%2$s</string>
     <string name="chapterTxtUrl">https://nnv3api.dmzj1.com/novel/download/%1$d_%2$d_%3$d.txt</string>
+    <string name="topicApiUrl">https://api.copymanga.com/api/v3/topic/%1$s</string>
+    <string name="topicContentApiUrl">https://api.copymanga.com/api/v3/topic/%1$s/contents?type=%2$d&amp;limit=21&amp;offset=%3$d</string>
+    <string name="recommendApiUrl">https://api.copymanga.com/api/v3/recs?pos=3200102&amp;limit=21&amp;offset=%1$d</string>
+    <string name="newestApiUrl">https://api.copymanga.com/api/v3/update/newest?limit=21&amp;offset=%1$d</string>
+    <string name="finishApiUrl">https://api.copymanga.com/api/v3/comics?limit=21&amp;offset=%1$d&amp;ordering=%2$s&amp;top=finish</string>
 
     <string name="complete">已完结</string>
 
