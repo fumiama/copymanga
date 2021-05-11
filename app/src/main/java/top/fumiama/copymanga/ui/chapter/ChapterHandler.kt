@@ -7,21 +7,21 @@ import android.widget.Toast
 import androidx.navigation.Navigation
 import kotlinx.android.synthetic.main.fragment_book.*
 import kotlinx.android.synthetic.main.fragment_chapters.*
-import kotlinx.android.synthetic.main.line_2chapters.view.*
 import kotlinx.android.synthetic.main.line_chapter.view.*
 import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.json.ChapterStructure
 import top.fumiama.copymanga.json.VolumeStructure
-import top.fumiama.copymanga.template.AutoDownloadHandler
+import top.fumiama.copymanga.template.http.AutoDownloadHandler
 import java.lang.ref.WeakReference
 
-class ChapterHandler(that: WeakReference<ChapterFragment>, pw: String, gpw: String):AutoDownloadHandler(
+class ChapterHandler(that: WeakReference<ChapterFragment>, pw: String, gpw: String):
+    AutoDownloadHandler(
     that.get()?.getString(R.string.groupInfoApiUrl)?.let { String.format(it, pw, gpw) } ?: "",
     VolumeStructure::class.java,
     Looper.myLooper()!!
 ) {
     private val that = that.get()
-    var hasToastedError = false
+    private var hasToastedError = false
         get(){
             val re = field
             field = true
@@ -46,6 +46,7 @@ class ChapterHandler(that: WeakReference<ChapterFragment>, pw: String, gpw: Stri
 
     override fun onError() {
         super.onError()
+        if(exit) return
         if(!hasToastedError) {
             Toast.makeText(that?.context, R.string.null_book, Toast.LENGTH_SHORT).show()
             that?.rootView?.let { it1 ->
@@ -55,6 +56,7 @@ class ChapterHandler(that: WeakReference<ChapterFragment>, pw: String, gpw: Stri
     }
     override fun doWhenFinishDownload() {
         super.doWhenFinishDownload()
+        if(exit) return
         Thread{ sendEmptyMessage(1) }.start()
     }
     private fun inflateChapters(){

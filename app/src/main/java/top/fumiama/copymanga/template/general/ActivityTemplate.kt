@@ -1,10 +1,10 @@
-package top.fumiama.copymanga.template
+package top.fumiama.copymanga.template.general
 
 import android.app.Activity
 import android.os.Bundle
 import android.view.View
-import top.fumiama.copymanga.tools.PropertiesTools
-import top.fumiama.copymanga.tools.UITools
+import top.fumiama.copymanga.tools.file.PropertiesTools
+import top.fumiama.copymanga.tools.api.UITools
 import java.io.File
 import java.lang.ref.WeakReference
 

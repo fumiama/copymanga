@@ -1,26 +1,26 @@
-package top.fumiama.copymanga.template
+package top.fumiama.copymanga.template.ui
 
 import android.os.Bundle
-import android.util.JsonReader
+import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.navigation.Navigation
 import com.google.gson.Gson
-import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.json.BookListStructure
 import top.fumiama.copymanga.json.TypeBookListStructure
-import top.fumiama.copymanga.tools.DownloadTools
-import java.io.File
+import top.fumiama.copymanga.template.general.MangaPagesFragmentTemplate
+import top.fumiama.copymanga.template.http.AutoDownloadThread
 import java.lang.ref.WeakReference
 
 @ExperimentalStdlibApi
 open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isTypeBook: Boolean = false): MangaPagesFragmentTemplate(inflateRes) {
+    var offset = 0
     private val subUrl get() = getApiUrl()
-
+    private var ad: AutoDownloadThread? = null
     init {
         pageHandler = object : PageHandler {
             override fun addPage(){
-                AutoDownloadThread(subUrl){
+                ad = AutoDownloadThread(subUrl){
                     if(isRefresh){
                         page = 0
                         isRefresh = false
@@ -28,9 +28,13 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
                     if(isTypeBook) {
                         val bookList = Gson().fromJson(it?.decodeToString(), TypeBookListStructure::class.java)
                         bookList?.apply {
+                            Log.d("MyICL", "offset:${results.offset}, total:${results.total}")
                             if(results.offset < results.total) {
-                                if(code == 200) results.list.forEach { book ->
-                                    cardList.addCard(book.comic.name, null, book.comic.cover, book.comic.path_word, null, null, false)
+                                if(code == 200) {
+                                    results.list.forEach { book ->
+                                        cardList.addCard(book.comic.name, null, book.comic.cover, book.comic.path_word, null, null, false)
+                                    }
+                                    offset += results.list.size
                                 }
                             }
                             page++
@@ -38,16 +42,21 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
                     } else {
                         val bookList = Gson().fromJson(it?.decodeToString(), BookListStructure::class.java)
                         bookList?.apply {
+                            Log.d("MyICL", "offset:${results.offset}, total:${results.total}")
                             if(results.offset < results.total) {
-                                if(code == 200) results.list.forEach{ book ->
-                                    cardList.addCard(book.name, null, book.cover, book.path_word, null, null, false)
+                                if(code == 200) {
+                                    results.list.forEach{ book ->
+                                        cardList.addCard(book.name, null, book.cover, book.path_word, null, null, false)
+                                    }
+                                    offset += results.list.size
                                 }
                             }
                             page++
                         }
                     }
                     onLoadFinish()
-                }.start()
+                }
+                ad?.start()
             }
             override fun initCardList(weakReference: WeakReference<Fragment>) {
                 cardList = CardList(weakReference, cardWidth, cardHeight, cardPerRow)
@@ -72,4 +81,9 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
     open fun setListeners(){}
 
     open fun onLoadFinish(){}
+
+    override fun onDestroy() {
+        super.onDestroy()
+        ad?.exit = true
+    }
 }

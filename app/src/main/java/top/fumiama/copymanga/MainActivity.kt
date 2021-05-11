@@ -21,6 +21,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
@@ -33,8 +34,8 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.nav_header_main.*
 import top.fumiama.dmzj.copymanga.R
-import top.fumiama.copymanga.tools.PropertiesTools
-import top.fumiama.copymanga.tools.UITools
+import top.fumiama.copymanga.tools.file.PropertiesTools
+import top.fumiama.copymanga.tools.api.UITools
 import top.fumiama.copymanga.ui.download.DownloadFragment
 import top.fumiama.copymanga.update.Update
 import java.io.File
@@ -45,6 +46,7 @@ import java.lang.ref.WeakReference
 class MainActivity : AppCompatActivity() {
     var isDrawerClosed = true
     var menuMain: Menu? = null
+    var navController: NavController? = null
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var p: PropertiesTools
@@ -57,7 +59,7 @@ class MainActivity : AppCompatActivity() {
         //translucentStatusBar()
         coordiv.layoutParams.height = getStatusBarHeight()
 
-        val navController = findNavController(R.id.nav_host_fragment)
+        navController = findNavController(R.id.nav_host_fragment)
         appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.nav_home,
@@ -69,8 +71,8 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_settings
             ), drawer_layout
         )
-        setupActionBarWithNavController(navController, appBarConfiguration)
-        nav_view.setupWithNavController(navController)
+        setupActionBarWithNavController(navController!!, appBarConfiguration)
+        nav_view.setupWithNavController(navController!!)
 
         p = PropertiesTools(File(filesDir, "database.prop"))
         headPic = File(getExternalFilesDir(""), "headPic")

@@ -3,7 +3,7 @@ package top.fumiama.copymanga.ui.cardflow.newest
 import android.view.View
 import kotlinx.android.synthetic.main.line_lazybooklines.*
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
-import top.fumiama.copymanga.template.InfoCardLoader
+import top.fumiama.copymanga.template.ui.InfoCardLoader
 import top.fumiama.dmzj.copymanga.R
 
 @ExperimentalStdlibApi

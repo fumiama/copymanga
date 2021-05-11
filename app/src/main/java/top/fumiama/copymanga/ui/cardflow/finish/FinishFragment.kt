@@ -6,7 +6,7 @@ import kotlinx.android.synthetic.main.anchor_popular.view.*
 import kotlinx.android.synthetic.main.line_finish.*
 import kotlinx.android.synthetic.main.line_lazybooklines.*
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
-import top.fumiama.copymanga.template.InfoCardLoader
+import top.fumiama.copymanga.template.ui.InfoCardLoader
 import top.fumiama.dmzj.copymanga.R
 import java.lang.Thread.sleep
 

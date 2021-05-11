@@ -11,13 +11,6 @@
         android:label="@string/menu_home"
         tools:layout="@layout/fragment_home" >
         <action
-            android:id="@+id/action_nav_home_to_nav_latest"
-            app:destination="@id/nav_latest"
-            app:enterAnim="@anim/slide_in_right"
-            app:exitAnim="@anim/slide_out_left"
-            app:popEnterAnim="@anim/slide_out_left_exit"
-            app:popExitAnim="@anim/slide_in_right_exit" />
-        <action
             android:id="@+id/action_nav_home_to_nav_book"
             app:destination="@id/nav_book"
             app:enterAnim="@anim/slide_in_right"
@@ -70,7 +63,7 @@
 
     <fragment
         android:id="@+id/nav_rank"
-        android:name="top.fumiama.copymanga.ui.rank.RankFragment"
+        android:name="top.fumiama.copymanga.ui.cardflow.rank.RankFragment"
         android:label="@string/menu_rank"
         tools:layout="@layout/fragment_rank" >
         <action
@@ -109,20 +102,6 @@
         <action
             android:id="@+id/action_nav_download_self"
             app:destination="@id/nav_download"
-            app:enterAnim="@anim/slide_in_right"
-            app:exitAnim="@anim/slide_out_left"
-            app:popEnterAnim="@anim/slide_out_left_exit"
-            app:popExitAnim="@anim/slide_in_right_exit"/>
-    </fragment>
-
-    <fragment
-        android:id="@+id/nav_latest"
-        android:name="top.fumiama.copymanga.ui.latest.LatestFragment"
-        android:label="@string/page_latest"
-        tools:layout="@layout/line_lazybooklines" >
-        <action
-            android:id="@+id/action_nav_latest_to_nav_book"
-            app:destination="@id/nav_book"
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_out_left_exit"

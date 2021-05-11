@@ -16,6 +16,7 @@ class SimpleKanban(private val client: Client, private val pwd: String) {   //mu
                     try {
                         firstRecv = client.receiveRawMessage(4)     //le
                         val length = convert2Int(firstRecv)
+                        Log.d("MySK", "Msg len: $length")
                         if(firstRecv.size > 4) re += firstRecv.copyOfRange(4, firstRecv.size)
                         re += client.receiveRawMessage(length - re.size, setProgress = true)
                         break
@@ -53,6 +54,7 @@ class SimpleKanban(private val client: Client, private val pwd: String) {   //mu
                 if(firstRecv.decodeToString() == "null") "null"
                 else {
                     val length = convert2Int(firstRecv)
+                    Log.d("MySK", "Msg len: $length")
                     var re = byteArrayOf()
                     if(firstRecv.size > 4) re += firstRecv.copyOfRange(4, firstRecv.size)
                     re += client.receiveRawMessage(length - re.size)

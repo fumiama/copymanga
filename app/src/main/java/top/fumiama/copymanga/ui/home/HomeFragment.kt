@@ -7,13 +7,12 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
-import com.bumptech.glide.load.model.LazyHeaders
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.viewpage_horizonal.view.*
 import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
-import top.fumiama.copymanga.template.NoBackRefreshFragment
-import top.fumiama.copymanga.tools.CMApi
+import top.fumiama.copymanga.template.general.NoBackRefreshFragment
+import top.fumiama.copymanga.tools.api.CMApi
 import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 
@@ -43,6 +42,11 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         homeHandler = HomeHandler(WeakReference(this))
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        homeHandler.destroy()
     }
 
     inner class ViewData(itemView: View) : RecyclerView.ViewHolder(itemView) {

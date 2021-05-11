@@ -10,8 +10,8 @@ import kotlinx.android.synthetic.main.line_sort.*
 import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.json.FilterStructure
-import top.fumiama.copymanga.template.AutoDownloadThread
-import top.fumiama.copymanga.template.InfoCardLoader
+import top.fumiama.copymanga.template.http.AutoDownloadThread
+import top.fumiama.copymanga.template.ui.InfoCardLoader
 import java.lang.Thread.sleep
 
 @ExperimentalStdlibApi

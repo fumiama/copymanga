@@ -7,11 +7,11 @@ import android.view.View
 import androidx.navigation.Navigation
 import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
-import top.fumiama.copymanga.template.NoBackRefreshFragment
+import top.fumiama.copymanga.template.general.NoBackRefreshFragment
 import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 
-class BookFragment:NoBackRefreshFragment(R.layout.fragment_book) {
+class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
     private lateinit var bookHandler: BookHandler
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -34,6 +34,7 @@ class BookFragment:NoBackRefreshFragment(R.layout.fragment_book) {
     override fun onDestroy() {
         super.onDestroy()
         mainWeakReference?.get()?.menuMain?.let { setMenuInvisible(it) }
+        bookHandler.destroy()
     }
 
     private fun setMenuInvisible(menu: Menu){

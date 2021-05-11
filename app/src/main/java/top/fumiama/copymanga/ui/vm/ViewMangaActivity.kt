@@ -27,10 +27,10 @@ import kotlinx.android.synthetic.main.widget_titlebar.*
 import kotlinx.android.synthetic.main.widget_titlebar.view.*
 import kotlinx.android.synthetic.main.widget_viewmangainfo.*
 import top.fumiama.dmzj.copymanga.R
-import top.fumiama.copymanga.template.TitleActivityTemplate
-import top.fumiama.copymanga.tools.CMApi
-import top.fumiama.copymanga.tools.DownloadTools
-import top.fumiama.copymanga.tools.TimeThread
+import top.fumiama.copymanga.template.general.TitleActivityTemplate
+import top.fumiama.copymanga.tools.api.CMApi
+import top.fumiama.copymanga.tools.http.DownloadTools
+import top.fumiama.copymanga.tools.thread.TimeThread
 import top.fumiama.copymanga.views.ScaleImageView
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -399,6 +399,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         dlhandler?.sendEmptyMessage(0)
         tt.canDo = false
         dlhandler = null
+        handler.destroy()
         super.onDestroy()
     }
 

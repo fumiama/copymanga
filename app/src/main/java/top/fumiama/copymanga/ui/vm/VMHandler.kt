@@ -15,8 +15,8 @@ import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.json.Chapter2Return
 import top.fumiama.copymanga.json.ChapterWithContent
 import top.fumiama.copymanga.json.ComicStructure
-import top.fumiama.copymanga.template.AutoDownloadHandler
-import top.fumiama.copymanga.tools.PropertiesTools
+import top.fumiama.copymanga.template.http.AutoDownloadHandler
+import top.fumiama.copymanga.tools.file.PropertiesTools
 import top.fumiama.copymanga.ui.vm.ViewMangaActivity.Companion.comicName
 import top.fumiama.copymanga.ui.vm.ViewMangaActivity.Companion.pn
 import top.fumiama.copymanga.views.ScaleImageView
@@ -113,12 +113,14 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
     }
     override fun onError() {
         super.onError()
+        if(exit) return
         wv.get()?.toolsBox?.toastError("下载章节信息失败")
     }
 
     @ExperimentalStdlibApi
     override fun doWhenFinishDownload() {
         super.doWhenFinishDownload()
+        if(exit) return
         prepareManga()
     }
 

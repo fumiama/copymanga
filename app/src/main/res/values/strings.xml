@@ -29,21 +29,21 @@
     <string name="null_book">获取图书信息失败</string>
     <string name="web_error">网络错误</string>
 
-    <string name="mainPageApiUrl">https://api.copymanga.com/api/v3/h5/homeIndex</string>
+    <string name="mainPageApiUrl">https://api.copymanga.com/api/v3/h5/homeIndex?platform=3</string>
     <string name="referUrl">"https://api.copymanga.com"</string>
     <string name="recentUpdateApiUrl">https://nnv3api.dmzj1.com/novel/recentUpdate/%1$d.json</string>
-    <string name="rankApiUrl">https://nnv3api.dmzj1.com/novel/rank/%1$d/%2$d/%3$d.json</string>
-    <string name="filterApiUrl">https://api.copymanga.com/api/v3/h5/filterIndex/comic/tags</string>
-    <string name="sortApiUrl">https://api.copymanga.com/api/v3/comics?limit=21&amp;offset=%1$d&amp;ordering=%2$s&amp;theme=%3$s</string>
-    <string name="bookInfoApiUrl">https://api.copymanga.com/api/v3/comic2/%1$s</string>
-    <string name="groupInfoApiUrl">https://api.copymanga.com/api/v3/comic/%1$s/group/%2$s/chapters?limit=100&amp;offset=%3$d</string>
-    <string name="chapterInfoApiUrl">https://api.copymanga.com/api/v3/comic/%1$s/chapter2/%2$s</string>
+    <string name="rankApiUrl">https://api.copymanga.com/api/v3/ranks?limit=21&amp;offset=%1$d&amp;date_type=%2$s&amp;platform=3</string>
+    <string name="filterApiUrl">https://api.copymanga.com/api/v3/h5/filterIndex/comic/tags?platform=3</string>
+    <string name="sortApiUrl">https://api.copymanga.com/api/v3/comics?limit=21&amp;offset=%1$d&amp;ordering=%2$s&amp;theme=%3$s&amp;platform=3</string>
+    <string name="bookInfoApiUrl">https://api.copymanga.com/api/v3/comic2/%1$s?platform=3</string>
+    <string name="groupInfoApiUrl">https://api.copymanga.com/api/v3/comic/%1$s/group/%2$s/chapters?limit=100&amp;offset=%3$d&amp;platform=3</string>
+    <string name="chapterInfoApiUrl">https://api.copymanga.com/api/v3/comic/%1$s/chapter2/%2$s?platform=3</string>
     <string name="chapterTxtUrl">https://nnv3api.dmzj1.com/novel/download/%1$d_%2$d_%3$d.txt</string>
-    <string name="topicApiUrl">https://api.copymanga.com/api/v3/topic/%1$s</string>
-    <string name="topicContentApiUrl">https://api.copymanga.com/api/v3/topic/%1$s/contents?type=%2$d&amp;limit=21&amp;offset=%3$d</string>
-    <string name="recommendApiUrl">https://api.copymanga.com/api/v3/recs?pos=3200102&amp;limit=21&amp;offset=%1$d</string>
-    <string name="newestApiUrl">https://api.copymanga.com/api/v3/update/newest?limit=21&amp;offset=%1$d</string>
-    <string name="finishApiUrl">https://api.copymanga.com/api/v3/comics?limit=21&amp;offset=%1$d&amp;ordering=%2$s&amp;top=finish</string>
+    <string name="topicApiUrl">https://api.copymanga.com/api/v3/topic/%1$s?platform=3</string>
+    <string name="topicContentApiUrl">https://api.copymanga.com/api/v3/topic/%1$s/contents?type=%2$d&amp;limit=21&amp;offset=%3$d&amp;platform=3</string>
+    <string name="recommendApiUrl">https://api.copymanga.com/api/v3/recs?pos=3200102&amp;limit=21&amp;offset=%1$d&amp;platform=3</string>
+    <string name="newestApiUrl">https://api.copymanga.com/api/v3/update/newest?limit=21&amp;offset=%1$d&amp;platform=3</string>
+    <string name="finishApiUrl">https://api.copymanga.com/api/v3/comics?limit=21&amp;offset=%1$d&amp;ordering=%2$s&amp;top=finish&amp;platform=3</string>
 
     <string name="complete">已完结</string>
 
@@ -70,4 +70,9 @@
     <string name="rank_list">排行榜 ☟日周月 ☛冠亚季</string>
     <string name="hot_list">热门更新</string>
     <string name="new_list">全新上架</string>
+
+    <string name="rank_fast">上升最快</string>
+    <string name="rank_week">近七天</string>
+    <string name="rank_month">近三十天</string>
+    <string name="rank_all">总榜单</string>
 </resources>

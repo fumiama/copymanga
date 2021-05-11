@@ -26,10 +26,10 @@ import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.json.ComicStructureOld
 import top.fumiama.copymanga.json.VolumeStructure
-import top.fumiama.copymanga.tools.CMApi
-import top.fumiama.copymanga.tools.MangaDlTools
-import top.fumiama.copymanga.tools.PropertiesTools
-import top.fumiama.copymanga.tools.UITools
+import top.fumiama.copymanga.tools.api.CMApi
+import top.fumiama.copymanga.tools.http.MangaDlTools
+import top.fumiama.copymanga.tools.file.PropertiesTools
+import top.fumiama.copymanga.tools.api.UITools
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment.Companion.json
 import top.fumiama.copymanga.ui.vm.ViewMangaActivity
 import top.fumiama.copymanga.views.ChapterToggleButton
@@ -64,7 +64,7 @@ class ComicDlHandler(looper: Looper, that: WeakReference<ComicDlFragment>, priva
     private var tbtnlist: Array<ChapterToggleButton> = arrayOf()
     private var tbtncnt = 0
     private var isNewTitle = false
-    private val mangaDlTools = MangaDlTools()
+    val mangaDlTools = MangaDlTools()
     private var multiSelect = false
     private var size = 0
     private var refreshSize = true

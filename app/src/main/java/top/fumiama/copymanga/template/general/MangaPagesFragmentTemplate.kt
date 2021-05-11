@@ -1,4 +1,4 @@
-package top.fumiama.copymanga.template
+package top.fumiama.copymanga.template.general
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -8,8 +8,9 @@ import android.view.View
 import androidx.fragment.app.Fragment
 import kotlinx.android.synthetic.main.line_header.view.*
 import kotlinx.android.synthetic.main.line_lazybooklines.*
+import top.fumiama.copymanga.template.ui.CardList
 import top.fumiama.copymanga.template.handler.MPATHandler
-import top.fumiama.copymanga.tools.UITools
+import top.fumiama.copymanga.tools.api.UITools
 import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 

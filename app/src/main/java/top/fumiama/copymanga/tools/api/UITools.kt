@@ -1,4 +1,4 @@
-package top.fumiama.copymanga.tools
+package top.fumiama.copymanga.tools.api
 
 import android.app.Activity
 import android.app.AlertDialog

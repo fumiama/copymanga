@@ -20,16 +20,17 @@ import com.to.aboomy.pager2banner.ScaleInTransformer
 import kotlinx.android.synthetic.main.card_book.view.*
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.line_1bookline.view.*
+import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.json.ComicStructure
 import top.fumiama.copymanga.json.IndexStructure
-import top.fumiama.copymanga.template.AutoDownloadHandler
-import top.fumiama.copymanga.tools.CMApi
-import top.fumiama.copymanga.tools.UITools
+import top.fumiama.copymanga.template.http.AutoDownloadHandler
+import top.fumiama.copymanga.tools.api.CMApi
+import top.fumiama.copymanga.tools.api.UITools
 import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 
-class HomeHandler(that: WeakReference<HomeFragment>) :AutoDownloadHandler(
+class HomeHandler(that: WeakReference<HomeFragment>) : AutoDownloadHandler(
     that.get()?.getString(R.string.mainPageApiUrl) ?: "",
     IndexStructure::class.java,
     Looper.myLooper()!!,
@@ -83,10 +84,12 @@ class HomeHandler(that: WeakReference<HomeFragment>) :AutoDownloadHandler(
     }
     override fun onError() {
         super.onError()
+        if(exit) return
         Toast.makeText(homeF?.context, R.string.web_error, Toast.LENGTH_SHORT).show()
     }
     override fun doWhenFinishDownload() {
         super.doWhenFinishDownload()
+        if(exit) return
         try {
             Thread {
                 sendEmptyMessage(7)         //inflateBanner
@@ -147,7 +150,9 @@ class HomeHandler(that: WeakReference<HomeFragment>) :AutoDownloadHandler(
                 comics += book.comic
             }
         }
-        if(comics.size == 9) allocateLine(homeF?.getString(R.string.rank_list)?:"", R.drawable.img_novel_bill, comics)
+        if(comics.size == 9) allocateLine(homeF?.getString(R.string.rank_list)?:"", R.drawable.img_novel_bill, comics) {
+            mainWeakReference?.get()?.navController?.navigate(R.id.nav_rank)
+        }
     }
 
     private fun inflateHot(){
@@ -305,7 +310,7 @@ class HomeHandler(that: WeakReference<HomeFragment>) :AutoDownloadHandler(
     private fun setCards(cv: CardView, pw: String, name: String, img: String, isFinal: Boolean, isTopic: Boolean) {
         cv.tic.text = name
         homeF?.let {
-            Glide.with(it).load(GlideUrl(img, CMApi.myGlideHeaders)).timeout(10000).into(cv.imic)
+            Glide.with(it).load(GlideUrl(img, CMApi.myGlideHeaders)).timeout(20000).into(cv.imic)
         }
         if (isFinal) cv.sgnic.visibility = View.VISIBLE
         cv.setOnClickListener {

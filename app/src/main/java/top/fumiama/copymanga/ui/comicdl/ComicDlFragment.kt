@@ -1,28 +1,28 @@
 package top.fumiama.copymanga.ui.comicdl
 
 import android.os.Bundle
-import android.os.Handler
 import android.os.Looper
-import android.os.Message
 import android.util.Log
 import android.view.Menu
 import android.view.View
 import com.google.gson.Gson
-import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.json.ChapterStructure
 import top.fumiama.copymanga.json.VolumeStructure
-import top.fumiama.copymanga.template.AutoDownloadThread
-import top.fumiama.copymanga.template.NoBackRefreshFragment
-import top.fumiama.copymanga.tools.CMApi
+import top.fumiama.copymanga.template.http.AutoDownloadThread
+import top.fumiama.copymanga.template.general.NoBackRefreshFragment
+import top.fumiama.copymanga.tools.api.CMApi
+import top.fumiama.dmzj.copymanga.R
 import java.io.File
 import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 
-class ComicDlFragment:NoBackRefreshFragment(R.layout.fragment_dlcomic) {
+class ComicDlFragment: NoBackRefreshFragment(R.layout.fragment_dlcomic) {
     var handler: ComicDlHandler? = null
+    var ads = emptyArray<AutoDownloadThread>()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        exit = false
         if(isFirstInflate){
             when {
                 arguments?.getBoolean("callFromOldDL", false) == true -> initOldComicData()
@@ -41,10 +41,15 @@ class ComicDlFragment:NoBackRefreshFragment(R.layout.fragment_dlcomic) {
         mainWeakReference?.get()?.menuMain?.let { setMenuVisible(it) }
     }
 
-    /*override fun onDestroy() {
+    override fun onDestroy() {
         super.onDestroy()
-        mainWeakReference?.get()?.menuMain?.let { setMenuInvisible(it) }
-    }*/
+        //mainWeakReference?.get()?.menuMain?.let { setMenuInvisible(it) }
+        handler?.mangaDlTools?.exit = true
+        ads.forEach {
+            it.exit = true
+        }
+        exit = true
+    }
 
     private fun start2load(volumes: Array<VolumeStructure>, isFromFile: Boolean = false, groupArray: Array<String>? =null){
         handler = ComicDlHandler(Looper.myLooper()!!,
@@ -93,22 +98,29 @@ class ComicDlFragment:NoBackRefreshFragment(R.layout.fragment_dlcomic) {
             gpws.forEachIndexed { i, gpw ->
                 Log.d("MyCDF", "下载:$gpw")
                 var offset = 0
-                val re = arrayOfNulls<VolumeStructure>(counts?.get(i)?:1)
+                val times = (counts?.get(i)?:1) / 100
+                val remain = (counts?.get(i)?:1) % 100
+                val re = arrayOfNulls<VolumeStructure>(if(remain != 0) (times+1) else (times))
+                Log.d("MyCDF", "${i}卷共${if(times == 0) 1 else times}次加载")
                 do {
                     counts?.set(i, counts[i] - 100)
                     CMApi.getApiUrl(R.string.groupInfoApiUrl, pw, gpw, offset)?.let {
-                        AutoDownloadThread(it) { result ->
-                            //Log.d("MyCDF", "返回:${result?.decodeToString()}")
+                        if(exit) return
+                        val ad = AutoDownloadThread(it) { result ->
+                            Log.d("MyCDF", "第${i}卷返回")
                             val r = Gson().fromJson(result?.decodeToString(), VolumeStructure::class.java)
                             re[r.results.offset / 100] = r
-                        }.start()
+                        }
+                        ads += ad
+                        ad.start()
                         offset += 100
                     }
                 } while ((counts?.get(i) ?: 0) > 0)
                 Thread {
                     var c = 0
                     while (c++ < 80) {
-                        sleep(100)
+                        sleep(1000)
+                        if(exit) return@Thread
                         if(re.all { it != null }) break
                     }
                     if(re.size > 1) {
@@ -127,7 +139,8 @@ class ComicDlFragment:NoBackRefreshFragment(R.layout.fragment_dlcomic) {
             Thread {
                 var c = 0
                 while (c < 80 && volumes.size != gpws.size) {
-                    sleep(100)
+                    sleep(1000)
+                    if(exit) return@Thread
                     Log.d("MyCDF", "已有：${volumes.size} 共：${gpws.size}")
                     c++
                 }
@@ -149,5 +162,6 @@ class ComicDlFragment:NoBackRefreshFragment(R.layout.fragment_dlcomic) {
 
     companion object {
         var json: String? = null
+        var exit = false
     }
 }

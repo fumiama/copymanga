@@ -1,9 +1,9 @@
-package top.fumiama.copymanga.template
+package top.fumiama.copymanga.template.general
 
 import android.os.Bundle
 import kotlinx.android.synthetic.main.widget_titlebar.*
 
-open class TitleActivityTemplate:ActivityTemplate() {
+open class TitleActivityTemplate: ActivityTemplate() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ilogo.setOnClickListener {

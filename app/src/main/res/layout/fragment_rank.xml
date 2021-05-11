@@ -4,11 +4,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="top.fumiama.copymanga.ui.rank.RankFragment">
+    tools:context="top.fumiama.copymanga.ui.cardflow.rank.RankFragment">
 
     <include
         android:id="@+id/frlai"
-        layout="@layout/line_finish"
+        layout="@layout/line_rank"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"

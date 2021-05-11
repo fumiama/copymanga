@@ -1,4 +1,4 @@
-package top.fumiama.copymanga.tools
+package top.fumiama.copymanga.tools.file
 //PropertiesTools.kt
 //created by fumiama 20200724
 import android.util.Log

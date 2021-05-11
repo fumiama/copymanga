@@ -1,4 +1,4 @@
-package top.fumiama.copymanga.template
+package top.fumiama.copymanga.template.http
 
 import android.os.Handler
 import android.os.Looper
@@ -8,10 +8,11 @@ import com.google.gson.Gson
 import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.json.ReturnBase
-import top.fumiama.copymanga.tools.DownloadTools
-import top.fumiama.copymanga.tools.TimeThread
+import top.fumiama.copymanga.tools.http.DownloadTools
+import top.fumiama.copymanga.tools.thread.TimeThread
 
 open class AutoDownloadHandler(private val url: String, private val jsonClass: Class<*>, looper: Looper, private val callCheckMsg: Int = -1): Handler(looper) {
+    var exit = false
     private var timeThread: TimeThread? = null
     private var checkTimes = 0
     override fun handleMessage(msg: Message) {
@@ -28,12 +29,16 @@ open class AutoDownloadHandler(private val url: String, private val jsonClass: C
     fun startLoad() {
         sendEmptyMessage(0)
     }
+    fun destroy() {
+        exit = true
+    }
     private fun download(){
         Thread{
             DownloadTools.getHttpContent(url,
                 mainWeakReference?.get()?.getString(R.string.referUrl)!!,
                 mainWeakReference?.get()?.getString(R.string.pc_ua)!!
             )?.let {
+                if(exit) return@Thread
                 val fi = it.inputStream()
                 setGsonItem(Gson().fromJson(fi.reader(), jsonClass))
                 fi.close()

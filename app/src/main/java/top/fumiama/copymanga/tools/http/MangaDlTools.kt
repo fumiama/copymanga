@@ -1,12 +1,12 @@
-package top.fumiama.copymanga.tools
+package top.fumiama.copymanga.tools.http
 
 import android.util.Log
 import com.google.gson.Gson
 import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.json.Chapter2Return
-import top.fumiama.copymanga.template.AutoDownloadThread
-import top.fumiama.copymanga.tools.DownloadTools.getHttpContent
+import top.fumiama.copymanga.template.http.AutoDownloadThread
+import top.fumiama.copymanga.tools.http.DownloadTools.getHttpContent
 import java.io.File
 import java.lang.Thread.sleep
 import java.util.zip.CRC32

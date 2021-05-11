@@ -4,15 +4,12 @@ import android.os.Bundle
 import android.os.Looper
 import android.os.Message
 import android.util.Log
-import android.view.Menu
 import android.view.View
-import android.view.ViewTreeObserver
 import android.widget.TextView
 import android.widget.Toast
 import androidx.navigation.Navigation
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
-import com.bumptech.glide.load.model.LazyHeaders
 import com.bumptech.glide.request.RequestOptions
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.card_book.*
@@ -24,15 +21,14 @@ import kotlinx.android.synthetic.main.line_chapter.view.*
 import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.json.BookInfoStructure
-import top.fumiama.copymanga.json.ReturnBase
 import top.fumiama.copymanga.json.ThemeStructure
-import top.fumiama.copymanga.template.AutoDownloadHandler
-import top.fumiama.copymanga.tools.CMApi
-import top.fumiama.copymanga.tools.GlideBlurTransformation
+import top.fumiama.copymanga.template.http.AutoDownloadHandler
+import top.fumiama.copymanga.tools.api.CMApi
+import top.fumiama.copymanga.tools.api.GlideBlurTransformation
 import java.lang.ref.WeakReference
 
 class BookHandler(that: WeakReference<BookFragment>, path: String)
-    :AutoDownloadHandler(
+    : AutoDownloadHandler(
     that.get()?.getString(R.string.bookInfoApiUrl)?.let { String.format(it, path) } ?: "",
     BookInfoStructure::class.java,
     Looper.myLooper()!!){
@@ -64,6 +60,7 @@ class BookHandler(that: WeakReference<BookFragment>, path: String)
 
     override fun onError() {
         super.onError()
+        if(exit) return
         if(!hasToastedError) {
             Toast.makeText(that?.context, R.string.null_book, Toast.LENGTH_SHORT).show()
             that?.rootView?.let { it1 ->
@@ -80,6 +77,7 @@ class BookHandler(that: WeakReference<BookFragment>, path: String)
     override fun getGsonItem() = book
     override fun doWhenFinishDownload() {
         super.doWhenFinishDownload()
+        if(exit) return
         inflateComponents()
         Thread{ for (i in 1..6) sendEmptyMessage(i) }.start()
     }

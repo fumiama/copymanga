@@ -1,4 +1,4 @@
-package top.fumiama.copymanga.tools
+package top.fumiama.copymanga.tools.api
 
 import com.bumptech.glide.load.model.LazyHeaders
 import top.fumiama.dmzj.copymanga.R
@@ -9,7 +9,15 @@ import java.io.File
 object CMApi {
     var myGlideHeaders: LazyHeaders? = null
         get() {
-            if(field === null) field = LazyHeaders.Builder().addHeader("referer", MainActivity.mainWeakReference?.get()?.getString(R.string.referUrl)!!).addHeader("User-Agent", MainActivity.mainWeakReference?.get()?.getString(R.string.pc_ua)!!).build()
+            if(field === null)
+                field = LazyHeaders.Builder()
+                    .addHeader("referer", MainActivity.mainWeakReference?.get()?.getString(R.string.referUrl)!!)
+                    .addHeader("User-Agent", MainActivity.mainWeakReference?.get()?.getString(R.string.pc_ua)!!)
+                    .addHeader("source", "copyApp")
+                    .addHeader("webp", "1")
+                    .addHeader("region", "1")
+                    .addHeader("platform", "3")
+                    .build()
             return field
         }
     fun getImgZipFileFromVM(exDir: File?, chapter2Return: Chapter2Return?) = File(exDir, "${chapter2Return?.results?.comic?.name}/${chapter2Return?.results?.chapter?.group_path_word}/${chapter2Return?.results?.chapter?.name}.zip")

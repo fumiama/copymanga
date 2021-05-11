@@ -1,4 +1,4 @@
-package top.fumiama.copymanga.template
+package top.fumiama.copymanga.template.ui
 
 import android.annotation.SuppressLint
 import android.net.Uri
@@ -11,7 +11,7 @@ import kotlinx.android.synthetic.main.card_book.view.*
 import kotlinx.android.synthetic.main.line_horizonal_empty.view.*
 import kotlinx.android.synthetic.main.line_lazybooklines.*
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
-import top.fumiama.copymanga.tools.CMApi
+import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.dmzj.copymanga.R
 import java.io.File
 import java.lang.ref.WeakReference

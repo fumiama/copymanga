@@ -8,8 +8,8 @@ import android.util.Log
 import android.widget.Toast
 import androidx.core.content.FileProvider
 import kotlinx.android.synthetic.main.dialog_progress.view.*
-import top.fumiama.copymanga.tools.PropertiesTools
-import top.fumiama.copymanga.tools.UITools
+import top.fumiama.copymanga.tools.file.PropertiesTools
+import top.fumiama.copymanga.tools.api.UITools
 import top.fumiama.dmzj.copymanga.R
 import java.io.File
 import java.security.MessageDigest

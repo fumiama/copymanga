@@ -1,13 +1,30 @@
-package top.fumiama.copymanga.tools
+package top.fumiama.copymanga.tools.http
 
 import android.util.Log
+import top.fumiama.copymanga.tools.ssl.AllTrustManager
+import top.fumiama.copymanga.tools.ssl.IgnoreHostNameVerifier
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
+import java.security.SecureRandom
 import java.util.concurrent.Callable
 import java.util.concurrent.FutureTask
+import javax.net.ssl.HttpsURLConnection
+import javax.net.ssl.SSLContext
 
 object DownloadTools {
+    private val trustManager = AllTrustManager()
+    private val sslContext: SSLContext = SSLContext.getInstance("SSL").let {
+        it.init(null, arrayOf(trustManager), SecureRandom())
+        it
+    }
+    private val ignoreHostNameVerifier = IgnoreHostNameVerifier()
+
+    init {
+        HttpsURLConnection.setDefaultHostnameVerifier(ignoreHostNameVerifier)
+        HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.socketFactory)
+    }
+
     fun getHttpContent(Url: String, refer: String? = null, ua: String? = null): ByteArray? {
         Log.d("Mydl", "getHttp: $Url")
         var ret: ByteArray? = null
@@ -15,9 +32,13 @@ object DownloadTools {
             try {
                 val connection = URL(Url).openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
-                connection.connectTimeout = 10000
-                connection.readTimeout = 10000
+                connection.connectTimeout = 20000
+                connection.readTimeout = 20000
                 refer?.let { connection.setRequestProperty("referer", it) }
+                connection.setRequestProperty("source", "copyApp")
+                connection.setRequestProperty("webp", "1")
+                connection.setRequestProperty("region", "1")
+                connection.setRequestProperty("platform", "3")
                 ua?.let { connection.setRequestProperty("User-agent", it) }
 
                 ret = connection.inputStream.readBytes()
@@ -41,8 +62,12 @@ object DownloadTools {
             try {
                 val connection = URL(Url).openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
-                connection.connectTimeout = 10000
-                connection.readTimeout = 10000
+                connection.connectTimeout = 20000
+                connection.readTimeout = 20000
+                connection.setRequestProperty("source", "copyApp")
+                connection.setRequestProperty("webp", "1")
+                connection.setRequestProperty("region", "1")
+                connection.setRequestProperty("platform", "3")
 
                 if (f.exists()) f.delete()
                 else f.parentFile?.mkdirs()
@@ -72,8 +97,8 @@ object DownloadTools {
             try {
                 val connection = URL(Url).openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
-                connection.connectTimeout = 10000
-                connection.readTimeout = 10000
+                connection.connectTimeout = 20000
+                connection.readTimeout = 20000
                 refer?.let { connection.setRequestProperty("referer", it) }
 
                 if (f.exists()) f.delete()
@@ -97,8 +122,8 @@ object DownloadTools {
             try {
                 val connection = URL(Url).openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
-                connection.connectTimeout = 10000
-                connection.readTimeout = 10000
+                connection.connectTimeout = 20000
+                connection.readTimeout = 20000
                 refer?.let { connection.setRequestProperty("referer", it) }
 
                 ret = connection.inputStream.readBytes()

@@ -10,7 +10,7 @@ import android.widget.Toast
 import com.liaoinstan.springview.widget.SpringView
 import top.fumiama.dmzj.copymanga.R
 import kotlinx.android.synthetic.main.line_lazybooklines.*
-import top.fumiama.copymanga.template.MangaPagesFragmentTemplate
+import top.fumiama.copymanga.template.general.MangaPagesFragmentTemplate
 import java.lang.ref.WeakReference
 
 

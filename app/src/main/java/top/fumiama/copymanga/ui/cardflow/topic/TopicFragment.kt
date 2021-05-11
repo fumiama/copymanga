@@ -8,8 +8,8 @@ import kotlinx.android.synthetic.main.line_lazybooklines.*
 import kotlinx.android.synthetic.main.fragment_topic.*
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.json.TopicStructure
-import top.fumiama.copymanga.template.AutoDownloadThread
-import top.fumiama.copymanga.template.InfoCardLoader
+import top.fumiama.copymanga.template.http.AutoDownloadThread
+import top.fumiama.copymanga.template.ui.InfoCardLoader
 import top.fumiama.dmzj.copymanga.R
 
 @ExperimentalStdlibApi
@@ -17,7 +17,7 @@ class TopicFragment : InfoCardLoader(R.layout.fragment_topic, R.id.action_nav_to
     private var type = 1
     override fun getApiUrl() =
         getString(R.string.topicContentApiUrl).let {
-            String.format(it, arguments?.getString("path"), type, page * 21)
+            String.format(it, arguments?.getString("path"), type, offset)
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
