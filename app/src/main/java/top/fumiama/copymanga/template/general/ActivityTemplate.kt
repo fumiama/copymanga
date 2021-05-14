@@ -17,7 +17,7 @@ open class ActivityTemplate:Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         p = PropertiesTools(File("$filesDir/settings.properties"))
-        toolsBox = UITools(WeakReference(this))
+        toolsBox = UITools(this)
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {

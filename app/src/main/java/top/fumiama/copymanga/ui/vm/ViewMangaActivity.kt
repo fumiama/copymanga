@@ -41,6 +41,7 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.InputStream
+import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 import java.util.*
 import java.util.concurrent.FutureTask
@@ -145,7 +146,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
     }
 
     private fun alertCellar() {
-        toolsBox.buildInfo("注意", "要使用使用流量观看吗？", "确定", null, "取消", {handler.startLoad()}, null, {finish()})
+        toolsBox.buildInfo("注意", "要使用使用流量观看吗？", "确定", "不再提醒", "取消", {handler.startLoad()}, { noCellarAlert = true; handler.startLoad()}, {finish()})
     }
 
     fun restorePN(){
@@ -668,5 +669,6 @@ class ViewMangaActivity : TitleActivityTemplate() {
         var dlhandler: Handler? = null
         var va: WeakReference<ViewMangaActivity>? = null
         var pn = 0
+        var noCellarAlert = false
     }
 }
