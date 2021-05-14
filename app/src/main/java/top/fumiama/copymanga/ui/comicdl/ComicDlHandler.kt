@@ -60,7 +60,6 @@ class ComicDlHandler(looper: Looper, that: WeakReference<ComicDlFragment>, priva
     private var checkedChapter = 0
     private var dldChapter = 0
     private var haveDlStarted = false
-    private var canDl = false
     private var tbtnlist: Array<ChapterToggleButton> = arrayOf()
     private var tbtncnt = 0
     private var isNewTitle = false
@@ -215,10 +214,12 @@ class ComicDlHandler(looper: Looper, that: WeakReference<ComicDlFragment>, priva
         setProgress2(dldChapter * 100 / checkedChapter, 233)
     }
     private fun updateProgressBar(pageNow: Int, size: Int) {
-        val delta = 100 / checkedChapter
-        val start = dldChapter * delta
-        val now = pageNow * delta / size
-        setProgress2(start + now, 64)
+        if(checkedChapter > 0) {
+            val delta = 100 / checkedChapter
+            val start = dldChapter * delta
+            val now = pageNow * delta / size
+            setProgress2(start + now, 64)
+        }
     }
     private fun setProgress2(end: Int, duration: Long) {
         ObjectAnimator.ofInt(
@@ -259,10 +260,10 @@ class ComicDlHandler(looper: Looper, that: WeakReference<ComicDlFragment>, priva
             else if(checkedChapter == 0) hideDlCard()
             else{
                 that.pdwn.progress = 0
-                if (canDl || checkedChapter == 0) canDl = false
+                if(haveDlStarted && checkedChapter != 0) mangaDlTools.wait = !mangaDlTools.wait
                 else {
                     haveDlStarted = true
-                    canDl = true
+                    mangaDlTools.wait = false
                     Thread{
                         sendEmptyMessage(9)     //set dl card color to green
                         downloadMangas()
@@ -291,16 +292,8 @@ class ComicDlHandler(looper: Looper, that: WeakReference<ComicDlFragment>, priva
     private fun downloadMangas(){
         for (i in tbtnlist) {
             if (i.isChecked) downloadChapterPages(i)
-            if (!canDl) {
-                checkedChapter -= dldChapter
-                dldChapter = 0
-                break
-            }
         }
-        if (canDl) {
-            haveDlStarted = false
-            canDl = false
-        }
+        haveDlStarted = false
     }
     
     private fun downloadChapterPages(i: ChapterToggleButton) {

@@ -78,19 +78,19 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
             }
             4 -> {
                 val simg = msg.obj as ScaleImageView
-                wv.get()?.loadImgOn(simg, msg.arg1)
-                simg.setHeight2FitImgWidth()
-                if(msg.arg2 == 1) sendEmptyMessage(8)
+                wv.get()?.loadImgOn(simg, msg.arg1, msg.arg2)
+                //simg.setHeight2FitImgWidth()
+                //if(msg.arg2 == 1) sendEmptyMessage(8)
             }
             5 -> wv.get()?.clearImgOn(msg.obj as ScaleImageView)
             6 -> wv.get()?.prepareLastPage(msg.arg1, msg.arg2)
             7 -> dl?.show()
             8 -> Thread{
-                    sleep(233)
-                    sendEmptyMessage(13)
-                }.start()
-            9 -> loadThread(msg.arg1)
-            10 -> loadThread()
+                sleep(233)
+                sendEmptyMessage(13)
+            }.start()
+            9 -> loadScrollMode(msg.arg1)
+            10 -> loadScrollMode()
             11 -> loadImgsIntoLine(msg.arg1)
             12 -> loadImgsIntoLine()
             13 -> {
@@ -98,10 +98,12 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
                 wv.get()?.restorePN()
             }
             14 -> {
-                val item = (pn - 1) / (wv.get()?.verticalLoadMaxCount?:40) * (wv.get()?.verticalLoadMaxCount?:40)
-                loadThread(item)
+                val item = (pn - 1) / (wv.get()?.verticalLoadMaxCount?:20) * (wv.get()?.verticalLoadMaxCount?:20)
+                loadScrollMode(item)
                 Log.d("MyVMH", "Load page from $item")
             }
+            15 -> dl?.hide()
+            //16 -> wv.get()?.prepareItems()
             22 -> wv.get()?.idtime?.text = SimpleDateFormat("HH:mm").format(Date()) + week + wv.get()?.toolsBox?.netinfo
         }
     }
@@ -128,7 +130,10 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
     fun loadFromFile(file: File): Boolean {
         return try {
             val jsonFile = File(file.parentFile, "${file.nameWithoutExtension}.json")
-            if(jsonFile.exists()) manga = Gson().fromJson(jsonFile.reader(), Chapter2Return::class.java)
+            if(jsonFile.exists()) {
+                manga = Gson().fromJson(jsonFile.reader(), Chapter2Return::class.java)
+                prepareManga()
+            }
             else{
                 manga = Chapter2Return()
                 manga?.let {
@@ -137,33 +142,18 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
                     it.results.comic.name = file.parentFile?.name
                     it.results.chapter = ChapterWithContent()
                     it.results.chapter.name = file.nameWithoutExtension
-                    it.results.chapter.size = countZipEntries(file)
+                    wv.get()?.countZipEntries { c ->
+                        it.results.chapter.size = c
+                        prepareManga()
+                    }
                 }
             }
-            prepareManga()
             true
         }catch (e: Exception){
             e.printStackTrace()
             //wv.get()?.toolsBox?.toastError("读取本地章节信息失败")
             false
         }
-    }
-
-    private fun countZipEntries(file: File): Int{
-        var count = 0
-        try {
-            val zip = ZipInputStream(file.inputStream().buffered())
-            var entry = zip.nextEntry
-            while (entry != null) {
-                if (!entry.isDirectory) count++
-                entry = zip.nextEntry
-            }
-            zip.closeEntry()
-            zip.close()
-        } catch (e: Exception) {
-            wv.get()?.toolsBox?.toastError("统计zip图片数错误!")
-        }
-        return count
     }
 
     @ExperimentalStdlibApi
@@ -174,29 +164,33 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
         wv.get()?.initManga()
         wv.get()?.vprog?.visibility = View.GONE
     }
-    private fun loadImgsIntoLine(item: Int = (wv.get()?.currentItem?:0), maxCount: Int = (wv.get()?.verticalLoadMaxCount?:40)){
-        Log.d("MyVMH", "Fun: loadImgsIntoLine($item)")
-        val count = wv.get()?.count?.minus(1)?:0
-        val notFull = item + maxCount > count
-        val loadCount = (if(notFull) count - item else maxCount) - 1
-        Log.d("MyVMH", "loadCount: $loadCount")
-        if(loadCount >= 0) for(i in 0..loadCount) obtainMessage(4,item + i, if(i == loadCount - 1)1 else 0, wv.get()?.scrollImages?.get(i)).sendToTarget()
-        else sendEmptyMessage(8)
-        if(notFull) obtainMessage(6, loadCount + 1, maxCount).sendToTarget()
-    }
+    private fun loadImgsIntoLine(item: Int = (wv.get()?.currentItem?:0), maxCount: Int = (wv.get()?.verticalLoadMaxCount?:20)) /*= Thread*/{
+        Log.d("MyVMH", "Fun: loadImgsIntoLine($item, $maxCount)")
+        wv.get()?.realCount?.let { count ->
+            if(count > 0){
+                val notFull = item + maxCount > count
+                val loadCount = (if(notFull) count - item else maxCount) - 1
+                Log.d("MyVMH", "count: $count, loadCount: $loadCount, notFull: $notFull")
+                if(loadCount >= 0) for(i in 0..loadCount) obtainMessage(4,item + i, if(i == loadCount - 1) 1 else 0, wv.get()?.scrollImages?.get(i)).sendToTarget()
+                else sendEmptyMessage(8)
+                if(notFull) obtainMessage(6, loadCount + 1, maxCount).sendToTarget()
+                wv.get()?.updateSeekBar()
+            }
+        }
+    }//.start()
 
-    private fun loadThread() = Thread{
+    private fun loadScrollMode() {
         sendEmptyMessage(7)
         //sleep(233)
         sendEmptyMessage(12)
-    }.start()
+    }
 
-    private fun loadThread(item: Int) = Thread{
+    private fun loadScrollMode(item: Int) {
         sendEmptyMessage(7)
         //sleep(233)
         Log.d("MyVMH", "loadImgsIntoLine($item)")
         obtainMessage(11, item, 0).sendToTarget()
-    }.start()
+    }
 
     private fun showInfCard() {
         Log.d("MyVMH", "Read info drawer delta: $delta")

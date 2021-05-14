@@ -19,6 +19,7 @@ class MangaDlTools {
     private var comicFileRelative: String? = null
     var size = 0
     var complete = false
+    var wait = false
 
     fun downloadChapterInVol(url: CharSequence, chapterName: CharSequence, group: CharSequence, index: Int){
         comicFileRelative = "$group/$chapterName.zip"
@@ -72,6 +73,8 @@ class MangaDlTools {
         zip.setLevel(9)
         var succeed = true
         for (i in urls.indices) {
+            while (wait && !exit) sleep(1000)
+            if (exit) break
             zip.putNextEntry(ZipEntry("$i.webp"))
             var tryTimes = 3
             var s = false
@@ -89,7 +92,6 @@ class MangaDlTools {
             if (!s && tryTimes <= 0) succeed = false
             onDownloadedListener?.handleMessage(s, i + 1)
             zip.flush()
-            if (exit) break
         }
         zip.close()
         onDownloadedListener?.handleMessage(succeed)

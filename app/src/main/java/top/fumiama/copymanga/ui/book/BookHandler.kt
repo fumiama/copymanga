@@ -17,6 +17,7 @@ import kotlinx.android.synthetic.main.fragment_book.*
 import kotlinx.android.synthetic.main.line_2chapters.view.*
 import kotlinx.android.synthetic.main.line_bookinfo.*
 import kotlinx.android.synthetic.main.line_bookinfo_text.*
+import kotlinx.android.synthetic.main.line_caption.view.*
 import kotlinx.android.synthetic.main.line_chapter.view.*
 import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
@@ -52,7 +53,7 @@ class BookHandler(that: WeakReference<BookFragment>, path: String)
             1 -> setCover()
             2 -> setTexts()
             3 -> fbibinfo?.let { setInfoHeight(it) }
-            //4 -> setThemes()
+            4 -> setThemes()
             5 -> setOverScale()
             6 -> endSetLayouts()
         }
@@ -147,44 +148,60 @@ class BookHandler(that: WeakReference<BookFragment>, path: String)
         }
     }
 
-    private fun setThemes(){
-        book?.results?.groups?.let {
-            val keyIterator = it.keys.iterator()
-            for(i in 0 until it.size){
-                if(i % 2 == 0){
-                    that?.fbl?.addView(if(i < it.size - 1){
-                        val line = that.layoutInflater.inflate(R.layout.line_2chapters, that.fbl, false)
-                        val leftKey = keyIterator.next()
-                        line?.l2cl?.lct?.text = it[leftKey]?.name
-                        line?.l2cl?.setOnClickListener { _->
-                            loadVolume(it[leftKey]?.path_word?:"null")
+    private fun setTheme(caption: String, themeStructure: Array<ThemeStructure>, nav: Int) {
+        that?.apply {
+            val t = layoutInflater.inflate(R.layout.line_caption, fbl, false)
+            t.tcptn.text = caption
+            fbl.addView(t)
+            fbl.addView(layoutInflater.inflate(R.layout.div_h, fbl, false))
+        }
+        var line: View? = null
+        val last = themeStructure.size - 1
+        themeStructure.onEachIndexed { i, it ->
+            if(line == null) {
+                if(i == last) {
+                    line = that?.layoutInflater?.inflate(R.layout.line_chapter, that.fbl, false)
+                    line?.lcc?.apply {
+                        lct.text = it.name
+                        setOnClickListener { _ ->
+                            loadVolume(it.name, it.path_word, nav)
                         }
-                        val rightKey = keyIterator.next()
-                        line?.l2cr?.lct?.text = it[rightKey]?.name
-                        line?.l2cr?.setOnClickListener { _->
-                            loadVolume(it[rightKey]?.path_word?:"null")
+                    }
+                    that?.fbl?.addView(line)
+                } else {
+                    line = that?.layoutInflater?.inflate(R.layout.line_2chapters, that.fbl, false)
+                    line?.l2cl?.apply {
+                        lct.text = it.name
+                        setOnClickListener { _ ->
+                            loadVolume(it.name, it.path_word, nav)
                         }
-                        line
-                    }else{
-                        //Log.d("MyBH", "Add chapter: ${vol[i].volume_name}")
-                        val line = that.layoutInflater.inflate(R.layout.line_chapter, that.fbl, false)
-                        val key = keyIterator.next()
-                        line?.lct?.text = it[key]?.name
-                        line?.lcc?.setOnClickListener { _->
-                            loadVolume(it[key]?.path_word?:"null")
-                        }
-                        line
-                    })
+                    }
                 }
+            } else line?.l2cr?.apply {
+                lct.text = it.name
+                setOnClickListener { _ ->
+                    loadVolume(it.name, it.path_word, nav)
+                }
+                that?.fbl?.addView(line)
+                line = null
             }
         }
     }
 
-    private fun loadVolume(gpw: String){
+    private fun setThemes(){
+        that?.apply {
+            book?.results?.comic?.apply {
+                author?.let { setTheme(getString(R.string.author), it, R.id.action_nav_book_to_nav_author) }
+                theme?.let { setTheme(getString(R.string.caption), it, R.id.action_nav_book_to_nav_caption) }
+            }
+        }
+    }
+
+    private fun loadVolume(name: String, path: String, nav: Int){
         Log.d("MyBH", "start to load chapter")
         val bundle = Bundle()
-        bundle.putString("group", gpw)
-        book?.results?.comic?.path_word?.let { bundle.putString("path", it) }
-        that?.rootView?.let { Navigation.findNavController(it).navigate(R.id.action_nav_book_to_nav_chapter, bundle) }
+        bundle.putString("name", name)
+        bundle.putString("path", path)
+        that?.rootView?.let { Navigation.findNavController(it).navigate(nav, bundle) }
     }
 }

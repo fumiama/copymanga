@@ -2,8 +2,10 @@ package top.fumiama.copymanga.ui.vm
 
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
+import android.app.Service
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.media.AudioManager
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
@@ -14,6 +16,8 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
+import com.bumptech.glide.request.target.SimpleTarget
+import com.bumptech.glide.request.transition.Transition
 import com.liaoinstan.springview.widget.SpringView
 import kotlinx.android.synthetic.main.activity_viewmanga.*
 import kotlinx.android.synthetic.main.line_header.view.*
@@ -28,6 +32,7 @@ import kotlinx.android.synthetic.main.widget_titlebar.view.*
 import kotlinx.android.synthetic.main.widget_viewmangainfo.*
 import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.template.general.TitleActivityTemplate
+import top.fumiama.copymanga.template.http.AutoDownloadThread
 import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.copymanga.tools.http.DownloadTools
 import top.fumiama.copymanga.tools.thread.TimeThread
@@ -35,8 +40,10 @@ import top.fumiama.copymanga.views.ScaleImageView
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.InputStream
 import java.lang.ref.WeakReference
 import java.util.*
+import java.util.concurrent.FutureTask
 import java.util.zip.ZipFile
 
 class ViewMangaActivity : TitleActivityTemplate() {
@@ -49,23 +56,32 @@ class ViewMangaActivity : TitleActivityTemplate() {
     //private var progressLog: PropertiesTools? = null
     var scrollImages = arrayOf<ScaleImageView>()
     //var zipFirst = false
-    private var useFullScreen = false
+    //private var useFullScreen = false
     var r2l = true
     var currentItem = 0
-    var verticalLoadMaxCount = 40
+    var verticalLoadMaxCount = 20
     private var notUseVP = true
     private var isVertical = false
-    private var q = 90
-    private val size get() = if(count / verticalLoadMaxCount > currentItem / verticalLoadMaxCount) verticalLoadMaxCount else count % verticalLoadMaxCount
+    private var q = 100
+    private val size get() = if(realCount / verticalLoadMaxCount > currentItem / verticalLoadMaxCount) verticalLoadMaxCount else realCount % verticalLoadMaxCount
     var infoDrawerDelta = 0f
     var pageNum: Int
         get() = getPageNumber()
         set(value) = setPageNumber(value)
     //var pn = 0
     private val isPnValid: Boolean get(){
-        if(pn == -2) pn = count
+        if(pn == -2) pn = realCount
         return intent.getStringExtra("function") == "log" && pn > 0
     }
+    private var tasks: Array<FutureTask<ByteArray?>?>? = null
+    private var destroy = false
+    private var cut = false
+    private var isCut = booleanArrayOf()
+    private var indexMap = intArrayOf()
+    private var volTurnPage = false
+    private var am: AudioManager? = null
+    private var pm: PagesManager? = null
+    val realCount get() = if(cut) indexMap.size else count
 
     @ExperimentalStdlibApi
     @SuppressLint("SetTextI18n")
@@ -76,17 +92,19 @@ class ViewMangaActivity : TitleActivityTemplate() {
         //progressLog = PropertiesTools(File("$filesDir/progress/${chapter2Return?.results?.chapter?.comic_id}"))
         //dlZip2View = intent.getStringExtra("callFrom") == "Dl" || p["dlZip2View"] == "true"
         //zipFirst = intent.getStringExtra("callFrom") == "zipFirst"
-        useFullScreen = p["useFullScreen"] != "true"
+        cut = p["useCut"] == "true"
         r2l = p["r2l"] == "true"
+        verticalLoadMaxCount = if (p["verticalMax"] != "null") p["verticalMax"].toInt() else 20
         isVertical = p["vertical"] == "true"
         notUseVP = p["noVP"] == "true" || isVertical
         //url = intent.getStringExtra("url")
         handler = VMHandler(this, if(urlArray.isNotEmpty()) urlArray[position] else "")
         if (p["quality"] != "null") q = p["quality"].toInt()
-        if (p["verticalMax"] != "null") verticalLoadMaxCount = p["verticalMax"].toInt()
         tt = TimeThread(handler, 22)
         tt.canDo = true
         tt.start()
+        volTurnPage = p["volturn"] == "true"
+        am = getSystemService(Service.AUDIO_SERVICE) as AudioManager
 
         Log.d("MyVM", "Now ZipFile is $zipFile")
         try {
@@ -101,15 +119,33 @@ class ViewMangaActivity : TitleActivityTemplate() {
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        if(useFullScreen) {
-            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.R)
-                window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-            else {
-                window.setDecorFitsSystemWindows(false)
-                window.insetsController?.hide(WindowInsets.Type.statusBars())
-                //window.insetsController?.hide(WindowInsets.Type.navigationBars())
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.R)
+            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        else {
+            window.setDecorFitsSystemWindows(false)
+            window.insetsController?.hide(WindowInsets.Type.statusBars())
+            //window.insetsController?.hide(WindowInsets.Type.navigationBars())
+        }
+    }
+
+    @ExperimentalStdlibApi
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        var flag = false
+        if(volTurnPage) when(keyCode) {
+            KeyEvent.KEYCODE_VOLUME_UP -> {
+                pm?.toPage(false)
+                flag = true
+            }
+            KeyEvent.KEYCODE_VOLUME_DOWN -> {
+                pm?.toPage(true)
+                flag = true
             }
         }
+        return if(flag) true else super.onKeyDown(keyCode, event)
+    }
+
+    private fun alertCellar() {
+        toolsBox.buildInfo("注意", "要使用使用流量观看吗？", "确定", null, "取消", {handler.startLoad()}, null, {finish()})
     }
 
     fun restorePN(){
@@ -121,30 +157,122 @@ class ViewMangaActivity : TitleActivityTemplate() {
         sendProgress()
     }
 
+    private fun preDownloadChapterPages() {
+        getImgUrlArray()?.let {
+            val mid = (if(pn in 1 until realCount) (if(cut) Math.abs(indexMap[pn]) else pn) else if(pn == -2 || pn >= realCount) it.size else 1) - 1
+            val left = if(isVertical && mid > verticalLoadMaxCount) (mid / verticalLoadMaxCount) * verticalLoadMaxCount else (mid-1)
+            val right = if(isVertical) (mid / verticalLoadMaxCount + 1) * verticalLoadMaxCount else mid
+            tasks = arrayOfNulls(it.size)
+            Thread{
+                for (i in right until it.size) {
+                    if(destroy) break
+                    tasks?.let { tasks ->
+                        tasks[i] = DownloadTools.touch(it[i])
+                        Thread.sleep(1000)
+                    }
+                }
+            }.start()
+            Thread.sleep(500)
+            Thread{
+                for (i in left downTo 0) {
+                    if(destroy) break
+                    tasks?.let { tasks ->
+                        tasks[i] = DownloadTools.touch(it[i])
+                        Thread.sleep(1000)
+                    }
+                }
+            }.start()
+        }
+    }
+
+    @ExperimentalStdlibApi
+    private fun doPrepareWebImg() {
+        getImgUrlArray()?.apply {
+            if(cut) {
+                handler.sendEmptyMessage(7)     //showDl
+                isCut = BooleanArray(size)
+                val analyzedCnt = BooleanArray(size)
+                forEachIndexed{ i, it ->
+                    if(it != null) {
+                        Thread{
+                            DownloadTools.getHttpContent(it, 1024)?.inputStream()?.let {
+                                isCut[i] = canCut(it)
+                                analyzedCnt[i] = true
+                            }
+                        }.start()
+                        Thread.sleep(22)
+                    }
+                }
+                while (analyzedCnt.count { it } != size) Thread.sleep(233)
+                isCut.forEachIndexed { index, b ->
+                    Log.d("MyVM", "[$index] cut: $b")
+                    indexMap += index+1
+                    if(b) indexMap += -(index+1)
+                }
+                handler.sendEmptyMessage(15)     //hideDl
+            }
+            count = size
+            runOnUiThread { prepareItems() }
+            preDownloadChapterPages()
+        }
+    }
+
     @ExperimentalStdlibApi
     fun initManga(){
-        prepareItems(count)
+        if (zipFile?.exists() != true) doPrepareWebImg()
+        else prepareItems()
         if (!isVertical) restorePN()
     }
 
     @ExperimentalStdlibApi
     private fun prepareImgFromWeb() {
-        handler.startLoad()
+        if(toolsBox.netinfo == "移动数据") alertCellar()
+        else handler.startLoad()
     }
 
+    private fun canCut(inputStream: InputStream): Boolean{
+        val op = BitmapFactory.Options()
+        op.inJustDecodeBounds = true
+        BitmapFactory.decodeStream(inputStream, null, op)
+        Log.d("MyVM", "w: ${op.outWidth}, h: ${op.outHeight}")
+        return op.outWidth.toFloat() / op.outHeight.toFloat() > 1
+    }
+
+    @ExperimentalStdlibApi
+    fun countZipEntries(doWhenFinish : (count: Int) -> Unit) = Thread{
+        if (zipFile != null) try {
+            Log.d("Myvm", "zip: $zipFile")
+            val zip = ZipFile(zipFile)
+            count = zip.size()
+            if(cut) zip.entries().toList().sortedBy{it.name.substringBefore('.').toInt()}.forEachIndexed { i, it ->
+                val useCut = canCut(zip.getInputStream(it))
+                isCut += useCut
+                indexMap += i + 1
+                if (useCut) indexMap += -(i + 1)
+                Log.d("Myvm", "[$i] 分析: ${it.name}, cut: $useCut")
+            }
+        } catch (e: Exception) {
+            runOnUiThread { toolsBox.toastError("统计zip图片数错误!") }
+        }
+        runOnUiThread {
+            Log.d("Myvm", "开始加载控件")
+            doWhenFinish(count)
+        }
+    }.start()
+
     private fun getPageNumber(): Int {
-        return if (r2l && !notUseVP) count - vp.currentItem
+        return if (r2l && !notUseVP) realCount - vp.currentItem
         else (if (notUseVP) currentItem else vp.currentItem) + 1
     }
 
     private fun setPageNumber(num: Int) {
-        if (r2l && !notUseVP) vp.currentItem = count - num
+        if (r2l && !notUseVP) vp.currentItem = realCount - num
         else if (notUseVP) {
             if(isVertical){
                 currentItem = num - 1
-                val delta = currentItem % verticalLoadMaxCount
-                Log.d("MyVM", "Height: ${psivl.height}, scrollY: ${psivs.scrollY}")
-                if (!isInScroll || isInSeek) psivs.scrollY = psivl.height / size * delta
+                val offset = currentItem % verticalLoadMaxCount
+                Log.d("MyVM", "Current: $currentItem, Height: ${psivl.height}, scrollY: ${psivs.scrollY}")
+                if (!isInScroll || isInSeek) psivs.scrollY = psivl.height * offset / size
                 updateSeekBar()
             }
             else {
@@ -156,31 +284,86 @@ class ViewMangaActivity : TitleActivityTemplate() {
                     toolsBox.toastError("页数${currentItem}不合法")
                 }
             }
-        } else vp.currentItem = num - 1
+        } else {
+            Log.d("MyVM", "Set vp current: ${num-1}")
+            var delta = num - 1 - vp.currentItem
+            if(delta >= 1) Thread{
+                while (delta-- > 0){
+                    Thread.sleep(23)
+                    runOnUiThread {
+                        vp.currentItem++
+                    }
+                }
+            }.start()
+            else if(delta <= -1) Thread{
+                while (delta++ < 0){
+                    Thread.sleep(23)
+                    runOnUiThread {
+                        vp.currentItem--
+                    }
+                }
+            }.start()
+        }
     }
 
     fun clearImgOn(imgView: ScaleImageView){
         imgView.visibility = View.GONE
     }
 
-    private fun getTempFile(position: Int) = File(cacheDir, "$position")
+    //private fun getTempFile(position: Int) = File(cacheDir, "$position")
 
     private fun getImgUrl(position: Int) = handler.manga?.results?.chapter?.let {
         it.contents[it.words.indexOf(position)].url
     }
 
-    fun loadImgOn(imgView: ScaleImageView, position: Int){
-        if (zipFile?.exists() == true) imgView.setImageBitmap(getImgBitmap(position))
-        else if(isVertical) {
-            val f = getTempFile(position)
-            if(DownloadTools.downloadUsingUrlRet(getImgUrl(position), f))
-                imgView.setImageBitmap(BitmapFactory.decodeFile(f.path))
-            else Toast.makeText(this, "下载第${position}页失败", Toast.LENGTH_SHORT).show()
+    private fun getImgUrlArray() = handler.manga?.results?.chapter?.let{
+            val re = arrayOfNulls<String>(it.contents.size)
+            for(i in it.contents.indices) {
+                re[i] = getImgUrl(i)
+            }
+            re
         }
-        else Glide.with(this)
-            .load(GlideUrl(getImgUrl(position), CMApi.myGlideHeaders))
-            .timeout(10000)
-            .into(imgView)
+
+    private fun cutBitmap(bitmap: Bitmap, isEnd: Boolean) = Bitmap.createBitmap(bitmap, if(!isEnd) 0 else (bitmap.width/2), 0, bitmap.width/2, bitmap.height)
+
+    private fun loadImg(imgView: ScaleImageView, bitmap: Bitmap, isLast: Int = 0, useCut: Boolean, isLeft: Boolean){
+        val bitmap2load = if(useCut) cutBitmap(bitmap, isLeft) else bitmap
+        runOnUiThread {
+            imgView.setImageBitmap(bitmap2load)
+            if(isVertical){
+                imgView.setHeight2FitImgWidth()
+                if (isLast == 1) handler.sendEmptyMessage(8)
+            }
+        }
+    }
+
+    private fun loadImgUrlInto(imgView: ScaleImageView, url: String, isLast: Int = 0, useCut: Boolean, isLeft: Boolean){
+        Log.d("MyVM", "Load from adt: $url")
+        AutoDownloadThread(url) {
+            it?.let { loadImg(imgView, BitmapFactory.decodeByteArray(it, 0, it.size), isLast, useCut, isLeft) }
+        }.start()
+    }
+
+    fun loadImgOn(imgView: ScaleImageView, position: Int, isLast: Int = 0){
+        Log.d("MyVM", "Load img: $position")
+        val index2load = if(cut) Math.abs(indexMap[position]) -1 else position
+        val useCut = cut && isCut[index2load]
+        val isLeft = cut && indexMap[position] > 0
+        if (zipFile?.exists() == true) getImgBitmap(index2load)?.let {
+            loadImg(imgView, it, isLast, useCut, isLeft)
+        }
+        else {
+            val re = tasks?.get(index2load)
+            if (re != null) Thread{
+                val data = re.get()
+                if(data != null) {
+                    loadImg(imgView, BitmapFactory.decodeByteArray(data, 0, data.size), isLast, useCut, isLeft)
+                    Log.d("MyVM", "Load from task")
+                }
+                else getImgUrl(index2load)?.let { loadImgUrlInto(imgView, it, isLast, useCut, isLeft) }
+            }.start()
+            else getImgUrl(index2load)?.let { loadImgUrlInto(imgView, it, isLast, useCut, isLeft) }
+        }
         imgView.visibility = View.VISIBLE
     }
 
@@ -190,7 +373,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
     }
 
     private fun initImgList(){
-        for (i in 0..39) {
+        for (i in 0 until verticalLoadMaxCount) {
             val newImg = ScaleImageView(this)
             scrollImages += newImg
             psivl.addView(newImg)
@@ -202,24 +385,21 @@ class ViewMangaActivity : TitleActivityTemplate() {
         handler.dl?.hide()
     }
 
-    private fun getImgBitmap(position: Int): Bitmap? {
-        Log.d("MyVM", "Get bitmap @$position, count is $count")
-        if (position >= count || position < 0) return null
-        else {
+    private fun getImgBitmap(position: Int): Bitmap? =
+        if (position >= count || position < 0) null
+        else try {
             val zip = ZipFile(zipFile)
-            if (q == 100) return BitmapFactory.decodeStream(zip.getInputStream(zip.getEntry("${position}.jpg")))
+            if (q == 100) BitmapFactory.decodeStream(zip.getInputStream(zip.getEntry("${position}.webp")))
             else {
                 val out = ByteArrayOutputStream()
-                try {
-                    BitmapFactory.decodeStream(zip.getInputStream(zip.getEntry("${position}.webp")))
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    return null
-                }?.compress(Bitmap.CompressFormat.JPEG, q, out)
-                return BitmapFactory.decodeStream(ByteArrayInputStream(out.toByteArray()))
+                BitmapFactory.decodeStream(zip.getInputStream(zip.getEntry("${position}.webp")))?.compress(Bitmap.CompressFormat.JPEG, q, out)
+                BitmapFactory.decodeStream(ByteArrayInputStream(out.toByteArray()))
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(this, "加载zip的${position}.webp错误", Toast.LENGTH_SHORT).show()
+            null
         }
-    }
 
     private fun setIdPosition(position: Int) {
         infoDrawerDelta = position.toFloat()
@@ -229,19 +409,24 @@ class ViewMangaActivity : TitleActivityTemplate() {
 
     @ExperimentalStdlibApi
     @SuppressLint("SetTextI18n")
-    private fun prepareItems(size: Int) {
-        ttitle.text = handler.manga?.results?.chapter?.name
-        prepareVP()
-        prepareInfoBar(size)
-        if (notUseVP && !isVertical) loadOneImg()
-        prepareIdBtVH()
-        toolsBox.dp2px(67)?.let { setIdPosition(it) }
-        prepareIdBtFullScreen()
-        prepareIdBtVP()
-        prepareIdBtLR()
-        handler.progressLog?.let {
-            //it["uuid"] = handler.manga?.results?.comic?.uuid
-            it["name"] = inftitle.ttitle.text
+    private fun prepareItems() {
+        try {
+            prepareVP()
+            //if (!isVertical) restorePN()
+            prepareInfoBar()
+            if (notUseVP && !isVertical && !isPnValid) loadOneImg()
+            prepareIdBtVH()
+            toolsBox.dp2px(67)?.let { setIdPosition(it) }
+            prepareIdBtCut()
+            prepareIdBtVP()
+            prepareIdBtLR()
+            /*progressLog?.let {
+                it["chapterId"] = hm.chapterId.toString()
+                it["name"] = inftitle.ttitle.text
+            }*/
+        }catch (e: Exception) {
+            e.printStackTrace()
+            toolsBox.toastError("准备控件错误")
         }
     }
 
@@ -250,6 +435,14 @@ class ViewMangaActivity : TitleActivityTemplate() {
             //it["chapterId"] = hm.chapterId.toString()
             it["page"] = pageNum.toString()
             //it["name"] = inftitle.ttitle.text
+        }
+    }
+
+    private fun prepareIdBtCut() {
+        idtbcut.isChecked = cut
+        idtbcut.setOnClickListener {
+            p["useCut"] = if (idtbcut.isChecked) "true" else "false"
+            Toast.makeText(this, "下次浏览生效", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -285,11 +478,11 @@ class ViewMangaActivity : TitleActivityTemplate() {
                     super.onPageSelected(position)
                 }
             })
-            if (r2l) vp.currentItem = count - 1
+            if (r2l && !isPnValid) vp.currentItem = realCount - 1
         }
     }
 
-    private fun updateSeekBar() {
+    fun updateSeekBar() {
         if (!isInSeek) hideObjs()
         updateSeekText()
         updateSeekProgress()
@@ -297,17 +490,18 @@ class ViewMangaActivity : TitleActivityTemplate() {
     }
 
     @SuppressLint("SetTextI18n")
-    private fun prepareInfoBar(size: Int) {
+    private fun prepareInfoBar() {
         oneinfo.alpha = 0F
         infseek.visibility = View.GONE
         isearch.visibility = View.GONE
         inftitle.ttitle.text = handler.manga?.results?.chapter?.name
-        inftxtprogress.text = "$pageNum/$size"
+        inftxtprogress.text = "$pageNum/$realCount"
         infseek.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(p0: SeekBar?, p1: Int, isHuman: Boolean) {
+                Log.d("MyVM", "seek to ${p1 * realCount / 100}")
                 if (isHuman) {
-                    if (p1 >= (pageNum + 1) * 100 / size) scrollForward()
-                    else if (p1 < (pageNum - 1) * 100 / size) scrollBack()
+                    if (p1 >= (pageNum + 1) * 100 / realCount) scrollForward()
+                    else if (p1 < (pageNum - 1) * 100 / realCount) scrollBack()
                 }
             }
             override fun onStartTrackingTouch(p0: SeekBar?) {
@@ -318,6 +512,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
                 isInSeek = false
             }
         })
+        isearch.setImageResource(R.drawable.ic_author)
         isearch.setOnClickListener {
             handler.sendEmptyMessage(3)
         }
@@ -330,16 +525,16 @@ class ViewMangaActivity : TitleActivityTemplate() {
             val vsps = vsp as SpringView
             vsps.footerView.lht.text = "更多"
             vsps.headerView.lht.text = "更多"
-            val pm = PagesManager(WeakReference(this))
+            pm = PagesManager(WeakReference(this))
             vsps.setListener(object :SpringView.OnFreshListener{
                 override fun onLoadmore() {
                     //scrollForward()
-                    pm.toPage(true)
+                    pm?.toPage(true)
                     vsps.onFinishFreshAndLoad()
                 }
                 override fun onRefresh() {
                     //scrollBack()
-                    pm.toPage(false)
+                    pm?.toPage(false)
                     vsps.onFinishFreshAndLoad()
                 }
             })
@@ -350,21 +545,16 @@ class ViewMangaActivity : TitleActivityTemplate() {
             psivs.setOnScrollChangeListener { _, _, scrollY, _, _ ->
                 isInScroll = true
                 if(!isInSeek){
-                    val newCurrent = (scrollY.toFloat() * size.toFloat() / psivl.height.toFloat() + 0.5).toInt()
-                    pageNum += newCurrent - currentItem % verticalLoadMaxCount
+                    val delta = (scrollY.toFloat() * size.toFloat() / psivl.height.toFloat() + 0.5).toInt() - currentItem % verticalLoadMaxCount
+                    if(delta != 0 && !(delta > 0 && pageNum == size)) {
+                        pageNum += delta
+                        Log.d("MyVM", "Scroll to offset $delta")
+                    }
                 }
             }
         }
         idtbvh.setOnClickListener {
             p["vertical"] = if (idtbvh.isChecked) "true" else "false"
-            Toast.makeText(this, "下次浏览生效", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun prepareIdBtFullScreen() {
-        idtbfullscreen.isChecked = !useFullScreen
-        idtbfullscreen.setOnClickListener {
-            p["useFullScreen"] = if (idtbfullscreen.isChecked) "true" else "false"
             Toast.makeText(this, "下次浏览生效", Toast.LENGTH_SHORT).show()
         }
     }
@@ -384,20 +574,19 @@ class ViewMangaActivity : TitleActivityTemplate() {
         if(isVertical && (pageNum-1) % verticalLoadMaxCount == 0) handler.sendEmptyMessage(10)
     }
 
-
-
     @SuppressLint("SetTextI18n")
     private fun updateSeekText() {
-        inftxtprogress.text = "$pageNum/$count"
+        inftxtprogress.text = "$pageNum/$realCount"
     }
 
     private fun updateSeekProgress() {
-        infseek.progress = pageNum * 100 / count
+        infseek.progress = pageNum * 100 / realCount
     }
 
     override fun onDestroy() {
         dlhandler?.sendEmptyMessage(0)
         tt.canDo = false
+        destroy = true
         dlhandler = null
         handler.destroy()
         super.onDestroy()
@@ -415,22 +604,30 @@ class ViewMangaActivity : TitleActivityTemplate() {
 
             @SuppressLint("ClickableViewAccessibility", "SetTextI18n")
             override fun onBindViewHolder(holder: ViewData, position: Int) {
-                val pos = if (r2l) count - position - 1 else position
-                if (zipFile?.exists() == true) getImgBitmap(pos)?.let {
-                    Glide.with(this@ViewMangaActivity).load(it)
-                        //.thumbnail(Glide.with(this@ViewMangaActivity).load(R.drawable.load))
-                        .into(holder.itemView.onei)
-                    //holder.itemView.onei.setImageBitmap(it)
+                val pos = if (r2l) realCount - position - 1 else position
+                val index2load = if(cut) Math.abs(indexMap[pos]) -1 else pos
+                val useCut = cut && isCut[index2load]
+                val isLeft = cut && indexMap[pos] > 0
+                if (zipFile?.exists() == true) getImgBitmap(index2load)?.let {
+                    //Glide.with(this@ViewMangaActivity).load(if(useCut) cutBitmap(it, isLeft) else it).into(holder.itemView.onei)
+                    holder.itemView.onei.setImageBitmap(if(useCut) cutBitmap(it, isLeft) else it)
                 }
-                else Glide.with(this@ViewMangaActivity).load(
-                    GlideUrl(getImgUrl(pos), CMApi.myGlideHeaders))
-                    .timeout(10000)
-                    //.thumbnail(Glide.with(this@ViewMangaActivity).load(R.drawable.load))
-                    .into(holder.itemView.onei)
+                else getImgUrl(index2load)?.let{
+                    if(useCut){
+                        val thisOneI = holder.itemView.onei
+                        Glide.with(this@ViewMangaActivity)
+                            .asBitmap()
+                            .load(GlideUrl(it, CMApi.myGlideHeaders)
+                            ).into(object : SimpleTarget<Bitmap>() {
+                                override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+                                    thisOneI.setImageBitmap(cutBitmap(resource, isLeft))
+                                } })
+                    } else Glide.with(this@ViewMangaActivity).load(GlideUrl(it, CMApi.myGlideHeaders)).into(holder.itemView.onei)
+                }
             }
 
             override fun getItemCount(): Int {
-                return count
+                return realCount
             }
         }
     }

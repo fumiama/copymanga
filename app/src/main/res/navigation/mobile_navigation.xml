@@ -134,6 +134,20 @@
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_out_left_exit"
             app:popExitAnim="@anim/slide_in_right_exit"/>
+        <action
+            android:id="@+id/action_nav_book_to_nav_author"
+            app:destination="@id/nav_author"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_out_left_exit"
+            app:popExitAnim="@anim/slide_in_right_exit"/>
+        <action
+            android:id="@+id/action_nav_book_to_nav_caption"
+            app:destination="@id/nav_caption"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_out_left_exit"
+            app:popExitAnim="@anim/slide_in_right_exit"/>
     </fragment>
 
     <fragment
@@ -189,9 +203,37 @@
         android:id="@+id/nav_finish"
         android:name="top.fumiama.copymanga.ui.cardflow.finish.FinishFragment"
         android:label="@string/complete"
-        tools:layout="@layout/fragment_newest" >
+        tools:layout="@layout/fragment_statuscardflow" >
         <action
             android:id="@+id/action_nav_finish_to_nav_book"
+            app:destination="@id/nav_book"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_out_left_exit"
+            app:popExitAnim="@anim/slide_in_right_exit"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_author"
+        android:name="top.fumiama.copymanga.ui.cardflow.author.AuthorFragment"
+        android:label="@string/author"
+        tools:layout="@layout/fragment_statuscardflow" >
+        <action
+            android:id="@+id/action_nav_author_to_nav_book"
+            app:destination="@id/nav_book"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_out_left_exit"
+            app:popExitAnim="@anim/slide_in_right_exit"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_caption"
+        android:name="top.fumiama.copymanga.ui.cardflow.caption.CaptionFragment"
+        android:label="@string/caption"
+        tools:layout="@layout/fragment_statuscardflow" >
+        <action
+            android:id="@+id/action_nav_caption_to_nav_book"
             app:destination="@id/nav_book"
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"

@@ -310,7 +310,9 @@ class HomeHandler(that: WeakReference<HomeFragment>) : AutoDownloadHandler(
     private fun setCards(cv: CardView, pw: String, name: String, img: String, isFinal: Boolean, isTopic: Boolean) {
         cv.tic.text = name
         homeF?.let {
-            Glide.with(it).load(GlideUrl(img, CMApi.myGlideHeaders)).timeout(20000).into(cv.imic)
+            if(img.startsWith("http")) {
+                Glide.with(it).load(GlideUrl(img, CMApi.myGlideHeaders)).timeout(20000).into(cv.imic)
+            }
         }
         if (isFinal) cv.sgnic.visibility = View.VISIBLE
         cv.setOnClickListener {

@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.View
 import androidx.navigation.Navigation
+import kotlinx.android.synthetic.main.app_bar_main.*
 import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.template.general.NoBackRefreshFragment
@@ -28,13 +29,21 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
 
     override fun onResume() {
         super.onResume()
-        mainWeakReference?.get()?.menuMain?.let { setMenuVisible(it) }
+        mainWeakReference?.get()?.apply {
+            menuMain?.let { setMenuVisible(it) }
+            toolbar.title = bookHandler.book?.results?.comic?.name
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
         mainWeakReference?.get()?.menuMain?.let { setMenuInvisible(it) }
         bookHandler.destroy()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        mainWeakReference?.get()?.menuMain?.let { setMenuInvisible(it) }
     }
 
     private fun setMenuInvisible(menu: Menu){

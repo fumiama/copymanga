@@ -44,6 +44,8 @@
     <string name="recommendApiUrl">https://api.copymanga.com/api/v3/recs?pos=3200102&amp;limit=21&amp;offset=%1$d&amp;platform=3</string>
     <string name="newestApiUrl">https://api.copymanga.com/api/v3/update/newest?limit=21&amp;offset=%1$d&amp;platform=3</string>
     <string name="finishApiUrl">https://api.copymanga.com/api/v3/comics?limit=21&amp;offset=%1$d&amp;ordering=%2$s&amp;top=finish&amp;platform=3</string>
+    <string name="authorApiUrl">https://api.copymanga.com/api/v3/comics?limit=21&amp;offset=%1$d&amp;ordering=%2$s&amp;author=%3$s&amp;platform=3</string>
+    <string name="captionApiUrl">https://api.copymanga.com/api/v3/comics?limit=21&amp;offset=%1$d&amp;ordering=%2$s&amp;theme=%3$s&amp;platform=3</string>
 
     <string name="complete">已完结</string>
 
@@ -75,4 +77,7 @@
     <string name="rank_week">近七天</string>
     <string name="rank_month">近三十天</string>
     <string name="rank_all">总榜单</string>
+
+    <string name="author">作者</string>
+    <string name="caption">标签</string>
 </resources>
