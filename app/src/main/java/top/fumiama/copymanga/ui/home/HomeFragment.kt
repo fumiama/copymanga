@@ -45,82 +45,83 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                 resources.getColor(R.color.colorBlue2, theme),
                 resources.getColor(R.color.colorGreen, theme))
 
+            fhs.apply {
+                val recyclerView = findViewById<RecyclerView>(R.id.search_recycler_view)
+                setAdapterLayoutManager(LinearLayoutManager(context))
+                val adapter = ListViewHolder(recyclerView).RecyclerViewAdapter()
+                setAdapter(adapter)
+                navigationIconSupport = SearchLayout.NavigationIconSupport.SEARCH
+                setMicIconImageResource(R.drawable.ic_setting_search)
+                val micView = findViewById<ImageButton>(R.id.search_image_view_mic)
+                setClearFocusOnBackPressed(true)
+                setOnNavigationClickListener(object : SearchLayout.OnNavigationClickListener {
+                    override fun onNavigationClick(hasFocus: Boolean) {
+                        if (hasFocus()) {
+                            clearFocus()
+                        }
+                        else requestFocus()
+                    }
+                })
+                setTextHint(android.R.string.search_go)
+                setOnQueryTextListener(object : SearchLayout.OnQueryTextListener {
+                    var lastChangeTime = 0L
+                    override fun onQueryTextChange(newText: CharSequence): Boolean {
+                        postDelayed({
+                            val diff = System.currentTimeMillis() - lastChangeTime
+                            if(diff > 500) {
+                                if (newText.isNotEmpty()) adapter.refresh(newText)
+                            }
+                        }, 1024)
+                        lastChangeTime = System.currentTimeMillis()
+                        return true
+                    }
+
+                    override fun onQueryTextSubmit(query: CharSequence): Boolean {
+                        /*if(query.isNotEmpty()) {
+                            val key = query.toString()
+                            Toast.makeText(context, key, Toast.LENGTH_SHORT).show()
+                        }*/
+                        return true
+                    }
+                })
+                setOnMicClickListener(object : SearchLayout.OnMicClickListener {
+                    val types = arrayOf("", "name", "author", "local")
+                    var i = 0
+                    override fun onMicClick() {
+                        val typenames = resources.getStringArray(R.array.search_types)
+                        AlertDialog.Builder(ContextThemeWrapper(context, R.style.AlertDialogTheme))
+                            .setTitle(R.string.set_search_types)
+                            .setIcon(R.mipmap.ic_launcher)
+                            .setSingleChoiceItems(ArrayAdapter(context, R.layout.line_choice_list, typenames), i){ d, p ->
+                                adapter.type = types[p]
+                                i = p
+                                d.cancel()
+                            }.show()
+                    }
+                })
+
+                setOnFocusChangeListener(object : SearchLayout.OnFocusChangeListener {
+                    override fun onFocusChange(hasFocus: Boolean) {
+                        navigationIconSupport = if (hasFocus) SearchLayout.NavigationIconSupport.ARROW
+                        else {
+                            micView.postDelayed({ micView.visibility = View.VISIBLE }, 233)
+                            SearchLayout.NavigationIconSupport.SEARCH
+                        }
+                    }
+                })
+
+                fhns.setOnTouchListener { _, e ->
+                    if (e.action == MotionEvent.ACTION_UP && mSearchEditText?.text?.isNotEmpty() == true) {
+                        ime?.hideSoftInputFromWindow(mainWeakReference?.get()?.window?.decorView?.windowToken, 0)
+                    }
+                    false
+                }
+            }
+
             Thread{
                 homeHandler.obtainMessage(-1, true).sendToTarget()
                 while(mainWeakReference?.get()?.isDrawerClosed != true) sleep(233)
                 //homeHandler.sendEmptyMessage(6)    //removeAllViews
-                fhs.apply {
-                    val recyclerView = findViewById<RecyclerView>(R.id.search_recycler_view)
-                    setAdapterLayoutManager(LinearLayoutManager(context))
-                    val adapter = ListViewHolder(recyclerView).RecyclerViewAdapter()
-                    setAdapter(adapter)
-                    navigationIconSupport = SearchLayout.NavigationIconSupport.SEARCH
-                    setMicIconImageResource(R.drawable.ic_setting_search)
-                    val micView = findViewById<ImageButton>(R.id.search_image_view_mic)
-                    setClearFocusOnBackPressed(true)
-                    setOnNavigationClickListener(object : SearchLayout.OnNavigationClickListener {
-                        override fun onNavigationClick(hasFocus: Boolean) {
-                            if (hasFocus()) {
-                                clearFocus()
-                            }
-                            else requestFocus()
-                        }
-                    })
-                    setTextHint(android.R.string.search_go)
-                    setOnQueryTextListener(object : SearchLayout.OnQueryTextListener {
-                        var lastChangeTime = 0L
-                        override fun onQueryTextChange(newText: CharSequence): Boolean {
-                            postDelayed({
-                                val diff = System.currentTimeMillis() - lastChangeTime
-                                if(diff > 500) {
-                                    if (newText.isNotEmpty()) adapter.refresh(newText)
-                                }
-                            }, 1024)
-                            lastChangeTime = System.currentTimeMillis()
-                            return true
-                        }
-
-                        override fun onQueryTextSubmit(query: CharSequence): Boolean {
-                            /*if(query.isNotEmpty()) {
-                                val key = query.toString()
-                                Toast.makeText(context, key, Toast.LENGTH_SHORT).show()
-                            }*/
-                            return true
-                        }
-                    })
-                    setOnMicClickListener(object : SearchLayout.OnMicClickListener {
-                        val types = arrayOf("", "name", "author", "local")
-                        var i = 0
-                        override fun onMicClick() {
-                            val typenames = resources.getStringArray(R.array.search_types)
-                            AlertDialog.Builder(ContextThemeWrapper(context, R.style.AlertDialogTheme))
-                                .setTitle(R.string.set_search_types)
-                                .setIcon(R.mipmap.ic_launcher)
-                                .setSingleChoiceItems(ArrayAdapter(context, R.layout.line_choice_list, typenames), i){ d, p ->
-                                    adapter.type = types[p]
-                                    i = p
-                                    d.cancel()
-                                }.show()
-                        }
-                    })
-
-                    setOnFocusChangeListener(object : SearchLayout.OnFocusChangeListener {
-                        override fun onFocusChange(hasFocus: Boolean) {
-                            navigationIconSupport = if (hasFocus) SearchLayout.NavigationIconSupport.ARROW
-                            else {
-                                micView.postDelayed({ micView.visibility = View.VISIBLE }, 233)
-                                SearchLayout.NavigationIconSupport.SEARCH
-                            }
-                        }
-                    })
-
-                    fhns.setOnTouchListener { _, e ->
-                        if (e.action == MotionEvent.ACTION_UP && mSearchEditText?.text?.isNotEmpty() == true) {
-                            ime?.hideSoftInputFromWindow(mainWeakReference?.get()?.window?.decorView?.windowToken, 0)
-                        }
-                        false
-                    }
-                }
                 homeHandler.fhib = null
                 sleep(600)
                 homeHandler.startLoad()
