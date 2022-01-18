@@ -42,7 +42,7 @@ object DownloadTools {
                     refer?.let { setRequestProperty("referer", it) }
                     setRequestProperty("source", "copyApp")
                     setRequestProperty("webp", "1")
-                    setRequestProperty("region", "1")
+                    setRequestProperty("region", "0")
                     setRequestProperty("platform", "3")
                     ua?.let { setRequestProperty("User-agent", it) }
 

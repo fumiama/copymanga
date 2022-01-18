@@ -11,4 +11,5 @@
     <color name="colorGreen">#BFEA88</color>
     <color name="textInputLayout">#ffffff</color>
     <color name="colorRed">#F6837A</color>
+    <color name="searchBarPrimaryColor">#E1E1E1</color>
 </resources>

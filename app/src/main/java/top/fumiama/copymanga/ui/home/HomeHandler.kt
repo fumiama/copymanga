@@ -81,6 +81,13 @@ class HomeHandler(that: WeakReference<HomeFragment>) : AutoDownloadHandler(
     override fun setGsonItem(gsonObj: Any) {
         super.setGsonItem(gsonObj)
         index = gsonObj as IndexStructure
+        var banners = arrayOf<IndexStructure.Results.Banners>()
+        index?.results?.banners?.forEach {
+            if(it.type == 1) {
+                banners += it
+            }
+        }
+        index?.results?.banners = banners
     }
     override fun onError() {
         super.onError()

@@ -26,7 +26,8 @@
         <activity
             android:name="top.fumiama.copymanga.MainActivity"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -39,7 +40,7 @@
             android:theme="@style/AppTheme.NoActionBar"/>
         <activity
             android:name="com.yalantis.ucrop.UCropActivity"
-            android:screenOrientation="portrait"
+            android:screenOrientation="fullSensor"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
         <activity
             android:name="top.fumiama.copymanga.ui.vm.ViewMangaActivity"

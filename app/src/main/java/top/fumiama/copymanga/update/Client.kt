@@ -1,9 +1,9 @@
 package top.fumiama.copymanga.update
-
+//Fumiama 20210601
+//Client.kt
 import android.util.Log
-import java.io.IOException
-import java.io.InputStream
-import java.io.OutputStream
+import java.io.*
+import java.lang.Thread.sleep
 import java.net.Socket
 
 class Client(private val ip: String, private val port: Int) {
@@ -26,7 +26,7 @@ class Client(private val ip: String, private val port: Int) {
             sc = Socket(ip, port) //通过socket连接服务器
             din = sc?.getInputStream()  //获取输入流并转换为StreamReader，约定编码格式
             dout = sc?.getOutputStream()    //获取输出流
-            sc?.soTimeout = 2333  //设置连接超时限制
+            sc?.soTimeout = 10000  //设置连接超时限制
             return if (isConnect) {
                 Log.d("MyC", "connect server successful")
                 true
@@ -44,13 +44,15 @@ class Client(private val ip: String, private val port: Int) {
      * 发送数据至服务器
      * @param message 要发送至服务器的字符串
      */
-    fun sendMessage(message: CharSequence?): Boolean {
+    fun sendMessage(message: String?): Boolean = sendMessage(message?.toByteArray())
+
+    fun sendMessage(message: ByteArray?): Boolean {
         try {
             if (isConnect) {
-                if (message != null) {        //判断输出流或者消息是否为空，为空的话会产生nullpoint错误
-                    dout?.write(message.toString().toByteArray())
+                if (message != null) {        //判断输出流或者消息是否为空，为空的话会产生null pointer错误
+                    dout?.write(message)
                     dout?.flush()
-                    Log.d("MyC", "Send msg: $message")
+                    Log.d("MyC", "Send msg: ${message.decodeToString()}")
                     return true
                 } else Log.d("MyC", "The message to be sent is empty")
                 Log.d("MyC", "send message succeed")
@@ -62,74 +64,51 @@ class Client(private val ip: String, private val port: Int) {
         return false
     }
 
-    var buffer = byteArrayOf()
+    fun read(): Char? = din?.read()?.toChar()
 
-    fun receiveRawMessage(totalSize: Int = -1, bufferSize: Int = 1048576, setProgress: Boolean = false) : ByteArray {
-        if(totalSize == buffer.size) {
-            val re = buffer
-            buffer = byteArrayOf()
-            return re
-        } else {
-            var re = byteArrayOf()
+    private var buffer = ByteArrayQueue()
+    private val receiveBuffer = ByteArray(65536)
+
+    fun receiveRawMessage(totalSize: Int, setProgress: Boolean = false) : ByteArray {
+        if(totalSize == buffer.size) return buffer.popAll()
+        else {
             try {
                 if (isConnect) {
                     Log.d("MyC", "开始接收服务端信息")
-                    val inMessage = ByteArray(bufferSize)     //设置接受缓冲，避免接受数据过长占用过多内存
-                    var a: Int
-                    do {
-                        a = din?.read(inMessage)?:0 //a存储返回消息的长度
-                        if(a > 0) {
-                            re += inMessage.copyOf(a)
-                            Log.d("MyC", "reply length:$a")
-                            if(totalSize < 0 && a < bufferSize) break
-                            else if(setProgress && totalSize > 0) progress?.notify(100 * re.size / totalSize)
-                        } else break
-                    } while (totalSize > re.size)
+                    while(totalSize > buffer.size) {
+                        val count = din?.read(receiveBuffer)?:0
+                        if(count > 0) {
+                            buffer += receiveBuffer.copyOfRange(0, count)
+                            Log.d("MyC", "reply length:$count")
+                            if(setProgress && totalSize > 0) progress?.notify(100 * buffer.size / totalSize)
+                        } else sleep(10)
+                    }
                 } else Log.d("MyC", "no connect to receive message")
             } catch (e: IOException) {
                 Log.d("MyC", "receive message failed")
                 e.printStackTrace()
             }
-            if(totalSize > 0 && re.size > totalSize) {
-                Log.d("MyC", "Reduce re size from ${re.size} to $totalSize")
-                buffer += re.copyOfRange(totalSize, re.size)
-                re = re.copyOf(totalSize)
-            } else if(totalSize > 0 && buffer.isNotEmpty()) {
-                Log.d("MyC", "Increase re size.")
-                buffer += re
-                if(buffer.size > totalSize) {
-                    re = buffer.copyOf(totalSize)
-                    buffer = buffer.copyOfRange(totalSize, buffer.size)
-                } else {
-                    re = buffer
-                    buffer = byteArrayOf()
-                }
-            } else if(totalSize < 0 && buffer.isNotEmpty()) {
-                re = buffer
-                buffer = byteArrayOf()
-                Log.d("MyC", "clear buffer")
-            }
-            return re
+            return if(totalSize > 0) buffer.pop(totalSize)?:byteArrayOf() else buffer.popAll()
         }
     }
 
-    //fun receiveMessage() = receiveRawMessage().decodeToString()
+    fun receiveMessage(totalSize: Int) = receiveRawMessage(totalSize).decodeToString()
 
     /**
      * 关闭连接
      */
     fun closeConnect() = try {
-            din?.close()
-            dout?.close()
-            sc?.close()
-            sc = null
-            din = null
-            dout = null
-            true
-        } catch (e: IOException) {
-            e.printStackTrace()
-            false
-        }
+        din?.close()
+        dout?.close()
+        sc?.close()
+        sc = null
+        din = null
+        dout = null
+        true
+    } catch (e: IOException) {
+        e.printStackTrace()
+        false
+    }
 
     var progress: Progress? = null
 

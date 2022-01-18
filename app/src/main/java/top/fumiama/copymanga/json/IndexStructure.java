@@ -14,6 +14,7 @@ public class IndexStructure extends ReturnBase {
         public FinishComics finishComics;
 
         public static class Banners{
+            public int type;
             public String cover;
             public String brief;
             public String out_uuid;

@@ -1,6 +1,7 @@
 package top.fumiama.copymanga
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -13,6 +14,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -41,7 +43,6 @@ import top.fumiama.copymanga.update.Update
 import java.io.File
 import java.io.FileInputStream
 import java.lang.ref.WeakReference
-
 
 class MainActivity : AppCompatActivity() {
     var isDrawerClosed = true
@@ -93,6 +94,8 @@ class MainActivity : AppCompatActivity() {
             override fun onDrawerStateChanged(newState: Int) {}
         })
         checkUpdate(false)
+
+        ime = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -144,6 +147,7 @@ class MainActivity : AppCompatActivity() {
         permissions: Array<String?>,
         grantResults: IntArray
     ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
             1 -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) pickPicture()
@@ -272,5 +276,6 @@ class MainActivity : AppCompatActivity() {
 
     companion object{
         var mainWeakReference: WeakReference<MainActivity>? = null
+        var ime: InputMethodManager? = null
     }
 }

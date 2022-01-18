@@ -7,7 +7,7 @@
     <string name="menu_home">主页</string>
     <string name="menu_sort">分类</string>
     <string name="menu_rank">排行</string>
-    <string name="app_description">©2021源文雨@CoolApk\n本应用为拷贝漫画的第三方客户端，数据均来源于网络，作者不对其中所呈现的任何内容负责。</string>
+    <string name="app_description">©2022源文雨@CoolApk\n本应用为拷贝漫画的第三方客户端，数据均来源于网络，作者不对其中所呈现的任何内容负责。</string>
     <string name="menu_history">浏览历史</string>
     <string name="menu_sub">我的订阅</string>
     <string name="menu_download">我的下载</string>
@@ -17,6 +17,7 @@
     <string name="page_group">漫画下载</string>
     <string name="page_topic">专题系列</string>
     <string name="check_update">检查更新</string>
+    <string name="set_search_types">设置搜索类别</string>
 
     <string name="navTextInfo">illust: Hiten(490219)</string>
     <string name="navTextInfoInputHint">请设定提示文字内容</string>
@@ -33,6 +34,7 @@
     <string name="referUrl">"https://api.copymanga.com"</string>
     <string name="recentUpdateApiUrl">https://nnv3api.dmzj1.com/novel/recentUpdate/%1$d.json</string>
     <string name="rankApiUrl">https://api.copymanga.com/api/v3/ranks?limit=21&amp;offset=%1$d&amp;date_type=%2$s&amp;platform=3</string>
+    <string name="searchApiUrl">https://api.copymanga.com/api/v3/search/comic?limit=21&amp;offset=%1$d&amp;q=%2$s&amp;q_type=%3$s&amp;platform=3</string>
     <string name="filterApiUrl">https://api.copymanga.com/api/v3/h5/filterIndex/comic/tags?platform=3</string>
     <string name="sortApiUrl">https://api.copymanga.com/api/v3/comics?limit=21&amp;offset=%1$d&amp;ordering=%2$s&amp;theme=%3$s&amp;platform=3</string>
     <string name="bookInfoApiUrl">https://api.copymanga.com/api/v3/comic2/%1$s?platform=3</string>

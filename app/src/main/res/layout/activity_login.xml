@@ -79,7 +79,7 @@
         android:layout_marginTop="4dp"
         android:fontFamily="@font/calibri"
         android:gravity="center"
-        android:text="This is the third-party app for ranobe reading"
+        android:text="This is the third-party app for manga reading"
         android:textColor="#9affffff"
         android:textSize="10sp" />
 
