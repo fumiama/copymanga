@@ -280,11 +280,13 @@ class BookHandler(that: WeakReference<BookFragment>, private val path: String)
     }
 
     private fun loadVolume(name: String, path: String, nav: Int){
-        Log.d("MyBH", "start to load chapter")
-        val bundle = Bundle()
-        bundle.putString("name", name)
-        bundle.putString("path", path)
-        that?.rootView?.let { Navigation.findNavController(it).navigate(nav, bundle) }
+        if(complete) {
+            Log.d("MyBH", "start to load chapter")
+            val bundle = Bundle()
+            bundle.putString("name", name)
+            bundle.putString("path", path)
+            that?.rootView?.let { Navigation.findNavController(it).navigate(nav, bundle) }
+        }
     }
 
     private fun initComicData() {
