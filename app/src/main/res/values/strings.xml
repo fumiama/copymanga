@@ -30,24 +30,22 @@
     <string name="null_book">获取图书信息失败</string>
     <string name="web_error">网络错误</string>
 
-    <string name="mainPageApiUrl">https://api.copymanga.com/api/v3/h5/homeIndex?platform=3</string>
+    <string name="mainPageApiUrl">https://copymanga.azurewebsites.net/api/api?/v3/h5/homeIndex?platform=3&amp;format=json</string>
     <string name="referUrl">"https://api.copymanga.com"</string>
-    <string name="recentUpdateApiUrl">https://nnv3api.dmzj1.com/novel/recentUpdate/%1$d.json</string>
-    <string name="rankApiUrl">https://api.copymanga.com/api/v3/ranks?limit=21&amp;offset=%1$d&amp;date_type=%2$s&amp;platform=3</string>
-    <string name="searchApiUrl">https://api.copymanga.com/api/v3/search/comic?limit=21&amp;offset=%1$d&amp;q=%2$s&amp;q_type=%3$s&amp;platform=3</string>
-    <string name="filterApiUrl">https://api.copymanga.com/api/v3/h5/filterIndex/comic/tags?platform=3</string>
-    <string name="sortApiUrl">https://api.copymanga.com/api/v3/comics?limit=21&amp;offset=%1$d&amp;ordering=%2$s&amp;theme=%3$s&amp;platform=3</string>
-    <string name="bookInfoApiUrl">https://api.copymanga.com/api/v3/comic2/%1$s?platform=3</string>
-    <string name="groupInfoApiUrl">https://api.copymanga.com/api/v3/comic/%1$s/group/%2$s/chapters?limit=100&amp;offset=%3$d&amp;platform=3</string>
-    <string name="chapterInfoApiUrl">https://api.copymanga.com/api/v3/comic/%1$s/chapter2/%2$s?platform=3</string>
-    <string name="chapterTxtUrl">https://nnv3api.dmzj1.com/novel/download/%1$d_%2$d_%3$d.txt</string>
-    <string name="topicApiUrl">https://api.copymanga.com/api/v3/topic/%1$s?platform=3</string>
-    <string name="topicContentApiUrl">https://api.copymanga.com/api/v3/topic/%1$s/contents?type=%2$d&amp;limit=21&amp;offset=%3$d&amp;platform=3</string>
-    <string name="recommendApiUrl">https://api.copymanga.com/api/v3/recs?pos=3200102&amp;limit=21&amp;offset=%1$d&amp;platform=3</string>
-    <string name="newestApiUrl">https://api.copymanga.com/api/v3/update/newest?limit=21&amp;offset=%1$d&amp;platform=3</string>
-    <string name="finishApiUrl">https://api.copymanga.com/api/v3/comics?limit=21&amp;offset=%1$d&amp;ordering=%2$s&amp;top=finish&amp;platform=3</string>
-    <string name="authorApiUrl">https://api.copymanga.com/api/v3/comics?limit=21&amp;offset=%1$d&amp;ordering=%2$s&amp;author=%3$s&amp;platform=3</string>
-    <string name="captionApiUrl">https://api.copymanga.com/api/v3/comics?limit=21&amp;offset=%1$d&amp;ordering=%2$s&amp;theme=%3$s&amp;platform=3</string>
+    <string name="rankApiUrl">https://copymanga.azurewebsites.net/api/api?/v3/ranks?limit=21&amp;offset=%1$d&amp;date_type=%2$s&amp;platform=3&amp;format=json</string>
+    <string name="searchApiUrl">https://copymanga.azurewebsites.net/api/api?/v3/search/comic?limit=21&amp;offset=%1$d&amp;q=%2$s&amp;q_type=%3$s&amp;platform=3&amp;format=json</string>
+    <string name="filterApiUrl">https://copymanga.azurewebsites.net/api/api?/v3/h5/filterIndex/comic/tags?platform=3&amp;format=json</string>
+    <string name="sortApiUrl">https://copymanga.azurewebsites.net/api/api?/v3/comics?limit=21&amp;offset=%1$d&amp;ordering=%2$s&amp;theme=%3$s&amp;platform=3&amp;format=json</string>
+    <string name="bookInfoApiUrl">https://copymanga.azurewebsites.net/api/api?/v3/comic2/%1$s?platform=3&amp;format=json</string>
+    <string name="groupInfoApiUrl">https://copymanga.azurewebsites.net/api/api?/v3/comic/%1$s/group/%2$s/chapters?limit=100&amp;offset=%3$d&amp;platform=3&amp;format=json</string>
+    <string name="chapterInfoApiUrl">https://copymanga.azurewebsites.net/api/api?/v3/comic/%1$s/chapter2/%2$s?platform=3&amp;format=json</string>
+    <string name="topicApiUrl">https://copymanga.azurewebsites.net/api/api?/v3/topic/%1$s?platform=3&amp;format=json</string>
+    <string name="topicContentApiUrl">https://copymanga.azurewebsites.net/api/api?/v3/topic/%1$s/contents?type=%2$d&amp;limit=21&amp;offset=%3$d&amp;platform=3&amp;format=json</string>
+    <string name="recommendApiUrl">https://copymanga.azurewebsites.net/api/api?/v3/recs?pos=3200102&amp;limit=21&amp;offset=%1$d&amp;platform=3&amp;format=json</string>
+    <string name="newestApiUrl">https://copymanga.azurewebsites.net/api/api?/v3/update/newest?limit=21&amp;offset=%1$d&amp;platform=3&amp;format=json</string>
+    <string name="finishApiUrl">https://copymanga.azurewebsites.net/api/api?/v3/comics?limit=21&amp;offset=%1$d&amp;ordering=%2$s&amp;top=finish&amp;platform=3&amp;format=json</string>
+    <string name="authorApiUrl">https://copymanga.azurewebsites.net/api/api?/v3/comics?limit=21&amp;offset=%1$d&amp;ordering=%2$s&amp;author=%3$s&amp;platform=3&amp;format=json</string>
+    <string name="captionApiUrl">https://copymanga.azurewebsites.net/api/api?/v3/comics?limit=21&amp;offset=%1$d&amp;ordering=%2$s&amp;theme=%3$s&amp;platform=3&amp;format=json</string>
 
     <string name="complete">已完结</string>
 

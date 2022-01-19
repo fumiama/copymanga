@@ -12,6 +12,7 @@ import android.util.Log
 import android.view.*
 import android.widget.SeekBar
 import android.widget.Toast
+import androidx.core.content.edit
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
@@ -41,7 +42,6 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.InputStream
-import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 import java.util.*
 import java.util.concurrent.FutureTask
@@ -90,21 +90,20 @@ class ViewMangaActivity : TitleActivityTemplate() {
         setContentView(R.layout.activity_viewmanga)
         super.onCreate(savedInstanceState)
         va = WeakReference(this)
-        //progressLog = PropertiesTools(File("$filesDir/progress/${chapter2Return?.results?.chapter?.comic_id}"))
         //dlZip2View = intent.getStringExtra("callFrom") == "Dl" || p["dlZip2View"] == "true"
         //zipFirst = intent.getStringExtra("callFrom") == "zipFirst"
-        cut = p["useCut"] == "true"
-        r2l = p["r2l"] == "true"
-        verticalLoadMaxCount = if (p["verticalMax"] != "null") p["verticalMax"].toInt() else 20
-        isVertical = p["vertical"] == "true"
-        notUseVP = p["noVP"] == "true" || isVertical
+        cut = pb["useCut"]
+        r2l = pb["r2l"]
+        verticalLoadMaxCount = p["verticalMax"].let { if(it > 0) it else 20 }
+        isVertical = pb["vertical"]
+        notUseVP = pb["noVP"] || isVertical
         //url = intent.getStringExtra("url")
         handler = VMHandler(this, if(urlArray.isNotEmpty()) urlArray[position] else "")
-        if (p["quality"] != "null") q = p["quality"].toInt()
+        p["quality"].let { q = if (it > 0) it else 100 }
         tt = TimeThread(handler, 22)
         tt.canDo = true
         tt.start()
-        volTurnPage = p["volturn"] == "true"
+        volTurnPage = pb["volturn"]
         am = getSystemService(Service.AUDIO_SERVICE) as AudioManager
 
         Log.d("MyVM", "Now ZipFile is $zipFile")
@@ -155,7 +154,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
             pageNum = pn
             pn = -1
         }
-        sendProgress()
+        setProgress()
     }
 
     private fun preDownloadChapterPages() {
@@ -220,6 +219,9 @@ class ViewMangaActivity : TitleActivityTemplate() {
 
     @ExperimentalStdlibApi
     fun initManga(){
+        handler.manga?.results?.chapter?.uuid?.let {
+            pn = getPreferences(MODE_PRIVATE).getInt(it, pn)
+        }
         if (zipFile?.exists() != true) doPrepareWebImg()
         else prepareItems()
         if (!isVertical) restorePN()
@@ -227,7 +229,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
 
     @ExperimentalStdlibApi
     private fun prepareImgFromWeb() {
-        if(toolsBox.netinfo == "移动数据") alertCellar()
+        if(!noCellarAlert && toolsBox.netinfo == "移动数据") alertCellar()
         else handler.startLoad()
     }
 
@@ -431,18 +433,21 @@ class ViewMangaActivity : TitleActivityTemplate() {
         }
     }
 
-    private fun sendProgress() {
-        handler.progressLog?.let {
-            //it["chapterId"] = hm.chapterId.toString()
-            it["page"] = pageNum.toString()
-            //it["name"] = inftitle.ttitle.text
+    private fun setProgress() {
+        handler.manga?.results?.chapter?.uuid?.let {
+            getPreferences(MODE_PRIVATE).edit {
+                //it["chapterId"] = hm.chapterId.toString()
+                putInt(it, pageNum)
+                //it["name"] = inftitle.ttitle.text
+                apply()
+            }
         }
     }
 
     private fun prepareIdBtCut() {
         idtbcut.isChecked = cut
         idtbcut.setOnClickListener {
-            p["useCut"] = if (idtbcut.isChecked) "true" else "false"
+            pb["useCut"] = idtbcut.isChecked
             Toast.makeText(this, "下次浏览生效", Toast.LENGTH_SHORT).show()
         }
     }
@@ -450,8 +455,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
     private fun prepareIdBtLR() {
         idtblr.isChecked = r2l
         idtblr.setOnClickListener {
-            if (idtblr.isChecked) p["r2l"] = "true"
-            else p["r2l"] = "false"
+            pb["r2l"] = idtblr.isChecked
             Toast.makeText(this, "下次浏览生效", Toast.LENGTH_SHORT).show()
         }
     }
@@ -459,8 +463,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
     private fun prepareIdBtVP() {
         idtbvp.isChecked = notUseVP
         idtbvp.setOnClickListener {
-            if (idtbvp.isChecked) p["noVP"] = "true"
-            else p["noVP"] = "false"
+            pb["noVP"] = idtbvp.isChecked
             Toast.makeText(this, "下次浏览生效", Toast.LENGTH_SHORT).show()
         }
     }
@@ -487,7 +490,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         if (!isInSeek) hideObjs()
         updateSeekText()
         updateSeekProgress()
-        sendProgress()
+        setProgress()
     }
 
     @SuppressLint("SetTextI18n")
@@ -555,7 +558,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
             }
         }
         idtbvh.setOnClickListener {
-            p["vertical"] = if (idtbvh.isChecked) "true" else "false"
+            pb["vertical"] = idtbvh.isChecked
             Toast.makeText(this, "下次浏览生效", Toast.LENGTH_SHORT).show()
         }
     }

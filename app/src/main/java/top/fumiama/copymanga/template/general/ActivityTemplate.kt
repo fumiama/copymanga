@@ -3,20 +3,18 @@ package top.fumiama.copymanga.template.general
 import android.app.Activity
 import android.os.Bundle
 import android.view.View
-import top.fumiama.copymanga.tools.file.PropertiesTools
+import androidx.core.content.edit
 import top.fumiama.copymanga.tools.api.UITools
-import java.io.File
-import java.lang.ref.WeakReference
 
 open class ActivityTemplate:Activity() {
-    lateinit var p: PropertiesTools
     lateinit var toolsBox: UITools
+    val p = IntPref()
+    val pb = BoolPref()
     private val allFullScreen
-        get() = p["allFullScreen"] == "true"
+        get() = getPreferences(MODE_PRIVATE).getBoolean("allFullScreen", false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        p = PropertiesTools(File("$filesDir/settings.properties"))
         toolsBox = UITools(this)
     }
 
@@ -24,5 +22,21 @@ open class ActivityTemplate:Activity() {
         super.onWindowFocusChanged(hasFocus)
         if(allFullScreen) window.decorView.systemUiVisibility =
             View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+    }
+
+    inner class IntPref {
+        operator fun get(key: String) = getPreferences(MODE_PRIVATE).getInt(key, -5)
+        operator fun set(key: String, value: Int) = getPreferences(MODE_PRIVATE).edit {
+            putInt(key, value)
+            apply()
+        }
+    }
+
+    inner class BoolPref {
+        operator fun get(key: String) = getPreferences(MODE_PRIVATE).getBoolean(key, false)
+        operator fun set(key: String, value: Boolean) = getPreferences(MODE_PRIVATE).edit {
+            putBoolean(key, value)
+            apply()
+        }
     }
 }

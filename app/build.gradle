@@ -9,8 +9,8 @@ android {
         applicationId 'top.fumiama.copymanga'
         minSdkVersion 23
         targetSdkVersion 31
-        versionCode 19
-        versionName '2.0.beta8'
+        versionCode 21
+        versionName '2.0.beta9'
         resConfigs "zh", "zh-rCN"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

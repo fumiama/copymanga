@@ -28,7 +28,6 @@ import top.fumiama.copymanga.json.ComicStructureOld
 import top.fumiama.copymanga.json.VolumeStructure
 import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.copymanga.tools.http.MangaDlTools
-import top.fumiama.copymanga.tools.file.PropertiesTools
 import top.fumiama.copymanga.tools.api.UITools
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment.Companion.json
 import top.fumiama.copymanga.ui.vm.ViewMangaActivity
@@ -45,7 +44,6 @@ class ComicDlHandler(looper: Looper, that: WeakReference<ComicDlFragment>, priva
     var complete = false
     private val that = that.get()
     private val toolsBox = UITools(that.get()?.context)
-    private val p = PropertiesTools(File("${that.get()?.context?.filesDir}/settings.properties"))
     private var btnNumPerRow = 4
     private var btnw = 0
     private var cdwnWidth = 0

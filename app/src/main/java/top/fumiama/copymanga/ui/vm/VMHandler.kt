@@ -16,7 +16,6 @@ import top.fumiama.copymanga.json.Chapter2Return
 import top.fumiama.copymanga.json.ChapterWithContent
 import top.fumiama.copymanga.json.ComicStructure
 import top.fumiama.copymanga.template.http.AutoDownloadHandler
-import top.fumiama.copymanga.tools.file.PropertiesTools
 import top.fumiama.copymanga.ui.vm.ViewMangaActivity.Companion.comicName
 import top.fumiama.copymanga.ui.vm.ViewMangaActivity.Companion.pn
 import top.fumiama.copymanga.views.ScaleImageView
@@ -26,7 +25,6 @@ import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
 import java.util.*
-import java.util.zip.ZipInputStream
 
 class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
     url, Chapter2Return::class.java, Looper.myLooper()!!
@@ -59,7 +57,6 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
                 else -> ""
             }
         }
-    var progressLog: PropertiesTools? = null
 
     @SuppressLint("SimpleDateFormat", "SetTextI18n")
     override fun handleMessage(msg: Message) {
@@ -159,7 +156,6 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
     @ExperimentalStdlibApi
     private fun prepareManga(){
         comicName = manga?.results?.comic?.name
-        progressLog = PropertiesTools(File("${wv.get()?.filesDir}/progress/${manga?.results?.comic?.name}"))
         wv.get()?.count = manga?.results?.chapter?.size?:0
         wv.get()?.initManga()
         wv.get()?.vprog?.visibility = View.GONE

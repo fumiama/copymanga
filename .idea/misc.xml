@@ -17,9 +17,12 @@
         <entry key="app/src/main/res/layout/fragment_home.xml" value="0.5095108695652174" />
         <entry key="app/src/main/res/layout/line_1bookline.xml" value="0.49592391304347827" />
         <entry key="app/src/main/res/layout/line_bookinfo.xml" value="0.49592391304347827" />
+        <entry key="app/src/main/res/layout/line_booktandb.xml" value="0.48596014492753625" />
+        <entry key="app/src/main/res/layout/line_chapter.xml" value="0.48596014492753625" />
         <entry key="app/src/main/res/layout/line_choice_list.xml" value="0.49592391304347827" />
         <entry key="app/src/main/res/layout/line_text_info.xml" value="0.49592391304347827" />
         <entry key="app/src/main/res/layout/line_word.xml" value="0.49592391304347827" />
+        <entry key="app/src/main/res/layout/nav_header_main.xml" value="0.48596014492753625" />
         <entry key="app/src/main/res/layout/viewpage_banner.xml" value="0.49592391304347827" />
         <entry key="app/src/main/res/layout/viewpage_horizonal.xml" value="0.49592391304347827" />
         <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.5572916666666666" />

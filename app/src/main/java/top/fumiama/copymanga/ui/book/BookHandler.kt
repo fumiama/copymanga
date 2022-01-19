@@ -1,5 +1,7 @@
 package top.fumiama.copymanga.ui.book
 
+import android.content.Context.MODE_PRIVATE
+import android.content.Intent
 import android.os.Bundle
 import android.os.Looper
 import android.os.Message
@@ -7,28 +9,41 @@ import android.util.Log
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.edit
 import androidx.navigation.Navigation
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.request.RequestOptions
+import com.google.gson.Gson
 import kotlinx.android.synthetic.main.app_bar_main.*
+import kotlinx.android.synthetic.main.button_tbutton.view.*
 import kotlinx.android.synthetic.main.card_book.*
 import kotlinx.android.synthetic.main.fragment_book.*
 import kotlinx.android.synthetic.main.line_2chapters.view.*
 import kotlinx.android.synthetic.main.line_bookinfo.*
 import kotlinx.android.synthetic.main.line_bookinfo_text.*
+import kotlinx.android.synthetic.main.line_booktandb.*
 import kotlinx.android.synthetic.main.line_caption.view.*
 import kotlinx.android.synthetic.main.line_chapter.view.*
+import kotlinx.android.synthetic.main.widget_downloadbar.*
 import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.json.BookInfoStructure
+import top.fumiama.copymanga.json.ChapterStructure
 import top.fumiama.copymanga.json.ThemeStructure
+import top.fumiama.copymanga.json.VolumeStructure
 import top.fumiama.copymanga.template.http.AutoDownloadHandler
+import top.fumiama.copymanga.template.http.AutoDownloadThread
 import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.copymanga.tools.api.GlideBlurTransformation
+import top.fumiama.copymanga.ui.comicdl.ComicDlFragment
+import top.fumiama.copymanga.ui.comicdl.ComicDlFragment.Companion.json
+import top.fumiama.copymanga.ui.vm.ViewMangaActivity
+import java.io.File
+import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 
-class BookHandler(that: WeakReference<BookFragment>, path: String)
+class BookHandler(that: WeakReference<BookFragment>, private val path: String)
     : AutoDownloadHandler(
     that.get()?.getString(R.string.bookInfoApiUrl)?.let { String.format(it, path) } ?: "",
     BookInfoStructure::class.java,
@@ -43,6 +58,12 @@ class BookHandler(that: WeakReference<BookFragment>, path: String)
     var book: BookInfoStructure? = null
     var fbibinfo:View? = null
     var complete = false
+    var ads = emptyArray<AutoDownloadThread>()
+    var gpws = arrayOf<String>()
+    var keys = arrayOf<String>()
+    var cnts = intArrayOf()
+    var vols: Array<VolumeStructure>? = null
+    var chapterNames = arrayOf<String>()
     private val divider get() = that?.layoutInflater?.inflate(R.layout.div_h, that.fbl, false)
     private var fbtinfo: View? = null
 
@@ -55,7 +76,6 @@ class BookHandler(that: WeakReference<BookFragment>, path: String)
             3 -> fbibinfo?.let { setInfoHeight(it) }
             4 -> setThemes()
             5 -> setOverScale()
-            6 -> endSetLayouts()
         }
     }
 
@@ -80,12 +100,20 @@ class BookHandler(that: WeakReference<BookFragment>, path: String)
         super.doWhenFinishDownload()
         if(exit) return
         inflateComponents()
-        Thread{ for (i in 1..6) sendEmptyMessage(i) }.start()
+        book?.results?.groups?.values?.forEach{
+            keys += it.name
+            gpws += it.path_word
+            cnts += it.count
+            Log.d("MyBFH", "Add caption: ${it.name} @ ${it.path_word} of ${it.count}")
+        }
+        initComicData()
+        Thread{ for (i in 1..5) sendEmptyMessage(i) }.start()
     }
 
     private fun endSetLayouts(){
         that?.fbloading?.visibility = View.GONE
         complete = true
+        that?.setStartRead()
         Log.d("MyBH", "Set complete: true")
     }
 
@@ -192,9 +220,63 @@ class BookHandler(that: WeakReference<BookFragment>, path: String)
         that?.apply {
             book?.results?.comic?.apply {
                 author?.let { setTheme(getString(R.string.author), it, R.id.action_nav_book_to_nav_author) }
+                fbl.addView(layoutInflater.inflate(R.layout.div_h, fbl, false))
                 theme?.let { setTheme(getString(R.string.caption), it, R.id.action_nav_book_to_nav_caption) }
             }
         }
+        Thread{
+            while (vols == null && !exit) sleep(1000)
+            if(exit) return@Thread
+            that?.apply {
+                book?.results?.apply {
+                    mainWeakReference?.get()?.runOnUiThread{
+                        ViewMangaActivity.fileArray = arrayOf()
+                        ViewMangaActivity.urlArray = arrayOf()
+                        vols?.forEachIndexed { iv, v ->
+                            fbl.addView(layoutInflater.inflate(R.layout.div_h, fbl, false))
+                            val t = layoutInflater.inflate(R.layout.line_caption, fbl, false)
+                            t.tcptn.text = keys[iv]
+                            fbl.addView(t)
+                            fbl.addView(layoutInflater.inflate(R.layout.div_h, fbl, false))
+                            var line: View? = null
+                            val last = v.results.list.size - 1
+                            v.results.list.onEachIndexed { i, it ->
+                                ViewMangaActivity.urlArray += CMApi.getApiUrl(R.string.chapterInfoApiUrl, comic.path_word, it.uuid)?:""
+                                ViewMangaActivity.fileArray += CMApi.getZipFile(context?.getExternalFilesDir(""), comic.name, keys[iv], it.name)
+                                chapterNames += it.name
+                                if(line == null) {
+                                    if(i == last) {
+                                        line = layoutInflater.inflate(R.layout.line_chapter, that.fbl, false)
+                                        line?.lcc?.apply {
+                                            lct.text = it.name
+                                            setOnClickListener { callViewManga(i) }
+                                        }
+                                        fbl?.addView(line)
+                                    } else {
+                                        line = layoutInflater.inflate(R.layout.line_2chapters, that.fbl, false)
+                                        line?.l2cl?.apply {
+                                            lct.text = it.name
+                                            setOnClickListener { callViewManga( i) }
+                                        }
+                                    }
+                                } else line?.l2cr?.apply {
+                                    lct.text = it.name
+                                    setOnClickListener { callViewManga(i) }
+                                    fbl?.addView(line)
+                                    line = null
+                                }
+                            }
+                        }
+                        // padding
+                        val line = layoutInflater.inflate(R.layout.line_chapter, that.fbl, false)
+                        line.lci.visibility = View.INVISIBLE
+                        line.isClickable = false
+                        fbl?.addView(line)
+                        endSetLayouts()
+                    }
+                }
+            }
+        }.start()
     }
 
     private fun loadVolume(name: String, path: String, nav: Int){
@@ -203,5 +285,101 @@ class BookHandler(that: WeakReference<BookFragment>, path: String)
         bundle.putString("name", name)
         bundle.putString("path", path)
         that?.rootView?.let { Navigation.findNavController(it).navigate(nav, bundle) }
+    }
+
+    private fun initComicData() {
+        var volumes = emptyArray<VolumeStructure>()
+        val counts = cnts.clone()
+        gpws.forEachIndexed { i, gpw ->
+            Log.d("MyBFH", "下载:$gpw")
+            var offset = 0
+            val times = counts[i] / 100
+            val remain = counts[i] % 100
+            val re = arrayOfNulls<VolumeStructure>(if(remain != 0) (times+1) else (times))
+            Log.d("MyBFH", "${i}卷共${if(times == 0) 1 else times}次加载")
+            do {
+                counts[i] = counts[i] - 100
+                CMApi.getApiUrl(R.string.groupInfoApiUrl, path, gpw, offset)?.let {
+                    if(ComicDlFragment.exit) return
+                    val ad = AutoDownloadThread(it) { result ->
+                        Log.d("MyBFH", "第${i}卷返回")
+                        val r =
+                            Gson().fromJson(result?.decodeToString(), VolumeStructure::class.java)
+                        re[r.results.offset / 100] = r
+                    }
+                    ads += ad
+                    ad.start()
+                    offset += 100
+                }
+            } while (counts[i] > 0)
+            Thread {
+                var c = 0
+                while (c++ < 80) {
+                    sleep(1000)
+                    if(ComicDlFragment.exit) return@Thread
+                    if(re.all { it != null }) break
+                }
+                if(re.size > 1) {
+                    val r = re[0]
+                    var s = emptyArray<ChapterStructure>()
+                    re.forEach {
+                        it?.results?.list?.forEach {
+                            s += it
+                        }
+                    }
+                    r?.results?.list = s
+                    r?.apply { volumes += this }
+                } else re[0]?.apply { volumes += this }
+            }.start()
+        }
+        Thread {
+            var c = 0
+            while (c < 80 && volumes.size != gpws.size) {
+                sleep(1000)
+                if(ComicDlFragment.exit) return@Thread
+                Log.d("MyBFH", "已有：${volumes.size} 共：${gpws.size}")
+                c++
+            }
+            if (volumes.size == gpws.size) {
+                mainWeakReference?.get()?.runOnUiThread {
+                    saveVolumes(volumes)
+                }
+            }
+        }.start()
+    }
+
+    private fun saveVolumes(volumes: Array<VolumeStructure>) {
+        that?.context?.getExternalFilesDir("")?.let { home ->
+            book?.results?.comic?.name?.let { name ->
+                val mangaFolder = File(home, name)
+                if(!mangaFolder.exists()) mangaFolder.mkdirs()
+                json = Gson().toJson(volumes)
+                File(mangaFolder, "info.json").writeText(json!!)
+                File(mangaFolder, "grps.json").writeText(Gson().toJson(keys))
+            }
+        }
+        vols = volumes
+    }
+    
+    fun callViewManga(pos: Int) {
+        book?.results?.comic?.name?.let {
+            mainWeakReference?.get()?.getPreferences(MODE_PRIVATE)?.edit {
+                putInt(it, pos)
+                apply()
+            }
+        }
+        ViewMangaActivity.dlhandler = null
+        ViewMangaActivity.position = pos
+        val zipf = ViewMangaActivity.fileArray[pos]
+        if (zipf.exists()) {
+            ViewMangaActivity.zipFile = zipf
+            that?.startActivity(
+                Intent(that.context, ViewMangaActivity::class.java)
+                .putExtra("callFrom", "zipFirst").putExtra("function", "log")
+            )
+        } else {
+            ViewMangaActivity.zipFile = null
+            that?.startActivity(Intent(that.context, ViewMangaActivity::class.java).putExtra("function", "log"))
+        }
     }
 }

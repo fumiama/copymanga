@@ -1,12 +1,14 @@
 package top.fumiama.copymanga.update
 
 import android.app.Activity
+import android.content.Context.MODE_PRIVATE
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import androidx.core.content.FileProvider
+import androidx.core.content.edit
 import kotlinx.android.synthetic.main.dialog_progress.view.*
 import top.fumiama.copymanga.tools.file.PropertiesTools
 import top.fumiama.copymanga.tools.api.UITools
@@ -15,7 +17,7 @@ import java.io.File
 import java.security.MessageDigest
 
 object Update {
-    fun checkUpdate(activity: Activity, p: PropertiesTools, toolsBox: UITools, ignoreSkip: Boolean = false) = activity.apply{
+    fun checkUpdate(activity: Activity, toolsBox: UITools, ignoreSkip: Boolean = false) = activity.apply{
         val client = Client("copymanga.v6.army", 12315)
         val progressBar = layoutInflater.inflate(R.layout.dialog_progress, null, false)
         val progressHandler = object : Client.Progress{
@@ -28,7 +30,7 @@ object Update {
         val msg = kanban[packageManager.getPackageInfo(packageName, 0).versionCode]
         if(msg != "null") {
             val verNum = msg.substringBefore('\n').toIntOrNull()
-            val skipNum = p["skipVersion"].let { if(it != "null") it.toInt() else 0 }
+            val skipNum = activity.getPreferences(MODE_PRIVATE).getInt("skipVersion", 0)
 
             Log.d("MyUP", "Ver:$verNum, skip: $skipNum")
             if(verNum != null) {
@@ -63,7 +65,12 @@ object Update {
                                     client.progress = null
                                 }
                             }.start()
-                        }, { p["skipVersion"] = verNum.toString() })
+                        }, {
+                            activity.getPreferences(MODE_PRIVATE).edit {
+                                putInt("skipVersion", verNum)
+                                apply()
+                            }
+                        })
                     }
                 } else runOnUiThread {
                     toolsBox.buildInfo("看板", msg.substringAfter('\n'), "知道了")

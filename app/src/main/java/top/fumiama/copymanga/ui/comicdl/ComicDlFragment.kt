@@ -28,7 +28,12 @@ class ComicDlFragment: NoBackRefreshFragment(R.layout.fragment_dlcomic) {
                 arguments?.getBoolean("callFromOldDL", false) == true -> initOldComicData()
                 arguments?.getBoolean("loadJson", false) == true -> context?.getExternalFilesDir("")?.let { home ->
                     arguments?.getString("name")?.let {
-                        start2load(loadFromJson(), true, loadGroupsFromFile(File(home, "$it/grps.json")))
+                        Thread{
+                            sleep(600)
+                            mainWeakReference?.get()?.runOnUiThread {
+                                start2load(loadFromJson(), true, loadGroupsFromFile(File(home, "$it/grps.json")))
+                            }
+                        }.start()
                     }
                 }
                 else -> initComicData(

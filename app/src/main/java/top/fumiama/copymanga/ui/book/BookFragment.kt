@@ -1,11 +1,13 @@
 package top.fumiama.copymanga.ui.book
 
+import android.content.Context.MODE_PRIVATE
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.View
 import androidx.navigation.Navigation
 import kotlinx.android.synthetic.main.app_bar_main.*
+import kotlinx.android.synthetic.main.line_booktandb.*
 import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.template.general.NoBackRefreshFragment
@@ -33,17 +35,40 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
             menuMain?.let { setMenuVisible(it) }
             toolbar.title = bookHandler.book?.results?.comic?.name
         }
+        setStartRead()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         mainWeakReference?.get()?.menuMain?.let { setMenuInvisible(it) }
         bookHandler.destroy()
+        bookHandler.ads.forEach {
+            it.exit = true
+        }
     }
 
     override fun onPause() {
         super.onPause()
         mainWeakReference?.get()?.menuMain?.let { setMenuInvisible(it) }
+    }
+
+    fun setStartRead() {
+        mainWeakReference?.get()?.apply {
+            bookHandler.book?.results?.comic?.name?.let {
+                getPreferences(MODE_PRIVATE).getInt(it, -1).let { p ->
+                    this@BookFragment.lbbstart.apply {
+                        var i = 0
+                        if(p >= 0) {
+                            text = bookHandler.chapterNames[p]
+                            i = p
+                        }
+                        setOnClickListener {
+                            bookHandler.callViewManga(i)
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private fun setMenuInvisible(menu: Menu){
@@ -68,19 +93,12 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
         val bundle = Bundle()
         bundle.putString("path", arguments?.getString("path")?:"null")
         bundle.putString("name", bookHandler.book?.results?.comic?.name)
-        val groups = bookHandler.book?.results?.groups
-        var keys = arrayOf<String>()
-        var gpws = arrayOf<String>()
-        var cnts = intArrayOf()
-        groups?.values?.forEach {
-            keys += it.name
-            gpws += it.path_word
-            cnts += it.count
-            Log.d("MyBF", "Add caption: ${it.name} @ ${it.path_word} of ${it.count}")
+        if(bookHandler.vols != null) {
+            bundle.putBoolean("loadJson", true)
         }
-        bundle.putStringArray("group", gpws)
-        bundle.putStringArray("groupNames", keys)
-        bundle.putIntArray("count", cnts)
+        bundle.putStringArray("group", bookHandler.gpws)
+        bundle.putStringArray("groupNames", bookHandler.keys)
+        bundle.putIntArray("count", bookHandler.cnts)
         rootView?.let { Navigation.findNavController(it).navigate(R.id.action_nav_book_to_nav_group, bundle) }
     }
 }

@@ -21,6 +21,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
@@ -36,7 +37,6 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.nav_header_main.*
 import top.fumiama.dmzj.copymanga.R
-import top.fumiama.copymanga.tools.file.PropertiesTools
 import top.fumiama.copymanga.tools.api.UITools
 import top.fumiama.copymanga.ui.download.DownloadFragment
 import top.fumiama.copymanga.update.Update
@@ -50,7 +50,6 @@ class MainActivity : AppCompatActivity() {
     var navController: NavController? = null
 
     private lateinit var appBarConfiguration: AppBarConfiguration
-    private lateinit var p: PropertiesTools
     private lateinit var headPic: File
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,7 +74,6 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController!!, appBarConfiguration)
         nav_view.setupWithNavController(navController!!)
 
-        p = PropertiesTools(File(filesDir, "database.prop"))
         headPic = File(getExternalFilesDir(""), "headPic")
         mainWeakReference = WeakReference(this)
         drawer_layout.addDrawerListener(object : DrawerLayout.DrawerListener {
@@ -121,7 +119,7 @@ class MainActivity : AppCompatActivity() {
             }
             true
         }
-        p["navTextInfo"].let { if (it != "null") navtinfo.text = it }
+        navtinfo.text = getPreferences(MODE_PRIVATE).getString("navTextInfo", getString(R.string.navTextInfo))
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 
@@ -239,7 +237,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun checkUpdate(ignoreSkip: Boolean) {
         Thread{
-            Update.checkUpdate(this, p, UITools(this), ignoreSkip)
+            Update.checkUpdate(this, UITools(this), ignoreSkip)
         }.start()
     }
 
@@ -259,7 +257,10 @@ class MainActivity : AppCompatActivity() {
         MaterialDialog(this).show {
             input(prefill = (it as TextView).text) { _, charSequence ->
                 it.text = charSequence
-                p["navTextInfo"] = charSequence.toString()
+                getPreferences(MODE_PRIVATE).edit {
+                    putString("navTextInfo", charSequence.toString())
+                    apply()
+                }
             }
             positiveButton(android.R.string.ok)
             title(R.string.navTextInfoInputHint)
