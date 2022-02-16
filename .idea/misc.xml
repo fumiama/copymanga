@@ -3,6 +3,7 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="../../.gradle/caches/transforms-3/530137dbe1613faf299d06bd64f02665/transformed/jetified-search-2.4.1/res/layout/search_view.xml" value="0.46557971014492755" />
         <entry key="app/src/main/res/drawable-anydpi/ic_like.xml" value="0.5572916666666666" />
         <entry key="app/src/main/res/drawable-anydpi/ic_setting_search.xml" value="0.5572916666666666" />
         <entry key="app/src/main/res/layout/activity_login.xml" value="0.49592391304347827" />
@@ -14,7 +15,7 @@
         <entry key="app/src/main/res/layout/fragment_book.xml" value="0.49592391304347827" />
         <entry key="app/src/main/res/layout/fragment_chapters.xml" value="0.49592391304347827" />
         <entry key="app/src/main/res/layout/fragment_download.xml" value="0.49592391304347827" />
-        <entry key="app/src/main/res/layout/fragment_home.xml" value="0.5095108695652174" />
+        <entry key="app/src/main/res/layout/fragment_home.xml" value="0.4376278118609407" />
         <entry key="app/src/main/res/layout/line_1bookline.xml" value="0.49592391304347827" />
         <entry key="app/src/main/res/layout/line_bookinfo.xml" value="0.49592391304347827" />
         <entry key="app/src/main/res/layout/line_booktandb.xml" value="0.48596014492753625" />

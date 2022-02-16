@@ -102,6 +102,7 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
 
                 setOnFocusChangeListener(object : SearchLayout.OnFocusChangeListener {
                     override fun onFocusChange(hasFocus: Boolean) {
+                        Log.d("MyHF", "fhs onFocusChange: $hasFocus")
                         navigationIconSupport = if (hasFocus) SearchLayout.NavigationIconSupport.ARROW
                         else {
                             micView.postDelayed({ micView.visibility = View.VISIBLE }, 233)
@@ -110,7 +111,8 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                     }
                 })
 
-                fhns.setOnTouchListener { _, e ->
+                setOnTouchListener { _, e ->
+                    Log.d("MyHF", "fhns on touch")
                     if (e.action == MotionEvent.ACTION_UP && mSearchEditText?.text?.isNotEmpty() == true) {
                         ime?.hideSoftInputFromWindow(mainWeakReference?.get()?.window?.decorView?.windowToken, 0)
                     }

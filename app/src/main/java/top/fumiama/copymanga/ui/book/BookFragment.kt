@@ -10,6 +10,7 @@ import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.line_booktandb.*
 import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
+import top.fumiama.copymanga.manga.Reader
 import top.fumiama.copymanga.template.general.NoBackRefreshFragment
 import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
@@ -54,8 +55,8 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
 
     fun setStartRead() {
         mainWeakReference?.get()?.apply {
-            bookHandler.book?.results?.comic?.name?.let {
-                getPreferences(MODE_PRIVATE).getInt(it, -1).let { p ->
+            bookHandler.book?.results?.comic?.name?.let { name ->
+                getPreferences(MODE_PRIVATE).getInt(name, -1).let { p ->
                     this@BookFragment.lbbstart.apply {
                         var i = 0
                         if(p >= 0) {
@@ -63,7 +64,7 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
                             i = p
                         }
                         setOnClickListener {
-                            bookHandler.callViewManga(i)
+                            Reader.viewMangaAt(name, i)
                         }
                     }
                 }

@@ -1,55 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="top.fumiama.copymanga.ui.home.HomeFragment">
 
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/fhns"
+            <FrameLayout  xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                tools:context="top.fumiama.copymanga.ui.home.HomeFragment"
+                android:focusableInTouchMode="true">
+
+
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swiperefresh"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true">
+        android:layout_height="wrap_content"
+        android:layout_marginTop="64dp">
 
-        <LinearLayout
+        <top.fumiama.copymanga.views.ScrollRefreshView
+            android:id="@+id/fhov"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_height="match_parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="SpeakableTextPresentCheck">
 
-            <com.lapism.search.widget.MaterialSearchView
-                android:id="@+id/fhs"
+            <LinearLayout
+                android:id="@+id/fhl"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:layout_behavior="com.lapism.search.widget.SearchBehavior">
+                android:orientation="vertical">
 
-            </com.lapism.search.widget.MaterialSearchView>
+            </LinearLayout>
+        </top.fumiama.copymanga.views.ScrollRefreshView>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-            <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-                android:id="@+id/swiperefresh"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
+    <com.lapism.search.widget.MaterialSearchView
+        android:id="@+id/fhs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_behavior="com.lapism.search.widget.SearchBehavior">
 
-                <top.fumiama.copymanga.views.ScrollRefreshView
-                    android:id="@+id/fhov"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent">
-
-                    <LinearLayout
-                        android:id="@+id/fhl"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical">
-
-                    </LinearLayout>
-                </top.fumiama.copymanga.views.ScrollRefreshView>
-            </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
-
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </com.lapism.search.widget.MaterialSearchView>
+</FrameLayout>

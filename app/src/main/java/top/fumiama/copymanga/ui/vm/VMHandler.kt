@@ -155,7 +155,9 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
 
     @ExperimentalStdlibApi
     private fun prepareManga(){
-        comicName = manga?.results?.comic?.name
+        if(comicName == null) {
+            comicName = manga?.results?.comic?.name
+        }
         wv.get()?.count = manga?.results?.chapter?.size?:0
         wv.get()?.initManga()
         wv.get()?.vprog?.visibility = View.GONE

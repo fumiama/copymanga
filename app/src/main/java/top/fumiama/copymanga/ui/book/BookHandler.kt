@@ -32,6 +32,7 @@ import top.fumiama.copymanga.json.BookInfoStructure
 import top.fumiama.copymanga.json.ChapterStructure
 import top.fumiama.copymanga.json.ThemeStructure
 import top.fumiama.copymanga.json.VolumeStructure
+import top.fumiama.copymanga.manga.Reader
 import top.fumiama.copymanga.template.http.AutoDownloadHandler
 import top.fumiama.copymanga.template.http.AutoDownloadThread
 import top.fumiama.copymanga.tools.api.CMApi
@@ -249,19 +250,19 @@ class BookHandler(that: WeakReference<BookFragment>, private val path: String)
                                         line = layoutInflater.inflate(R.layout.line_chapter, that.fbl, false)
                                         line?.lcc?.apply {
                                             lct.text = it.name
-                                            setOnClickListener { callViewManga(i) }
+                                            setOnClickListener { _ -> Reader.viewMangaAt(it.name, i) }
                                         }
                                         fbl?.addView(line)
                                     } else {
                                         line = layoutInflater.inflate(R.layout.line_2chapters, that.fbl, false)
                                         line?.l2cl?.apply {
                                             lct.text = it.name
-                                            setOnClickListener { callViewManga( i) }
+                                            setOnClickListener { _ -> Reader.viewMangaAt(it.name, i) }
                                         }
                                     }
                                 } else line?.l2cr?.apply {
                                     lct.text = it.name
-                                    setOnClickListener { callViewManga(i) }
+                                    setOnClickListener { _ -> Reader.viewMangaAt(it.name, i) }
                                     fbl?.addView(line)
                                     line = null
                                 }
@@ -361,27 +362,5 @@ class BookHandler(that: WeakReference<BookFragment>, private val path: String)
             }
         }
         vols = volumes
-    }
-    
-    fun callViewManga(pos: Int) {
-        book?.results?.comic?.name?.let {
-            mainWeakReference?.get()?.getPreferences(MODE_PRIVATE)?.edit {
-                putInt(it, pos)
-                apply()
-            }
-        }
-        ViewMangaActivity.dlhandler = null
-        ViewMangaActivity.position = pos
-        val zipf = ViewMangaActivity.fileArray[pos]
-        if (zipf.exists()) {
-            ViewMangaActivity.zipFile = zipf
-            that?.startActivity(
-                Intent(that.context, ViewMangaActivity::class.java)
-                .putExtra("callFrom", "zipFirst").putExtra("function", "log")
-            )
-        } else {
-            ViewMangaActivity.zipFile = null
-            that?.startActivity(Intent(that.context, ViewMangaActivity::class.java).putExtra("function", "log"))
-        }
     }
 }

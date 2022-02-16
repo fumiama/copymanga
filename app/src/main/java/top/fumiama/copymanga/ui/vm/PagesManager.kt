@@ -1,11 +1,10 @@
 package top.fumiama.copymanga.ui.vm
 
-import android.content.Intent
 import android.widget.Toast
-import top.fumiama.copymanga.ui.vm.ViewMangaActivity.Companion.fileArray
+import top.fumiama.copymanga.manga.Reader
+import top.fumiama.copymanga.ui.vm.ViewMangaActivity.Companion.comicName
 import top.fumiama.copymanga.ui.vm.ViewMangaActivity.Companion.position
 import top.fumiama.copymanga.ui.vm.ViewMangaActivity.Companion.urlArray
-import top.fumiama.copymanga.ui.vm.ViewMangaActivity.Companion.zipFile
 import java.lang.ref.WeakReference
 
 class PagesManager(w: WeakReference<ViewMangaActivity>) {
@@ -38,18 +37,10 @@ class PagesManager(w: WeakReference<ViewMangaActivity>) {
                 urlArray.let {
                     if(chapterPosition >= 0 && chapterPosition < it.size) it[chapterPosition].let {
                         if (if(goNext)isEndR else isEndL) {
-                            val f = fileArray[chapterPosition]
-                            val intent = Intent(v, ViewMangaActivity::class.java)
                             //if(v.zipFirst) intent.putExtra("callFrom", "zipFirst")
-                            if(!goNext){
-                                ViewMangaActivity.pn = -2
-                                intent.putExtra("function", "log")
-                            }
-                            zipFile = if (f.exists()) f else null
-                            position = chapterPosition
                             v.tt.canDo = false
                             //ViewMangaActivity.dlhandler = null
-                            v.startActivity(intent)
+                            comicName?.let { it1 -> Reader.viewMangaAt(it1, chapterPosition, goNext) }
                             v.finish()
                         } else {
                             val hint = if(goNext) '下' else '上'
