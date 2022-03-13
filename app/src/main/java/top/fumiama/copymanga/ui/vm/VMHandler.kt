@@ -104,11 +104,15 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
             22 -> wv.get()?.idtime?.text = SimpleDateFormat("HH:mm").format(Date()) + week + wv.get()?.toolsBox?.netinfo
         }
     }
-
     override fun getGsonItem() = manga
-    override fun setGsonItem(gsonObj: Any) {
+    override fun setGsonItem(gsonObj: Any): Boolean {
         super.setGsonItem(gsonObj)
-        manga = gsonObj as Chapter2Return
+        val m = gsonObj as Chapter2Return
+        if(m.results.chapter.words.size != m.results.chapter.size) {
+            return false
+        }
+        manga = m
+        return true
     }
     override fun onError() {
         super.onError()

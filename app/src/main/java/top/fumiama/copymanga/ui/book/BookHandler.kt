@@ -91,9 +91,10 @@ class BookHandler(that: WeakReference<BookFragment>, private val path: String)
         }
     }
 
-    override fun setGsonItem(gsonObj: Any) {
-        super.setGsonItem(gsonObj)
+    override fun setGsonItem(gsonObj: Any): Boolean {
+        val pass = super.setGsonItem(gsonObj)
         book = gsonObj as BookInfoStructure
+        return pass
     }
 
     override fun getGsonItem() = book

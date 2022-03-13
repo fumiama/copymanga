@@ -201,6 +201,7 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                             bundle.putString("path", path_word)
                             rootView?.let { r -> Navigation.findNavController(r).navigate(R.id.action_nav_home_to_nav_book, bundle) }
                     }
+                    holder.itemView.lwc.layoutParams.height = fhs.width / 4
                 }
             }
 

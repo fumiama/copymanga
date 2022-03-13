@@ -390,18 +390,29 @@ class ViewMangaActivity : TitleActivityTemplate() {
 
     private fun getImgBitmap(position: Int): Bitmap? =
         if (position >= count || position < 0) null
-        else try {
+        else {
             val zip = ZipFile(zipFile)
-            if (q == 100) BitmapFactory.decodeStream(zip.getInputStream(zip.getEntry("${position}.webp")))
-            else {
-                val out = ByteArrayOutputStream()
-                BitmapFactory.decodeStream(zip.getInputStream(zip.getEntry("${position}.webp")))?.compress(Bitmap.CompressFormat.JPEG, q, out)
-                BitmapFactory.decodeStream(ByteArrayInputStream(out.toByteArray()))
+            try {
+                if (q == 100) BitmapFactory.decodeStream(zip.getInputStream(zip.getEntry("${position}.jpg")))
+                else {
+                    val out = ByteArrayOutputStream()
+                    BitmapFactory.decodeStream(zip.getInputStream(zip.getEntry("${position}.jpg")))?.compress(Bitmap.CompressFormat.JPEG, q, out)
+                    BitmapFactory.decodeStream(ByteArrayInputStream(out.toByteArray()))
+                }
+            } catch (e: Exception) {
+                try {
+                    if (q == 100) BitmapFactory.decodeStream(zip.getInputStream(zip.getEntry("${position}.webp")))
+                    else {
+                        val out = ByteArrayOutputStream()
+                        BitmapFactory.decodeStream(zip.getInputStream(zip.getEntry("${position}.webp")))?.compress(Bitmap.CompressFormat.JPEG, q, out)
+                        BitmapFactory.decodeStream(ByteArrayInputStream(out.toByteArray()))
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    Toast.makeText(this, "加载zip的第${position}项错误", Toast.LENGTH_SHORT).show()
+                    null
+                }
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Toast.makeText(this, "加载zip的${position}.webp错误", Toast.LENGTH_SHORT).show()
-            null
         }
 
     private fun setIdPosition(position: Int) {

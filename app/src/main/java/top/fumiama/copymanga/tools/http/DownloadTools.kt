@@ -3,8 +3,10 @@ package top.fumiama.copymanga.tools.http
 import android.util.Log
 import top.fumiama.copymanga.tools.ssl.AllTrustManager
 import top.fumiama.copymanga.tools.ssl.IgnoreHostNameVerifier
+import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
+import java.net.URLEncoder
 import java.security.SecureRandom
 import java.util.concurrent.Callable
 import java.util.concurrent.FutureTask
@@ -87,7 +89,7 @@ object DownloadTools {
         }
     }
 
-    fun getHttpContent(Url: String, readSize: Int? = null, refer: String? = "https://api.copymanga.com"): ByteArray? {
+    fun getHttpContent(Url: String, readSize: Int, refer: String? = "https://api.copymanga.com"): ByteArray? {
         Log.d("Mydl", "getHttp: $Url")
         var ret: ByteArray? = null
         val task = FutureTask(Callable {
@@ -96,7 +98,7 @@ object DownloadTools {
                 refer?.let { connection?.setRequestProperty("referer", it) }
 
                 val ci = connection?.inputStream
-                if(readSize != null) {
+                if(readSize > 0) {
                     ret = ByteArray(readSize)
                     ci?.read(ret, 0, readSize)
                 } else ret = ci?.readBytes()
@@ -116,7 +118,7 @@ object DownloadTools {
         }
     }
 
-    fun touch(url: String?, refer: String? = "https://www.dmzj1.com"): FutureTask<ByteArray?>? =
+    fun touch(url: String?, refer: String? = "https://api.copymanga.com"): FutureTask<ByteArray?>? =
         url?.let {
             Log.d("Mydl", "touchHttp: $it")
             var ret: ByteArray? = null
@@ -137,4 +139,40 @@ object DownloadTools {
             Thread(task).start()
             task
         }
+
+    private fun replaceChineseCharacters(string: String?) : String? {
+        if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.M) return string
+        else return string?.replace(Regex("(?<=/)[\\w\\s\\d\\u4e00-\\u9fa5.-]+(?=/?)")) { match ->
+            return@replace URLEncoder.encode(match.value, "UTF-8")
+        }
+    }
+
+    fun downloadUsingUrlRet(url: String?, f: File, refer: String?): Boolean {
+        Log.d("Mydl", "Ret Get url: $url, File: $f")
+        val task = FutureTask(Callable {
+            val connection = getConnection(replaceChineseCharacters(url))
+            if(refer != null) connection?.setRequestProperty("referer", refer)
+
+            if (f.exists()) f.delete()
+            else f.parentFile?.mkdirs()
+            f.parentFile?.let {
+                if (!it.canRead()) it.setReadable(true)
+                if (!it.canWrite()) it.setWritable(true)
+            }
+            val ci = connection?.inputStream
+            val fo = f.outputStream()
+            ci?.buffered()?.copyTo(fo)
+            fo.close()
+            ci?.close()
+            connection?.disconnect()
+            return@Callable true
+        })
+        Thread(task).start()
+        return try {
+            task.get()
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+            false
+        }
+    }
 }

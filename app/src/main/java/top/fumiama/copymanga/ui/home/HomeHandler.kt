@@ -78,8 +78,8 @@ class HomeHandler(that: WeakReference<HomeFragment>) : AutoDownloadHandler(
     }
 
     override fun getGsonItem() = index
-    override fun setGsonItem(gsonObj: Any) {
-        super.setGsonItem(gsonObj)
+    override fun setGsonItem(gsonObj: Any) :Boolean {
+        val pass = super.setGsonItem(gsonObj)
         index = gsonObj as IndexStructure
         var banners = arrayOf<IndexStructure.Results.Banners>()
         index?.results?.banners?.forEach {
@@ -88,6 +88,7 @@ class HomeHandler(that: WeakReference<HomeFragment>) : AutoDownloadHandler(
             }
         }
         index?.results?.banners = banners
+        return pass
     }
     override fun onError() {
         super.onError()

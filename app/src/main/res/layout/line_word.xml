@@ -14,6 +14,7 @@
         layout="@layout/card_book_plain"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginStart="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/lwl"
         app:layout_constraintHorizontal_weight="1"
@@ -23,7 +24,8 @@
     <LinearLayout
         android:id="@+id/lwl"
         android:layout_width="0dp"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

@@ -39,9 +39,10 @@ class ChapterHandler(that: WeakReference<ChapterFragment>, pw: String, gpw: Stri
     }
 
     override fun getGsonItem() = chapters
-    override fun setGsonItem(gsonObj: Any) {
-        super.setGsonItem(gsonObj)
+    override fun setGsonItem(gsonObj: Any) :Boolean {
+        val pass = super.setGsonItem(gsonObj)
         chapters = gsonObj as VolumeStructure
+        return pass
     }
 
     override fun onError() {

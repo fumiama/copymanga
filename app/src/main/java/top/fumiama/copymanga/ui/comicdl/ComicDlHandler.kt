@@ -27,7 +27,7 @@ import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.json.ComicStructureOld
 import top.fumiama.copymanga.json.VolumeStructure
 import top.fumiama.copymanga.tools.api.CMApi
-import top.fumiama.copymanga.tools.http.MangaDlTools
+import top.fumiama.copymanga.manga.MangaDlTools
 import top.fumiama.copymanga.tools.api.UITools
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment.Companion.json
 import top.fumiama.copymanga.ui.vm.ViewMangaActivity
@@ -48,46 +48,23 @@ class ComicDlHandler(looper: Looper, that: WeakReference<ComicDlFragment>, priva
     private var btnw = 0
     private var cdwnWidth = 0
     private var dl: Dialog? = null
-    private var hasToastedError = false
-        get(){
-            val re = field
-            field = true
-            return re
-        }
     private var haveSElectAll = false
     private var checkedChapter = 0
-    private var dldChapter = 0
-    private var haveDlStarted = false
+    private val dldChapter: Int get() = finishMap.count { p -> return@count p == true }
     private var tbtnlist: Array<ChapterToggleButton> = arrayOf()
     private var tbtncnt = 0
     private var isNewTitle = false
     val mangaDlTools = MangaDlTools()
     private var multiSelect = false
-    private var size = 0
-    private var refreshSize = true
     private var ltbtn: View? = null
-
+    private var finishMap = arrayOf<Boolean?>()
+    var downloading = false
 
     @SuppressLint("SetTextI18n")
     override fun handleMessage(msg: Message) {
         super.handleMessage(msg)
         when(msg.what){
             0 -> dl?.hide()
-            1 -> {
-                tbtnlist[msg.arg1].setBackgroundResource(R.drawable.rndbg_checked)
-                tbtnlist[msg.arg1].isChecked = false
-                updateProgressBar()
-            }
-            -1 -> {
-                tbtnlist.get(msg.arg1).setBackgroundResource(R.drawable.rndbg_error)
-                dldChapter--
-                Toast.makeText(
-                    that?.context,
-                    "下载${tbtnlist[msg.arg1].chapterName}失败",
-                    Toast.LENGTH_SHORT
-                ).show()
-                updateProgressBar()
-            }
             //2 -> scanHiddenChapters()
             //3 ->
             4 -> {
@@ -104,7 +81,6 @@ class ComicDlHandler(looper: Looper, that: WeakReference<ComicDlFragment>, priva
                     }
                     haveSElectAll = false
                     checkedChapter = 0
-                    dldChapter = 0
                 } else {
                     for (i in tbtnlist) {
                         if (multiSelect || !i.isChecked && !isChapterExists(i.chapterName, i.caption ?: "null")) {
@@ -117,24 +93,12 @@ class ComicDlHandler(looper: Looper, that: WeakReference<ComicDlFragment>, priva
                 }
                 that?.tdwn?.text = "${dldChapter}/${checkedChapter}"
             }
-            5 -> {
-                setSize(msg.arg2)
-                updateProgressBar(msg.arg2, size)
-                if (!(msg.obj as Boolean)) {
-                    Toast.makeText(that?.context, "下载${tbtnlist.get(msg.arg1).chapterName}的第${msg.arg2}页失败", Toast.LENGTH_SHORT).show()
-                }else{
-                    val progressTxt = that?.tdwn?.text.toString()
-                    that?.tdwn?.text = "${progressTxt.substringBefore(' ')} 的 ${msg.arg2}/${size} 页"
-                }
-            }
             6 -> that?.tdwn?.text = "${dldChapter}/${checkedChapter}"
             7 -> deleteChapters(msg.obj as File, msg.arg1)
-            8 -> that?.cdwn?.setCardBackgroundColor(that.resources.getColor(R.color.colorBlue))
             9 -> that?.cdwn?.setCardBackgroundColor(that.resources.getColor(R.color.colorGreen))
             10 -> addTbtn(msg.obj as Array<String>)
             11 -> addCaption(msg.obj as String)
             12 -> addDiv()
-            13 -> that?.let { Toast.makeText(it.context, "下载${tbtnlist[msg.arg1].textOn}的第${msg.arg2}页失败，尝试重新下载...", Toast.LENGTH_SHORT).show() }
         }
     }
 
@@ -208,16 +172,8 @@ class ComicDlHandler(looper: Looper, that: WeakReference<ComicDlFragment>, priva
         File(that?.context?.getExternalFilesDir(""),"$comicName/$caption/$chapter.zip").exists()
     @SuppressLint("SetTextI18n")
     private fun updateProgressBar() {
-        that?.tdwn?.text = "${++dldChapter}/$checkedChapter"
-        setProgress2(dldChapter * 100 / checkedChapter, 233)
-    }
-    private fun updateProgressBar(pageNow: Int, size: Int) {
-        if(checkedChapter > 0) {
-            val delta = 100 / checkedChapter
-            val start = dldChapter * delta
-            val now = pageNow * delta / size
-            setProgress2(start + now, 64)
-        }
+        that?.tdwn?.text = "$dldChapter/$checkedChapter"
+        setProgress2(dldChapter * 100 / (if(checkedChapter > 0) checkedChapter else 1), 233)
     }
     private fun setProgress2(end: Int, duration: Long) {
         ObjectAnimator.ofInt(
@@ -226,12 +182,6 @@ class ComicDlHandler(looper: Looper, that: WeakReference<ComicDlFragment>, priva
             that?.pdwn?.progress?:0,
             end
         ).setDuration(duration).start()
-    }
-    private fun setSize(pageNow: Int){
-        if(refreshSize || size == 0) {
-            size = mangaDlTools.size
-            refreshSize = false
-        }else if(pageNow == size) refreshSize = true
     }
     private fun setComponents() {
         val widthData = toolsBox.calcWidthFromDpRoot(8, 64)
@@ -258,23 +208,17 @@ class ComicDlHandler(looper: Looper, that: WeakReference<ComicDlFragment>, priva
             else if(checkedChapter == 0) hideDlCard()
             else{
                 that.pdwn.progress = 0
-                if(haveDlStarted && checkedChapter != 0) mangaDlTools.wait = !mangaDlTools.wait
-                else {
-                    haveDlStarted = true
-                    mangaDlTools.wait = false
-                    Thread{
-                        sendEmptyMessage(9)     //set dl card color to green
-                        downloadMangas()
-                        sendEmptyMessage(8)     //set dl card color to blue
-                        if (!haveDlStarted) {
-                            dldChapter = 0
-                            checkedChapter = 0
-                            this.postDelayed({
-                                setProgress2(0, 233)
-                                that.tdwn?.text = "0/0"
-                            }, 400)
-                        }
-                    }.start()
+                if (downloading || checkedChapter == 0) {
+                   mangaDlTools.wait = !mangaDlTools.wait!!
+                } else {
+                    if(!downloading) {
+                        downloading = true
+                        Thread {
+                            sendEmptyMessage(9)
+                            finishMap = arrayOfNulls(tbtnlist.size)
+                            downloadChapterPages()
+                        }.start()
+                    } else mangaDlTools.wait = false
                 }
             }
         }
@@ -282,46 +226,78 @@ class ComicDlHandler(looper: Looper, that: WeakReference<ComicDlFragment>, priva
             Thread { sendEmptyMessage(4) }.start()
             return@setOnLongClickListener true
         }
+        mangaDlTools.onDownloadedListener = object :MangaDlTools.OnDownloadedListener{
+            override fun handleMessage(index: Int, isSuccess: Boolean) {
+                mainWeakReference?.get()?.runOnUiThread {
+                    if(isSuccess) onZipDownloadFinish(index)
+                    else onZipDownloadFailure(index)
+                }
+            }
+
+            override fun handleMessage(
+                index: Int,
+                downloaded: Int,
+                total: Int,
+                isSuccess: Boolean
+            ) {
+                mainWeakReference?.get()?.runOnUiThread {
+                    if(isSuccess) {
+                        tbtnlist[index].text = if(downloaded == 0 && total == 0) tbtnlist[index].chapterName else "$downloaded/$total"
+                    } else {
+                        tbtnlist[index].text = "$downloaded/$total"
+                        Toast.makeText(that?.context, "下载${tbtnlist[index].chapterName}的第${downloaded}页失败", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
     }
     fun showMultiSelectInfo() {
         toolsBox.buildInfo("进入多选模式？", "之后可以对已下载漫画进行批量删除/重新下载",
             "确定", null, "取消", { multiSelect = true })
     }
-    private fun downloadMangas(){
-        for (i in tbtnlist) {
-            if (i.isChecked) downloadChapterPages(i)
-        }
-        haveDlStarted = false
-    }
     
-    private fun downloadChapterPages(i: ChapterToggleButton) {
-        mangaDlTools.onDownloadedListener =
-            object : MangaDlTools.OnDownloadedListener {
-                override fun handleMessage(succeed: Boolean) {
-                    this@ComicDlHandler.obtainMessage(if (succeed) 1 else -1, i.index, 0)
-                        .sendToTarget()
-                }
-                override fun handleMessage(succeed: Boolean, pageNow: Int) {
-                    this@ComicDlHandler.obtainMessage(
-                        5,
-                        i.index,
-                        pageNow,
-                        succeed
-                    ).sendToTarget()
-                }
-                override fun handleMessage(pageNow: Int){
-                    this@ComicDlHandler.obtainMessage(13, i.index, pageNow).sendToTarget()
+    private fun downloadChapterPages() {
+        tbtnlist.forEach { i ->
+            if(i.isChecked) {
+                i.url?.let {
+                    mangaDlTools.downloadChapterInVol(
+                        it,
+                        i.chapterName,
+                        i.caption?:"null",
+                        i.index
+                    )
                 }
             }
-        i.url?.let {
-            mangaDlTools.downloadChapterInVol(
-                it,
-                i.chapterName,
-                i.caption?:"null",
-                i.index
-            )
         }
     }
+
+    private fun onZipDownloadFinish(index: Int) {
+        if(index >= 0 && index < tbtnlist.size) {
+            tbtnlist[index].setBackgroundResource(R.drawable.rndbg_checked)
+            tbtnlist[index].isChecked = false
+            finishMap[index] = true
+            updateProgressBar()
+            that?.apply {
+                cdwn.postDelayed({
+                    if (dldChapter == checkedChapter) {
+                        checkedChapter = 0
+                        setProgress2(0, 233)
+                        tdwn.text = "0/0"
+                        cdwn.setCardBackgroundColor(resources.getColor(R.color.colorBlue))
+                        finishMap = arrayOf()
+                        downloading = false
+                    }
+                }, 400)
+            }
+        }
+    }
+
+    private fun onZipDownloadFailure(index: Int) {
+        tbtnlist[index].setBackgroundResource(R.drawable.rndbg_error)
+        Toast.makeText(that?.context, "下载${tbtnlist[index].chapterName}失败", Toast.LENGTH_SHORT).show()
+        updateProgressBar()
+    }
+    
     private fun showDlCard(){
         //ObjectAnimator.ofFloat(dlsdwn, "alpha", 0.3f, 0.9f).setDuration(233).start()
         ObjectAnimator.ofFloat(that?.dlsdwn, "translationX", cdwnWidth.toFloat() * 0.9f, 0f).setDuration(233).start()

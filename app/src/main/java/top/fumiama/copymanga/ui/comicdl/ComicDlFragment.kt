@@ -49,6 +49,7 @@ class ComicDlFragment: NoBackRefreshFragment(R.layout.fragment_dlcomic) {
     override fun onDestroy() {
         super.onDestroy()
         //mainWeakReference?.get()?.menuMain?.let { setMenuInvisible(it) }
+        handler?.downloading = false
         handler?.mangaDlTools?.exit = true
         ads.forEach {
             it.exit = true

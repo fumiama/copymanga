@@ -7,6 +7,7 @@ import android.util.Log
 import com.google.gson.Gson
 import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
+import top.fumiama.copymanga.json.Chapter2Return
 import top.fumiama.copymanga.json.ReturnBase
 import top.fumiama.copymanga.tools.http.DownloadTools
 import top.fumiama.copymanga.tools.thread.TimeThread
@@ -22,7 +23,7 @@ open class AutoDownloadHandler(private val url: String, private val jsonClass: C
             0 -> setLayouts()
         }
     }
-    open fun setGsonItem(gsonObj: Any) {}
+    open fun setGsonItem(gsonObj: Any): Boolean = true
     open fun getGsonItem(): ReturnBase? = null
     open fun onError() {}
     open fun doWhenFinishDownload() {}
@@ -33,21 +34,25 @@ open class AutoDownloadHandler(private val url: String, private val jsonClass: C
         exit = true
     }
     private fun download(){
-        Thread{
-            DownloadTools.getHttpContent(url,
-                mainWeakReference?.get()?.getString(R.string.referUrl)!!,
-                mainWeakReference?.get()?.getString(R.string.pc_ua)!!
-            )?.let {
-                if(exit) return@Thread
-                val fi = it.inputStream()
-                setGsonItem(Gson().fromJson(fi.reader(), jsonClass))
-                fi.close()
-            }
-        }.start()
+        Thread{ dlThread() }.start()
         checkTimes = 0
         timeThread = TimeThread(this, callCheckMsg)
         timeThread?.canDo = true
         timeThread?.start()
+    }
+    private fun dlThread() {
+        DownloadTools.getHttpContent(url,
+            mainWeakReference?.get()?.getString(R.string.referUrl)!!,
+            mainWeakReference?.get()?.getString(R.string.pc_ua)!!
+        )?.let {
+            if(exit) return
+            val fi = it.inputStream()
+            val pass = setGsonItem(Gson().fromJson(fi.reader(), jsonClass))
+            fi.close()
+            if(!pass) {
+                dlThread()
+            }
+        }
     }
     private fun check(){
         val g = getGsonItem()

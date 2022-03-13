@@ -27,7 +27,6 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
                 bookHandler.startLoad()
             }.start()
         }
-        else bookHandler.fbibinfo?.layoutParams?.height = (bookHandler.fbibinfo?.width?:0 * 4.0 / 9.0 + 0.5).toInt()
     }
 
     override fun onResume() {
@@ -37,6 +36,7 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
             toolbar.title = bookHandler.book?.results?.comic?.name
         }
         setStartRead()
+        bookHandler.fbibinfo?.layoutParams?.height = ((bookHandler.fbibinfo?.width?:0) * 4.0 / 9.0 + 0.5).toInt()
     }
 
     override fun onDestroy() {

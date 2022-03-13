@@ -22,16 +22,13 @@ import java.util.zip.ZipInputStream
 
 class DownloadFragment: NoBackRefreshFragment(R.layout.fragment_download) {
     private var nullZipDirStr = emptyArray<String>()
-    private var handler: DlLHandler? = null
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         if(isFirstInflate) {
             arguments?.getString("title")?.let {
                 mainWeakReference?.get()?.toolbar?.title = it
             }
-
-            handler = DlLHandler(Looper.myLooper()!!, this)
-            handler?.obtainMessage(3, currentDir)?.sendToTarget()       //call scanFile
+            scanFile(currentDir)
         }
     }
 
@@ -71,15 +68,11 @@ class DownloadFragment: NoBackRefreshFragment(R.layout.fragment_download) {
                     setOnItemLongClickListener { _, _, position, _ ->
                         val chosenFile = File(cd, it[position])
                         AlertDialog.Builder(context)
-                            .setIcon(R.drawable.ic_launcher_foreground).setMessage("在此执行删除/查错?")
-                            .setTitle("提示").setPositiveButton("删除") { _, _ ->
-                                if (chosenFile.exists()) handler?.obtainMessage(2, chosenFile)
-                                    ?.sendToTarget()       //call rmrf
-                                handler?.obtainMessage(3, cd)?.sendToTarget()       //call scanFile
+                            .setIcon(R.drawable.ic_launcher_foreground).setMessage("删除?")
+                            .setTitle("提示").setPositiveButton(android.R.string.ok) { _, _ ->
+                                if (chosenFile.exists()) rmrf(chosenFile)
+                                scanFile(cd)
                             }.setNegativeButton(android.R.string.cancel) { _, _ -> }
-                            .setNeutralButton("查错") { _, _ ->
-                                handler?.obtainMessage(1, chosenFile)?.sendToTarget()
-                            }  //call checkDir
                             .show()
                         true
                     }
@@ -96,13 +89,6 @@ class DownloadFragment: NoBackRefreshFragment(R.layout.fragment_download) {
                 else i.delete()
         }
         f.delete()
-    }
-
-    fun checkDir(f: File){
-        nullZipDirStr = emptyArray()
-        findNullWebpZipFileInDir(f)
-        if(nullZipDirStr.isNotEmpty()) showErrorZip(nullZipDirStr.joinToString("\n"))
-        else Toast.makeText(context, "未发现错误", Toast.LENGTH_SHORT).show()
     }
 
     private fun callDownloadFragment(jsonFile: File, isNew: Boolean = false){
