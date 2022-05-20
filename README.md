@@ -4,7 +4,7 @@
   拷贝漫画的第三方APP，优化阅读/下载体验<br><br>
 </div>
 
-<div align=center> <a href="#"> <img src="http://sayuri.fumiama.top/cmoe?name=copymanga&theme=gb" /> </a> </div>
+<div align=center> <a href="#"> <img src="http://cmoe.azurewebsites.net/cmoe?name=copymanga&theme=gb" /> </a> </div>
 
 ## 提示
 漫画数据均来源于拷贝漫画官方，作者不对其中呈现的任何内容负责。
