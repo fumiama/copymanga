@@ -19,7 +19,6 @@ class DlHandler(activity: DlActivity, looper: Looper) : Handler(looper) {
     private var size = 0
     private var refreshSize = true
 
-    @ExperimentalStdlibApi
     @SuppressLint("SetTextI18n")
     override fun handleMessage(msg: Message) {
         super.handleMessage(msg)

@@ -640,7 +640,6 @@ class ScaleImageView : ImageView {
      *
      * 在onTouchEvent末尾被执行.
      */
-    @ExperimentalStdlibApi
     private val mGestureDetector =
         GestureDetector(this.context, object : SimpleOnGestureListener() {
             override fun onFling(
@@ -697,7 +696,6 @@ class ScaleImageView : ImageView {
     private val isBig: Boolean
         get() = getMatrixScale(mOuterMatrix)[0] > 1f
 
-    @ExperimentalStdlibApi
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         super.onTouchEvent(event)

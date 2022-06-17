@@ -73,7 +73,6 @@ class ViewMangaActivity : Activity() {
             field = getPageNumber()
         }
 
-    @ExperimentalStdlibApi
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -121,7 +120,6 @@ class ViewMangaActivity : Activity() {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) window.setDecorFitsSystemWindows(false)
     }
 
-    @ExperimentalStdlibApi
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         var flag = false
         if(volTurnPage) when(keyCode) {

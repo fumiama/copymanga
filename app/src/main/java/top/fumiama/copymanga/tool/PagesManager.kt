@@ -12,13 +12,10 @@ class PagesManager(w: WeakReference<ViewMangaActivity>) {
     val v = w.get()
     private var isEndL = false
     private var isEndR = false
-    @ExperimentalStdlibApi
     fun toPreviousPage(){ toPage(v?.r2l==true) }
-    @ExperimentalStdlibApi
     fun toNextPage(){ toPage(v?.r2l!=true) }
     private fun judgePrevious() = v?.pageNum?:0 > 1
     private fun judgeNext() = v?.pageNum?:0 < v?.count?:0
-    @ExperimentalStdlibApi
     private fun toPage(goNext:Boolean){
         if (v?.clicked == false) {
             if (if(goNext)judgeNext() else judgePrevious()) {

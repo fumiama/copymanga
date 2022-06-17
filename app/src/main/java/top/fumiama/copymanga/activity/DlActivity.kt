@@ -50,7 +50,6 @@ class DlActivity : Activity() {
     private lateinit var mangaDlTools: MangaDlTools
     var multiSelect = false
 
-    @ExperimentalStdlibApi
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -105,7 +104,6 @@ class DlActivity : Activity() {
         handler.sendEmptyMessage(8)     //set dl card color to blue
     }
 
-    @ExperimentalStdlibApi
     @SuppressLint("SetTextI18n")
     fun setLayouts() {
         ttitle.text = comicName
@@ -184,7 +182,6 @@ class DlActivity : Activity() {
         if(!(jsonFile.exists() && intent.getBooleanExtra("callFromDlList", false))) json?.let { jsonFile.writeText(it) }
     }
 
-    @ExperimentalStdlibApi
     private fun downloadChapterPages(i: ChapterToggleButton) {
         mangaDlTools.onDownloadedListener =
             object : MangaDlTools.OnDownloadedListener {
