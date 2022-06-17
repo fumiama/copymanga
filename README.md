@@ -2,6 +2,11 @@
   <img src=".github/komako.jpg" width = "300" height = "300" alt="Komako"><br>
   <h1>copymanga 拷贝漫画</h1>
   拷贝漫画的第三方APP，优化阅读/下载体验<br><br>
+
+  [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+    alt="Get it on F-Droid"
+    height="80">](https://f-droid.org/packages/top.fumiama.copymanga)
+
 </div>
 
 <div align=center> <a href="#"> <img src="http://cmoe.azurewebsites.net/cmoe?name=copymanga&theme=gb" /> </a> </div>
