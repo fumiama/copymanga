@@ -28,6 +28,8 @@ import top.fumiama.copymanga.tool.MangaDlTools.Companion.wmdlt
 import top.fumiama.copymanga.tool.ToolsBox
 import top.fumiama.copymanga.view.ChapterToggleButton
 import top.fumiama.copymanga.view.LazyScrollView
+import top.fumiama.copymanga.web.JSHidden
+import top.fumiama.copymanga.web.WebChromeClient
 import java.io.File
 import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
@@ -57,6 +59,10 @@ class DlActivity : Activity() {
         setContentView(binding.root)
         mh?.saveUrlsOnly = true
         mangaDlTools = MangaDlTools(this)
+        dwh.settings.userAgentString = getString(R.string.pc_ua)
+        dwh.webChromeClient = WebChromeClient()
+        dwh.setWebViewClient("h.js")
+        dwh.loadJSInterface(JSHidden())
         handler.sendEmptyMessage(-2)        //setLayouts
     }
 
@@ -133,9 +139,11 @@ class DlActivity : Activity() {
                     haveDlStarted = true
                     canDl = true
                     handler.sendEmptyMessage(9)     //set dl card color to red
-                    Toast.makeText(this, "十秒后开始下载...", Toast.LENGTH_SHORT).show()
-                    fillChapters()
-                    Thread { dlThread { downloadChapterPages(it) } }.start()
+                    Toast.makeText(this, "请耐心等待加载...", Toast.LENGTH_SHORT).show()
+                    Thread {
+                        fillChapters()
+                        dlThread { downloadChapterPages(it) }
+                    }.start()
                 }
             }
         }

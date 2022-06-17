@@ -8,6 +8,8 @@ import android.webkit.*
 import android.webkit.WebViewClient
 import android.widget.Toast
 import top.fumiama.copymanga.R
+import top.fumiama.copymanga.activity.MainActivity.Companion.mh
+import top.fumiama.copymanga.activity.MainActivity.Companion.wm
 
 class WebViewClient(private val context: Context, jsFileName: String):WebViewClient() {
     private val js = context.assets.open(jsFileName).readBytes().decodeToString()
@@ -23,9 +25,14 @@ class WebViewClient(private val context: Context, jsFileName: String):WebViewCli
     }
 
     override fun onPageFinished(view: WebView?, url: String?) {
-        view?.loadUrl(js)
-        Log.d("MyWC", "Inject JS into: $url")
-        super.onPageFinished(view, url)
+        Thread {
+            Thread.sleep(500)
+            wm?.get()?.runOnUiThread {
+                view?.loadUrl(js)
+                Log.d("MyWC", "Inject JS into: $url")
+                super.onPageFinished(view, url)
+            }
+        }.start()
     }
 
     override fun onReceivedSslError(view: WebView?, handler: SslErrorHandler?, error: SslError?) {

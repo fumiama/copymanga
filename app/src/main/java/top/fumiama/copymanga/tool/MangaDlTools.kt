@@ -2,12 +2,11 @@ package top.fumiama.copymanga.tool
 
 import top.fumiama.copymanga.R
 import top.fumiama.copymanga.activity.DlActivity
-import top.fumiama.copymanga.data.ComicStructure
-import top.fumiama.copymanga.view.JSWebView
-import top.fumiama.copymanga.web.JSHidden
+import kotlinx.android.synthetic.main.activity_dl.*
 import java.io.File
 import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
+import java.util.concurrent.Semaphore
 import java.util.zip.CRC32
 import java.util.zip.CheckedOutputStream
 import java.util.zip.ZipEntry
@@ -15,18 +14,12 @@ import java.util.zip.ZipOutputStream
 
 class MangaDlTools(activity: DlActivity) {
     var exit = false
+    private val sem = Semaphore(1)
     private val da = WeakReference(activity)
     private val d = da.get()
     private val p = PropertiesTools(File("${d?.filesDir}/chapters.hash"))
     private var imgUrlsList: Array<Array<String>?>? = null
     private var chaptersCount = 0
-    private val newWebViewHidden: JSWebView?
-        get() {
-            val re = d?.let { JSWebView(it, it.getString(R.string.pc_ua)) }
-            re?.setWebViewClient("h.js")
-            re?.loadJSInterface(JSHidden())
-            return re
-        }
 
     init {
         wmdlt = WeakReference(this)
@@ -42,12 +35,16 @@ class MangaDlTools(activity: DlActivity) {
     }
 
     fun dlChapterUrl(url: String){
-        p[url.substringAfterLast("/")] = (chaptersCount++).toString()
-        newWebViewHidden?.loadUrl(url)
+        sem.acquire()
+        da.get()?.apply {
+            p[url.substringAfterLast("/")] = (chaptersCount++).toString()
+            runOnUiThread { dwh.loadUrl(url) }
+        }
     }
 
     fun setChapterImgs(hash: String, imgUrls: Array<String>){
         imgUrlsList?.set(p[hash].toInt(), imgUrls)
+        sem.release()
     }
 
     fun dlChapterAndPackIntoZip(zipf: File, hash: String){

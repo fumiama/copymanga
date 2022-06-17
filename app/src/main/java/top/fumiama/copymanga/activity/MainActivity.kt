@@ -22,7 +22,6 @@ import top.fumiama.copymanga.web.WebChromeClient
 import java.lang.ref.WeakReference
 
 class MainActivity: Activity() {
-    var wh: JSWebView? = null
     var uploadMessageAboveL: ValueCallback<Array<Uri>>? = null
     private var toolsBox: ToolsBox? = null
     @SuppressLint("JavascriptInterface")
@@ -44,10 +43,10 @@ class MainActivity: Activity() {
                 w.loadJSInterface(JS())
                 w.loadUrl(getString(R.string.web_home))
 
-                wh = JSWebView(this, getString(R.string.pc_ua))
-                wh?.webChromeClient = WebChromeClient()
-                wh?.setWebViewClient("h.js")
-                wh?.loadJSInterface(JSHidden())
+                wh.settings.userAgentString = getString(R.string.pc_ua)
+                wh.webChromeClient = WebChromeClient()
+                wh.setWebViewClient("h.js")
+                wh.loadJSInterface(JSHidden())
             }
         }
         SetDraggable().with(this).onto(fab)

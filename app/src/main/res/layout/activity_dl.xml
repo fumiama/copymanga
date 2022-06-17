@@ -5,6 +5,16 @@
     android:layout_height="match_parent"
     android:background="#FCFCFF">
 
+    <top.fumiama.copymanga.view.JSWebView
+        android:id="@+id/dwh"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="false"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:longClickable="false"
+        android:touchscreenBlocksFocus="false" />
+
     <include
         android:id="@+id/dtitle"
         layout="@layout/widget_titlebar"

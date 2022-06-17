@@ -6,6 +6,11 @@
     android:layout_height="match_parent">
 
     <top.fumiama.copymanga.view.JSWebView
+        android:id="@+id/wh"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <top.fumiama.copymanga.view.JSWebView
         android:id="@+id/w"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
