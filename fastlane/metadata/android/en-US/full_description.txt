@@ -1,7 +1,7 @@
 Third-party client for copymanga with better reading/downloading experience.
 <h3>Features</h3>
-1. Browsering the homepage, category, rank, my downloads, tag, and author.
-2. Viewing. searching and reading the manga; remembering the reading progress of the captures of the manga.
-3. Downloading the manga. But due to force majeure, the downloading is slow and error-prone. This is not due to bad optimization, absolutely not.
-4. Reading the downloaded manga.
-5. Checking update.
+1. Browse homepage, category, rank, my downloads, tag, and author.
+2. View, search and read manga; log reading progress.
+3. Download manga. But due to force majeure, the downloading is slow and error-prone. This is not due to bad optimization, absolutely not.
+4. Read downloaded manga.
+5. Check update.
