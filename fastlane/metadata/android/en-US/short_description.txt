@@ -1,0 +1,1 @@
+Third-party client for copymanga with better reading/downloading experience
