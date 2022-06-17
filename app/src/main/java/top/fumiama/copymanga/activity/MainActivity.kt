@@ -45,6 +45,7 @@ class MainActivity: Activity() {
                 w.loadUrl(getString(R.string.web_home))
 
                 wh = JSWebView(this, getString(R.string.pc_ua))
+                wh?.webChromeClient = WebChromeClient()
                 wh?.setWebViewClient("h.js")
                 wh?.loadJSInterface(JSHidden())
             }

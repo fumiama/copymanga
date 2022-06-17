@@ -14,14 +14,21 @@ if (typeof (loaded) == "undefined"){
     function modify() {
         var url = location.href;
         if(url.indexOf("/chapter/")>0){
-            var imglist = document.getElementsByClassName("container-fluid comicContent")[0].getElementsByTagName("li");
-            var nextChapter = document.getElementsByClassName("comicContent-next")[0].getElementsByTagName("a")[0].href;
-            var prevChapter = document.getElementsByClassName("comicContent-prev")[1].getElementsByTagName("a")[0].href;
-            if(nextChapter == location.href) nextChapter = "null";
-            if(prevChapter == location.href) prevChapter = "null";
-            var liststr = document.title.split(" - ")[1] + " " + location.href.substring(location.href.lastIndexOf("/")+1) + "\n" + nextChapter + "\n" + prevChapter;
-            for(var i = 0; i < imglist.length; i++) liststr += "\n" + imglist[i].getElementsByTagName("img")[0].dataset.src;
-            GM.loadChapter(liststr);
+            window.scroll({ top: document.body.scrollHeight, left: 0, behavior: 'smooth' });
+            setTimeout(() => {
+                window.scroll({ top: document.body.scrollHeight, left: 0, behavior: 'smooth' });
+                setTimeout(() => {
+                    window.scroll({ top: document.body.scrollHeight, left: 0, behavior: 'smooth' });
+                    var imglist = document.getElementsByClassName("container-fluid comicContent")[0].getElementsByTagName("li");
+                    var nextChapter = document.getElementsByClassName("comicContent-next")[0].getElementsByTagName("a")[0].href;
+                    var prevChapter = document.getElementsByClassName("comicContent-prev")[1].getElementsByTagName("a")[0].href;
+                    if(nextChapter == location.href) nextChapter = "null";
+                    if(prevChapter == location.href) prevChapter = "null";
+                    var liststr = document.title.split(" - ")[1] + " " + location.href.substring(location.href.lastIndexOf("/")+1) + "\n" + nextChapter + "\n" + prevChapter;
+                    for(var i = 0; i < imglist.length; i++) liststr += "\n" + imglist[i].getElementsByTagName("img")[0].dataset.src;
+                    GM.loadChapter(liststr);
+                }, 500);
+            }, 500);
         } else {
             var json = Array();
             var chapters = document.getElementsByClassName("upLoop")[0].children;

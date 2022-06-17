@@ -2,8 +2,9 @@ package top.fumiama.copymanga.web
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.net.http.SslError
 import android.util.Log
-import android.webkit.WebView
+import android.webkit.*
 import android.webkit.WebViewClient
 import android.widget.Toast
 import top.fumiama.copymanga.R
@@ -22,9 +23,20 @@ class WebViewClient(private val context: Context, jsFileName: String):WebViewCli
     }
 
     override fun onPageFinished(view: WebView?, url: String?) {
+        view?.loadUrl(js)
+        Log.d("MyWC", "Inject JS into: $url")
         super.onPageFinished(view, url)
-        url?.let {
-            view?.postDelayed({view.loadUrl(js)}, 1000)
-        }
+    }
+
+    override fun onReceivedSslError(view: WebView?, handler: SslErrorHandler?, error: SslError?) {
+        handler?.proceed() // ignore ssl errors
+    }
+
+    override fun shouldInterceptRequest(
+        view: WebView?,
+        request: WebResourceRequest?
+    ): WebResourceResponse? {
+        request?.requestHeaders?.set("Access-Control-Allow-Origin", "*")
+        return super.shouldInterceptRequest(view, request)
     }
 }
