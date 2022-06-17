@@ -24,7 +24,7 @@ class WebViewClient(private val context: Context, jsFileName: String):WebViewCli
     override fun onPageFinished(view: WebView?, url: String?) {
         super.onPageFinished(view, url)
         url?.let {
-            view?.loadUrl(js)
+            view?.postDelayed({view.loadUrl(js)}, 1000)
         }
     }
 }
