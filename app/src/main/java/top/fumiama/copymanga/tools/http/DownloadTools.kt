@@ -45,6 +45,7 @@ object DownloadTools {
                     setRequestProperty("source", "copyApp")
                     setRequestProperty("webp", "1")
                     setRequestProperty("region", "0")
+                    setRequestProperty("authorization", "Token")
                     setRequestProperty("platform", "3")
                     ua?.let { setRequestProperty("User-agent", it) }
 

@@ -71,7 +71,10 @@ class ViewMangaActivity : TitleActivityTemplate() {
         set(value) = setPageNumber(value)
     //var pn = 0
     private val isPnValid: Boolean get(){
-        if(pn == -2) pn = realCount
+        if(pn == -2) {
+            pn = 0
+            return true
+        }
         return intent.getStringExtra("function") == "log" && pn > 0
     }
     private var tasks: Array<FutureTask<ByteArray?>?>? = null

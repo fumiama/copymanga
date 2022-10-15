@@ -304,11 +304,11 @@ class BookHandler(that: WeakReference<BookFragment>, private val path: String)
             do {
                 counts[i] = counts[i] - 100
                 CMApi.getApiUrl(R.string.groupInfoApiUrl, path, gpw, offset)?.let {
+                    Log.d("MyBFH", "get api: $it")
                     if(ComicDlFragment.exit) return
                     val ad = AutoDownloadThread(it) { result ->
                         Log.d("MyBFH", "第${i}卷返回")
-                        val r =
-                            Gson().fromJson(result?.decodeToString(), VolumeStructure::class.java)
+                        val r = Gson().fromJson(result?.decodeToString(), VolumeStructure::class.java)
                         re[r.results.offset / 100] = r
                     }
                     ads += ad
