@@ -698,7 +698,7 @@ class ScaleImageView : ImageView {
     private val isBig: Boolean
         get() = getMatrixScale(mOuterMatrix)[0] > 1f
 
-    @ExperimentalStdlibApi
+    @OptIn(ExperimentalStdlibApi::class)
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         super.onTouchEvent(event)

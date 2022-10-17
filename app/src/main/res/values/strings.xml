@@ -80,4 +80,16 @@
 
     <string name="author">作者</string>
     <string name="caption">标签</string>
+
+    <string name="settings_cat_net">网络</string>
+    <string name="settings_cat_net_sw_use_foreign">使用海外线路</string>
+    <string name="settings_cat_net_sm_use_foreign">不管使用什么线路, API访问均是海外, 只有图片CDN可能会变化, 请酌情选择使用</string>
+
+    <string name="settings_cat_vm">漫画浏览</string>
+    <string name="settings_cat_vm_sw_vol_turn">音量键翻页</string>
+    <string name="settings_cat_vm_sm_vol_turn">使用音量上下键前后翻页</string>
+    <string name="settings_cat_vm_sb_vertical_max">竖向翻页一次加载页数</string>
+    <string name="settings_cat_vm_sm_vertical_max">默认为20</string>
+    <string name="settings_cat_vm_sb_quality">图片质量</string>
+    <string name="settings_cat_vm_sm_quality">默认为100</string>
 </resources>

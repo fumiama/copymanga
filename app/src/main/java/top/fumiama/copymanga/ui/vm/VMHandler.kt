@@ -120,14 +120,12 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
         wv.get()?.toolsBox?.toastError("下载章节信息失败")
     }
 
-    @ExperimentalStdlibApi
     override fun doWhenFinishDownload() {
         super.doWhenFinishDownload()
         if(exit) return
         prepareManga()
     }
 
-    @ExperimentalStdlibApi
     fun loadFromFile(file: File): Boolean {
         return try {
             val jsonFile = File(file.parentFile, "${file.nameWithoutExtension}.json")
@@ -157,7 +155,6 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
         }
     }
 
-    @ExperimentalStdlibApi
     private fun prepareManga(){
         if(comicName == null) {
             comicName = manga?.results?.comic?.name

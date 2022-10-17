@@ -232,9 +232,11 @@ class BookHandler(that: WeakReference<BookFragment>, private val path: String)
             that?.apply {
                 book?.results?.apply {
                     mainWeakReference?.get()?.runOnUiThread{
+                        if(exit) return@runOnUiThread
                         ViewMangaActivity.fileArray = arrayOf()
                         ViewMangaActivity.urlArray = arrayOf()
                         vols?.forEachIndexed { iv, v ->
+                            if(exit) return@runOnUiThread
                             fbl.addView(layoutInflater.inflate(R.layout.div_h, fbl, false))
                             val t = layoutInflater.inflate(R.layout.line_caption, fbl, false)
                             t.tcptn.text = keys[iv]

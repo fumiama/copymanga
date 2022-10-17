@@ -36,8 +36,10 @@ class SortFragment : InfoCardLoader(R.layout.fragment_sort, R.id.action_nav_sort
         setUpdate()
         setHot()
         AutoDownloadThread(getString(R.string.filterApiUrl)) {
+            if(ad?.exit == true) return@AutoDownloadThread
             it?.let {
                 filter = Gson().fromJson(it.inputStream().reader(), FilterStructure::class.java)
+                if(ad?.exit == true) return@AutoDownloadThread
                 mainWeakReference?.get()?.runOnUiThread{
                     setClasses()
                 }
@@ -53,6 +55,7 @@ class SortFragment : InfoCardLoader(R.layout.fragment_sort, R.id.action_nav_sort
     }
 
     private fun setUpdate(){
+        if(ad?.exit == true) return
         line_sort_time.apt.setText(R.string.menu_update_time)
         line_sort_time.setOnClickListener {
             sortValue = if(it.apim.rotation == 0f) {
@@ -71,6 +74,7 @@ class SortFragment : InfoCardLoader(R.layout.fragment_sort, R.id.action_nav_sort
 
     private fun setClasses(){
         filter?.results?.theme?.let { items ->
+            if(ad?.exit == true) return@let
             line_sort_class.apt.text = "全部"
             line_sort_class.setOnClickListener {
                 val popupMenu = popupMenu {
@@ -108,6 +112,7 @@ class SortFragment : InfoCardLoader(R.layout.fragment_sort, R.id.action_nav_sort
     }
 
     private fun setHot() {
+        if(ad?.exit == true) return
         line_sort_hot.apt.setText(R.string.menu_hot)
         line_sort_hot.setOnClickListener {
             sortValue = if (it.apim.rotation == 0f) {

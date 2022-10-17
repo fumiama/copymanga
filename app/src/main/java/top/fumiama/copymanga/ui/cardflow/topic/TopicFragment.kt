@@ -25,10 +25,12 @@ class TopicFragment : InfoCardLoader(R.layout.fragment_topic, R.id.action_nav_to
         AutoDownloadThread(getString(R.string.topicApiUrl).let {
             String.format(it, arguments?.getString("path"))
         }) {
+            if(ad?.exit == true) return@AutoDownloadThread
             it?.apply {
                 val r = inputStream().reader()
                 val topic = Gson().fromJson(r, TopicStructure::class.java)
                 topic?.apply {
+                    if(ad?.exit == true) return@AutoDownloadThread
                     mainWeakReference?.get()?.let {
                         it.runOnUiThread {
                             it.toolbar.title = results.title

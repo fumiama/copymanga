@@ -87,7 +87,6 @@ class ViewMangaActivity : TitleActivityTemplate() {
     private var pm: PagesManager? = null
     val realCount get() = if(cut) indexMap.size else count
 
-    @ExperimentalStdlibApi
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         setContentView(R.layout.activity_viewmanga)
@@ -131,7 +130,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         }
     }
 
-    @ExperimentalStdlibApi
+    @OptIn(ExperimentalStdlibApi::class)
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         var flag = false
         if(volTurnPage) when(keyCode) {
@@ -220,7 +219,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         }
     }
 
-    @ExperimentalStdlibApi
+    @OptIn(ExperimentalStdlibApi::class)
     fun initManga(){
         handler.manga?.results?.chapter?.uuid?.let {
             pn = getPreferences(MODE_PRIVATE).getInt(it, pn)
@@ -230,7 +229,6 @@ class ViewMangaActivity : TitleActivityTemplate() {
         if (!isVertical) restorePN()
     }
 
-    @ExperimentalStdlibApi
     private fun prepareImgFromWeb() {
         if(!noCellarAlert && toolsBox.netinfo == "移动数据") alertCellar()
         else handler.startLoad()
@@ -244,7 +242,6 @@ class ViewMangaActivity : TitleActivityTemplate() {
         return op.outWidth.toFloat() / op.outHeight.toFloat() > 1
     }
 
-    @ExperimentalStdlibApi
     fun countZipEntries(doWhenFinish : (count: Int) -> Unit) = Thread{
         if (zipFile != null) try {
             Log.d("Myvm", "zip: $zipFile")

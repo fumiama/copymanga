@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:title="@string/settings_cat_net">
+        <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
+            app:key="settings_cat_net_sw_use_foreign"
+            app:selectable="true"
+            app:summary="@string/settings_cat_net_sm_use_foreign"
+            app:title="@string/settings_cat_net_sw_use_foreign" />
+    </PreferenceCategory>
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:title="@string/settings_cat_vm">
+        <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
+            app:key="settings_cat_vm_sw_vol_turn"
+            app:selectable="true"
+            app:summary="@string/settings_cat_vm_sm_vol_turn"
+            app:title="@string/settings_cat_vm_sw_vol_turn" />
+        <SeekBarPreference
+            android:defaultValue="20"
+            app:defaultValue="true"
+            app:iconSpaceReserved="false"
+            app:key="settings_cat_vm_sb_vertical_max"
+            app:showSeekBarValue="true"
+            app:summary="@string/settings_cat_vm_sm_vertical_max"
+            app:title="@string/settings_cat_vm_sb_vertical_max" />
+        <SeekBarPreference
+            android:defaultValue="100"
+            app:defaultValue="true"
+            app:iconSpaceReserved="false"
+            app:key="settings_cat_vm_sb_quality"
+            app:showSeekBarValue="true"
+            app:summary="@string/settings_cat_vm_sm_quality"
+            app:title="@string/settings_cat_vm_sb_quality" />
+    </PreferenceCategory>
+</PreferenceScreen>

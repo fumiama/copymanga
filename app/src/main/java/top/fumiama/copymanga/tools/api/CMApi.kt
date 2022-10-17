@@ -3,7 +3,7 @@ package top.fumiama.copymanga.tools.api
 import com.bumptech.glide.load.model.LazyHeaders
 import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.MainActivity
-import top.fumiama.copymanga.json.Chapter2Return
+import top.fumiama.copymanga.ui.settings.SettingsFragment.Companion.settingsPref
 import java.io.File
 
 object CMApi {
@@ -15,7 +15,7 @@ object CMApi {
                     .addHeader("User-Agent", MainActivity.mainWeakReference?.get()?.getString(R.string.pc_ua)!!)
                     .addHeader("source", "copyApp")
                     .addHeader("webp", "1")
-                    .addHeader("region", "1")
+                    .addHeader("region", if(settingsPref?.getBoolean("", false) == false) "1" else "0")
                     .addHeader("platform", "3")
                     .build()
             return field

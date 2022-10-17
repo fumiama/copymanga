@@ -3,6 +3,7 @@ package top.fumiama.copymanga.tools.http
 import android.util.Log
 import top.fumiama.copymanga.tools.ssl.AllTrustManager
 import top.fumiama.copymanga.tools.ssl.IgnoreHostNameVerifier
+import top.fumiama.copymanga.ui.settings.SettingsFragment.Companion.settingsPref
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
@@ -44,7 +45,7 @@ object DownloadTools {
                     refer?.let { setRequestProperty("referer", it) }
                     setRequestProperty("source", "copyApp")
                     setRequestProperty("webp", "1")
-                    setRequestProperty("region", "0")
+                    setRequestProperty("region", if(settingsPref?.getBoolean("", false) == false) "1" else "0")
                     setRequestProperty("authorization", "Token")
                     setRequestProperty("platform", "3")
                     ua?.let { setRequestProperty("User-agent", it) }

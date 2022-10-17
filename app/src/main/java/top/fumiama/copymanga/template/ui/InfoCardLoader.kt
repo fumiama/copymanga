@@ -16,7 +16,7 @@ import java.lang.ref.WeakReference
 open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isTypeBook: Boolean = false): MangaPagesFragmentTemplate(inflateRes) {
     var offset = 0
     private val subUrl get() = getApiUrl()
-    private var ad: AutoDownloadThread? = null
+    var ad: AutoDownloadThread? = null
     init {
         pageHandler = object : PageHandler {
             override fun addPage(){
@@ -32,6 +32,7 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
                             if(results.offset < results.total) {
                                 if(code == 200) {
                                     results.list.forEach { book ->
+                                        if(ad?.exit == true) return@AutoDownloadThread
                                         cardList.addCard(book.comic.name, null, book.comic.cover, book.comic.path_word, null, null, false)
                                     }
                                     offset += results.list.size
@@ -46,6 +47,7 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
                             if(results.offset < results.total) {
                                 if(code == 200) {
                                     results.list.forEach{ book ->
+                                        if(ad?.exit == true) return@AutoDownloadThread
                                         cardList.addCard(book.name, null, book.cover, book.path_word, null, null, false)
                                     }
                                     offset += results.list.size

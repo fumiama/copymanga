@@ -28,7 +28,6 @@ open class MangaPagesFragmentTemplate(inflateRes:Int, val isLazy: Boolean = true
     var isRefresh = false
 
     @SuppressLint("ClickableViewAccessibility")
-    @ExperimentalStdlibApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

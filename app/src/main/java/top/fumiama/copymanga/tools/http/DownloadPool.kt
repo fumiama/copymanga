@@ -29,13 +29,13 @@ class DownloadPool(folder: String) {
     }
 
     operator fun plusAssign(quest: Quest) {
-        packZipFile(quest.fileName, quest.imgUrl, quest.refer?:"")
+        packZipFile(quest.fileName, quest.imgUrl, quest.refer)
     }
 
     operator fun plusAssign(quests: Array<Quest>) {
         Thread{
             quests.forEach { quest ->
-                packZipFile(quest.fileName, quest.imgUrl, quest.refer?:"")
+                packZipFile(quest.fileName, quest.imgUrl, quest.refer)
                 sleep(1000)
             }
         }.start()
@@ -49,7 +49,7 @@ class DownloadPool(folder: String) {
         mOnPageDownloadListener = onPageDownloadListener
     }
 
-    private fun packZipFile(fileName: String, imgUrls: Array<String>, refer: String) {
+    private fun packZipFile(fileName: String, imgUrls: Array<String>, refer: String?) {
         Thread{
             File(saveFolder, fileName).let { f ->
                 f.parentFile?.let { if(!it.exists()) it.mkdirs() }
