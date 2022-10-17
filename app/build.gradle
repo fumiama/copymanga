@@ -9,9 +9,9 @@ android {
         applicationId 'top.fumiama.copymanga'
         minSdkVersion 23
         targetSdkVersion 33
-        versionCode 24
-        versionName '2.0.beta12'
-        resConfigs "zh", "zh-rCN"
+        versionCode 25
+        versionName '2.0.beta13'
+        resConfigs 'zh', 'zh-rCN'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -34,8 +34,8 @@ android {
         }*/
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
     kotlinOptions {
         jvmTarget = '11'
@@ -52,7 +52,6 @@ android {
 
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'androidx.core:core-ktx:1.9.0'
     implementation 'androidx.appcompat:appcompat:1.5.1'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
@@ -69,7 +68,7 @@ dependencies {
     implementation 'com.to.aboomy:pager2banner:1.0.1'
     implementation 'com.github.bumptech.glide:glide:4.12.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
-    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation 'com.google.code.gson:gson:2.8.9'
     implementation 'com.github.vovaksenov99:OverscrollableScrollView:1.0'
     implementation 'com.liaoinstan.springview:library:1.7.0'
     implementation 'com.github.zawadz88.materialpopupmenu:material-popup-menu:4.0.1'

@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<top.fumiama.copymanga.ui.settings.SettingsFragment
-    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+<View xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
     android:layout_height="match_parent">
-
-</top.fumiama.copymanga.ui.settings.SettingsFragment>
+</View>
