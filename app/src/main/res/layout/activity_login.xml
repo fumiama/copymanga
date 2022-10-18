@@ -79,7 +79,7 @@
         android:layout_marginTop="4dp"
         android:fontFamily="@font/calibri"
         android:gravity="center"
-        android:text="This is the third-party app for manga reading"
+        android:text="A third-party app for manga reading"
         android:textColor="#9affffff"
         android:textSize="10sp" />
 
@@ -102,9 +102,10 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:id="@+id/altusrnm"
                 android:drawableEnd="@drawable/ic_email_white_24dp"
                 android:fontFamily="@font/calibri"
-                android:hint="Email"
+                android:hint="Username"
                 android:maxLines="1"
                 android:textSize="16sp" />
         </com.google.android.material.textfield.TextInputLayout>
@@ -117,6 +118,7 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:id="@+id/altpwd"
                 android:drawableEnd="@drawable/ic_lock_white_24dp"
                 android:drawablePadding="16dp"
                 android:fontFamily="@font/calibri"
@@ -137,6 +139,7 @@
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:id="@+id/alblogin"
                 android:layout_marginLeft="16dp"
                 android:background="@drawable/buttonshapewhitebg"
                 android:fontFamily="@font/calibri"

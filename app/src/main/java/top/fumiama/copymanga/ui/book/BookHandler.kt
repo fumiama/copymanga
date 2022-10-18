@@ -253,19 +253,19 @@ class BookHandler(that: WeakReference<BookFragment>, private val path: String)
                                         line = layoutInflater.inflate(R.layout.line_chapter, that.fbl, false)
                                         line?.lcc?.apply {
                                             lct.text = it.name
-                                            setOnClickListener { _ -> Reader.viewMangaAt(it.name, i) }
+                                            setOnClickListener { Reader.viewMangaAt(book!!.results.comic.name, i) }
                                         }
                                         fbl?.addView(line)
                                     } else {
                                         line = layoutInflater.inflate(R.layout.line_2chapters, that.fbl, false)
                                         line?.l2cl?.apply {
                                             lct.text = it.name
-                                            setOnClickListener { _ -> Reader.viewMangaAt(it.name, i) }
+                                            setOnClickListener { Reader.viewMangaAt(book!!.results.comic.name, i) }
                                         }
                                     }
                                 } else line?.l2cr?.apply {
                                     lct.text = it.name
-                                    setOnClickListener { _ -> Reader.viewMangaAt(it.name, i) }
+                                    setOnClickListener { Reader.viewMangaAt(book!!.results.comic.name, i) }
                                     fbl?.addView(line)
                                     line = null
                                 }

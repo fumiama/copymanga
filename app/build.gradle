@@ -9,8 +9,8 @@ android {
         applicationId 'top.fumiama.copymanga'
         minSdkVersion 23
         targetSdkVersion 33
-        versionCode 25
-        versionName '2.0.beta13'
+        versionCode 26
+        versionName '2.0.beta14'
         resConfigs 'zh', 'zh-rCN'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -66,9 +66,9 @@ dependencies {
     implementation 'com.afollestad.material-dialogs:input:3.3.0'
     implementation 'com.github.yalantis:ucrop:2.2.6'
     implementation 'com.to.aboomy:pager2banner:1.0.1'
-    implementation 'com.github.bumptech.glide:glide:4.12.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
-    implementation 'com.google.code.gson:gson:2.8.9'
+    implementation 'com.github.bumptech.glide:glide:4.14.2'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.14.2'
+    implementation 'com.google.code.gson:gson:2.9.1'
     implementation 'com.github.vovaksenov99:OverscrollableScrollView:1.0'
     implementation 'com.liaoinstan.springview:library:1.7.0'
     implementation 'com.github.zawadz88.materialpopupmenu:material-popup-menu:4.0.1'

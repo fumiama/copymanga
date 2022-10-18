@@ -22,7 +22,6 @@
             app:title="@string/settings_cat_vm_sw_vol_turn" />
         <SeekBarPreference
             android:defaultValue="20"
-            app:defaultValue="true"
             app:iconSpaceReserved="false"
             app:key="settings_cat_vm_sb_vertical_max"
             app:showSeekBarValue="true"
@@ -30,7 +29,6 @@
             app:title="@string/settings_cat_vm_sb_vertical_max" />
         <SeekBarPreference
             android:defaultValue="100"
-            app:defaultValue="true"
             app:iconSpaceReserved="false"
             app:key="settings_cat_vm_sb_quality"
             app:showSeekBarValue="true"

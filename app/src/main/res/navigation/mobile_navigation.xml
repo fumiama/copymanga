@@ -83,9 +83,17 @@
 
     <fragment
         android:id="@+id/nav_history"
-        android:name="top.fumiama.copymanga.ui.history.HistoryFragment"
+        android:name="top.fumiama.copymanga.ui.cardflow.history.HistoryFragment"
         android:label="@string/menu_history"
-        tools:layout="@layout/fragment_history" />
+        tools:layout="@layout/fragment_history" >
+        <action
+            android:id="@+id/action_nav_history_to_nav_book"
+            app:destination="@id/nav_book"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_out_left_exit"
+            app:popExitAnim="@anim/slide_in_right_exit"/>
+    </fragment>
 
     <fragment
         android:id="@+id/nav_download"

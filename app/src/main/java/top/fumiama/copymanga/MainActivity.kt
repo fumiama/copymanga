@@ -32,6 +32,7 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.input.input
+import com.bumptech.glide.Glide
 import com.yalantis.ucrop.UCrop
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
@@ -86,6 +87,13 @@ class MainActivity : AppCompatActivity() {
                 Log.d("MyMain", "onDrawerOpened")
                 isDrawerClosed = false
                 DownloadFragment.currentDir = getExternalFilesDir("")
+                getPreferences(MODE_PRIVATE)?.apply {
+                    val name = getString("nickname", getString("username", ""))
+                    val avatar = getString("avatar", "")
+                    if(name != "") navttitle.text = name
+                    else navttitle.setText(R.string.noLogin)
+                    if(avatar != "") Glide.with(this@MainActivity).load(avatar).into(navhicon)
+                }
             }
 
             override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}

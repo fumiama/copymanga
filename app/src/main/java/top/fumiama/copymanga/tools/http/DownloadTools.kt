@@ -1,10 +1,12 @@
 package top.fumiama.copymanga.tools.http
 
+import android.content.Context
 import android.util.Log
+import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.tools.ssl.AllTrustManager
 import top.fumiama.copymanga.tools.ssl.IgnoreHostNameVerifier
 import top.fumiama.copymanga.ui.settings.SettingsFragment.Companion.settingsPref
-import java.io.File
+import top.fumiama.dmzj.copymanga.R
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
@@ -27,13 +29,25 @@ object DownloadTools {
         HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.socketFactory)
     }
 
-    private fun getConnection(url: String?, method: String = "GET") =
+    fun getConnection(url: String?, method: String = "GET", refer: String? = null, ua: String? = null) =
         url?.let {
             val connection = URL(url).openConnection() as HttpURLConnection
             connection.requestMethod = method
             connection.connectTimeout = 20000
             connection.readTimeout = 20000
-            connection
+            connection.apply {
+                ua?.let { setRequestProperty("user-agent", it) }
+                refer?.let { setRequestProperty("referer", it) }
+                setRequestProperty("source", "copyApp")
+                setRequestProperty("webp", "1")
+                setRequestProperty("region", if(settingsPref?.getBoolean("", false) == false) "1" else "0")
+                MainActivity.mainWeakReference?.get()?.getPreferences(Context.MODE_PRIVATE)?.getString("token", "")?.let {
+                    if(it != "") setRequestProperty("authorization", "Token $it")
+                    else setRequestProperty("authorization", "Token")
+                }
+                setRequestProperty("host", url.substringAfter("://").substringBefore("/"))
+                setRequestProperty("platform", "3")
+            }
         }
 
     fun getHttpContent(Url: String, refer: String? = null, ua: String? = null): ByteArray? {
@@ -41,42 +55,10 @@ object DownloadTools {
         var ret: ByteArray? = null
         val task = FutureTask(Callable {
             try {
-                getConnection(Url)?.apply {
-                    refer?.let { setRequestProperty("referer", it) }
-                    setRequestProperty("source", "copyApp")
-                    setRequestProperty("webp", "1")
-                    setRequestProperty("region", if(settingsPref?.getBoolean("", false) == false) "1" else "0")
-                    setRequestProperty("authorization", "Token")
-                    setRequestProperty("platform", "3")
-                    ua?.let { setRequestProperty("User-agent", it) }
-
+                getConnection(Url, "GET", refer, ua)?.apply {
                     ret = inputStream.readBytes()
                     disconnect()
                 }
-            } catch (ex: Exception) {
-                ex.printStackTrace()
-            }
-            return@Callable ret
-        })
-        Thread(task).start()
-        return try {
-            task.get()
-        } catch (ex: Exception) {
-            ex.printStackTrace()
-            null
-        }
-    }
-
-    fun getHttpContent(Url: String, refer: String? = null): ByteArray? {
-        Log.d("Mydl", "getHttp: $Url")
-        var ret: ByteArray? = null
-        val task = FutureTask(Callable {
-            try {
-                val connection = getConnection(Url)
-                refer?.let { connection?.setRequestProperty("referer", it) }
-
-                ret = connection?.inputStream?.readBytes()
-                connection?.disconnect()
             } catch (ex: Exception) {
                 ex.printStackTrace()
             }
@@ -96,8 +78,10 @@ object DownloadTools {
         var ret: ByteArray? = null
         val task = FutureTask(Callable {
             try {
-                val connection = getConnection(Url)
-                refer?.let { connection?.setRequestProperty("referer", it) }
+                val connection = getConnection(Url, "GET", refer)?.apply {
+                    ret = inputStream.readBytes()
+                    disconnect()
+                }
 
                 val ci = connection?.inputStream
                 if(readSize > 0) {
@@ -126,8 +110,10 @@ object DownloadTools {
             var ret: ByteArray? = null
             val task = FutureTask(Callable {
                 try {
-                    val connection = getConnection(it)
-                    refer?.let { connection?.setRequestProperty("referer", it) }
+                    val connection = getConnection(it, "GET", refer)?.apply {
+                        ret = inputStream.readBytes()
+                        disconnect()
+                    }
 
                     val ci = connection?.inputStream
                     ret = ci?.readBytes()
@@ -146,35 +132,6 @@ object DownloadTools {
         if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.M) return string
         else return string?.replace(Regex("(?<=/)[\\w\\s\\d\\u4e00-\\u9fa5.-]+(?=/?)")) { match ->
             return@replace URLEncoder.encode(match.value, "UTF-8")
-        }
-    }
-
-    fun downloadUsingUrlRet(url: String?, f: File, refer: String?): Boolean {
-        Log.d("Mydl", "Ret Get url: $url, File: $f")
-        val task = FutureTask(Callable {
-            val connection = getConnection(replaceChineseCharacters(url))
-            if(refer != null) connection?.setRequestProperty("referer", refer)
-
-            if (f.exists()) f.delete()
-            else f.parentFile?.mkdirs()
-            f.parentFile?.let {
-                if (!it.canRead()) it.setReadable(true)
-                if (!it.canWrite()) it.setWritable(true)
-            }
-            val ci = connection?.inputStream
-            val fo = f.outputStream()
-            ci?.buffered()?.copyTo(fo)
-            fo.close()
-            ci?.close()
-            connection?.disconnect()
-            return@Callable true
-        })
-        Thread(task).start()
-        return try {
-            task.get()
-        } catch (ex: Exception) {
-            ex.printStackTrace()
-            false
         }
     }
 }

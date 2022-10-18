@@ -25,9 +25,7 @@ import kotlinx.android.synthetic.main.line_header.view.*
 import kotlinx.android.synthetic.main.page_imgview.*
 import kotlinx.android.synthetic.main.page_imgview.view.*
 import kotlinx.android.synthetic.main.page_scrollimgview.*
-import kotlinx.android.synthetic.main.page_scrollimgview.view.*
 import kotlinx.android.synthetic.main.widget_infodrawer.*
-import kotlinx.android.synthetic.main.widget_infodrawer.view.*
 import kotlinx.android.synthetic.main.widget_titlebar.*
 import kotlinx.android.synthetic.main.widget_titlebar.view.*
 import kotlinx.android.synthetic.main.widget_viewmangainfo.*
@@ -43,7 +41,7 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.InputStream
 import java.lang.ref.WeakReference
-import java.util.*
+import top.fumiama.copymanga.ui.settings.SettingsFragment.Companion.settingsPref
 import java.util.concurrent.FutureTask
 import java.util.zip.ZipFile
 
@@ -96,16 +94,16 @@ class ViewMangaActivity : TitleActivityTemplate() {
         //zipFirst = intent.getStringExtra("callFrom") == "zipFirst"
         cut = pb["useCut"]
         r2l = pb["r2l"]
-        verticalLoadMaxCount = p["verticalMax"].let { if(it > 0) it else 20 }
+        verticalLoadMaxCount = settingsPref?.getInt("settings_cat_vm_sb_vertical_max", 20)?.let { if(it > 0) it else 20 }?:20
         isVertical = pb["vertical"]
         notUseVP = pb["noVP"] || isVertical
         //url = intent.getStringExtra("url")
         handler = VMHandler(this, if(urlArray.isNotEmpty()) urlArray[position] else "")
-        p["quality"].let { q = if (it > 0) it else 100 }
+        settingsPref?.getInt("settings_cat_vm_sb_quality", 100)?.let { q = if (it > 0) it else 100 }
         tt = TimeThread(handler, 22)
         tt.canDo = true
         tt.start()
-        volTurnPage = pb["volturn"]
+        volTurnPage = settingsPref?.getBoolean("settings_cat_vm_sw_vol_turn", false)?:false
         am = getSystemService(Service.AUDIO_SERVICE) as AudioManager
 
         Log.d("MyVM", "Now ZipFile is $zipFile")

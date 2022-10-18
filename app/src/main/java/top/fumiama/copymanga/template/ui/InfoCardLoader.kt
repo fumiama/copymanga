@@ -7,13 +7,14 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.Navigation
 import com.google.gson.Gson
 import top.fumiama.copymanga.json.BookListStructure
+import top.fumiama.copymanga.json.HistoryBookListStructure
 import top.fumiama.copymanga.json.TypeBookListStructure
 import top.fumiama.copymanga.template.general.MangaPagesFragmentTemplate
 import top.fumiama.copymanga.template.http.AutoDownloadThread
 import java.lang.ref.WeakReference
 
 @ExperimentalStdlibApi
-open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isTypeBook: Boolean = false): MangaPagesFragmentTemplate(inflateRes) {
+open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isTypeBook: Boolean = false,private val isHistoryBook: Boolean = false): MangaPagesFragmentTemplate(inflateRes) {
     var offset = 0
     private val subUrl get() = getApiUrl()
     var ad: AutoDownloadThread? = null
@@ -32,6 +33,21 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
                             if(results.offset < results.total) {
                                 if(code == 200) {
                                     results.list.forEach { book ->
+                                        if(ad?.exit == true) return@AutoDownloadThread
+                                        cardList.addCard(book.comic.name, null, book.comic.cover, book.comic.path_word, null, null, false)
+                                    }
+                                    offset += results.list.size
+                                }
+                            }
+                            page++
+                        }
+                    } else if(isHistoryBook) {
+                        val bookList = Gson().fromJson(it?.decodeToString(), HistoryBookListStructure::class.java)
+                        bookList?.apply {
+                            Log.d("MyICL", "offset:${results.offset}, total:${results.total}")
+                            if(results.offset < results.total) {
+                                if(code == 200) {
+                                    results.list.forEach{ book ->
                                         if(ad?.exit == true) return@AutoDownloadThread
                                         cardList.addCard(book.comic.name, null, book.comic.cover, book.comic.path_word, null, null, false)
                                     }

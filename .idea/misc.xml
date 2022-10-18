@@ -18,19 +18,26 @@
         <entry key="app/src/main/res/layout/fragment_book.xml" value="0.49592391304347827" />
         <entry key="app/src/main/res/layout/fragment_chapters.xml" value="0.49592391304347827" />
         <entry key="app/src/main/res/layout/fragment_download.xml" value="0.49592391304347827" />
+        <entry key="app/src/main/res/layout/fragment_history.xml" value="0.5395833333333333" />
         <entry key="app/src/main/res/layout/fragment_home.xml" value="0.4376278118609407" />
+        <entry key="app/src/main/res/layout/fragment_newest.xml" value="0.5395833333333333" />
         <entry key="app/src/main/res/layout/fragment_settings.xml" value="0.5255208333333333" />
         <entry key="app/src/main/res/layout/line_1bookline.xml" value="0.49592391304347827" />
         <entry key="app/src/main/res/layout/line_bookinfo.xml" value="0.49592391304347827" />
+        <entry key="app/src/main/res/layout/line_bookinfo_text.xml" value="0.5395833333333333" />
         <entry key="app/src/main/res/layout/line_booktandb.xml" value="0.48596014492753625" />
         <entry key="app/src/main/res/layout/line_chapter.xml" value="0.48596014492753625" />
         <entry key="app/src/main/res/layout/line_choice_list.xml" value="0.49592391304347827" />
+        <entry key="app/src/main/res/layout/line_rank.xml" value="0.5395833333333333" />
+        <entry key="app/src/main/res/layout/line_sort.xml" value="0.5395833333333333" />
         <entry key="app/src/main/res/layout/line_text_info.xml" value="0.49592391304347827" />
         <entry key="app/src/main/res/layout/line_word.xml" value="0.49592391304347827" />
         <entry key="app/src/main/res/layout/nav_header_main.xml" value="0.48596014492753625" />
         <entry key="app/src/main/res/layout/viewpage_banner.xml" value="0.49592391304347827" />
         <entry key="app/src/main/res/layout/viewpage_horizonal.xml" value="0.49592391304347827" />
         <entry key="app/src/main/res/layout/widget_infodrawer.xml" value="0.5395833333333333" />
+        <entry key="app/src/main/res/menu/activity_main_drawer.xml" value="0.5395833333333333" />
+        <entry key="app/src/main/res/menu/main.xml" value="0.5395833333333333" />
         <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.5572916666666666" />
         <entry key="app/src/main/res/xml/pref_setting.xml" value="0.6289537712895377" />
       </map>

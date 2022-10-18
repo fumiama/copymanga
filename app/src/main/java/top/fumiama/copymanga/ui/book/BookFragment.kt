@@ -54,7 +54,7 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
     }
 
     fun setStartRead() {
-        mainWeakReference?.get()?.apply {
+        if(bookHandler.chapterNames.isNotEmpty()) mainWeakReference?.get()?.apply {
             bookHandler.book?.results?.comic?.name?.let { name ->
                 getPreferences(MODE_PRIVATE).getInt(name, -1).let { p ->
                     this@BookFragment.lbbstart.apply {
