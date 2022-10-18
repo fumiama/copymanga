@@ -358,8 +358,10 @@ class ViewMangaActivity : TitleActivityTemplate() {
             if (re != null) Thread{
                 val data = re.get()
                 if(data != null) {
-                    loadImg(imgView, BitmapFactory.decodeByteArray(data, 0, data.size), isLast, useCut, isLeft)
-                    Log.d("MyVM", "Load from task")
+                    BitmapFactory.decodeByteArray(data, 0, data.size)?.let {
+                        loadImg(imgView, it, isLast, useCut, isLeft)
+                        Log.d("MyVM", "Load from task")
+                    }?:Log.d("MyVM", "null bitmap")
                 }
                 else getImgUrl(index2load)?.let { loadImgUrlInto(imgView, it, isLast, useCut, isLeft) }
             }.start()
