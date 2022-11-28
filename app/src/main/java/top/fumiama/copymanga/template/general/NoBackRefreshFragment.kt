@@ -20,4 +20,9 @@ open class NoBackRefreshFragment(private val layoutToLoad: Int):Fragment() {
         } else isFirstInflate = false
         return rootView
     }
+    override fun onDestroyView() {
+        super.onDestroyView()
+        rootView = null
+        isFirstInflate = true
+    }
 }
