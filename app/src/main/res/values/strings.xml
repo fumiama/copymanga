@@ -61,6 +61,7 @@
     <string name="TRANSPORT_NULL">无网络</string>
 
     <string name="pc_ua">Dart/2.16 (dart:io)</string>
+    <string name="app_ver">1.4.4</string>
 
     <string name="menu_update_time">更新时间</string>
     <string name="menu_hot">热度</string>

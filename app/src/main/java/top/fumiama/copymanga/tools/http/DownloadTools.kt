@@ -2,11 +2,10 @@ package top.fumiama.copymanga.tools.http
 
 import android.content.Context
 import android.util.Log
+import androidx.preference.PreferenceManager
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.tools.ssl.AllTrustManager
 import top.fumiama.copymanga.tools.ssl.IgnoreHostNameVerifier
-import top.fumiama.copymanga.ui.settings.SettingsFragment.Companion.settingsPref
-import top.fumiama.dmzj.copymanga.R
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
@@ -40,10 +39,17 @@ object DownloadTools {
                 refer?.let { setRequestProperty("referer", it) }
                 setRequestProperty("source", "copyApp")
                 setRequestProperty("webp", "1")
-                setRequestProperty("region", if(settingsPref?.getBoolean("", false) == false) "1" else "0")
-                MainActivity.mainWeakReference?.get()?.getPreferences(Context.MODE_PRIVATE)?.getString("token", "")?.let {
-                    if(it != "") setRequestProperty("authorization", "Token $it")
-                    else setRequestProperty("authorization", "Token")
+                MainActivity.mainWeakReference?.get()?.let {
+                    PreferenceManager.getDefaultSharedPreferences(it).apply {
+                        setRequestProperty("region", if(!getBoolean("settings_cat_net_sw_use_foreign", false)) "1" else "0")
+                    }
+                    it.getPreferences(Context.MODE_PRIVATE).apply {
+                        setRequestProperty("version", getString("app_ver", "1.4.4"))
+                        getString("token", "")?.let {
+                            if(it != "") setRequestProperty("authorization", "Token $it")
+                            else setRequestProperty("authorization", "Token")
+                        }
+                    }
                 }
                 setRequestProperty("host", url.substringAfter("://").substringBefore("/"))
                 setRequestProperty("platform", "3")

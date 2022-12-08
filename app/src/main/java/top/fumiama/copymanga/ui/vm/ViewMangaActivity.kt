@@ -3,6 +3,7 @@ package top.fumiama.copymanga.ui.vm
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Service
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.AudioManager
@@ -13,6 +14,7 @@ import android.view.*
 import android.widget.SeekBar
 import android.widget.Toast
 import androidx.core.content.edit
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
@@ -29,6 +31,7 @@ import kotlinx.android.synthetic.main.widget_infodrawer.*
 import kotlinx.android.synthetic.main.widget_titlebar.*
 import kotlinx.android.synthetic.main.widget_titlebar.view.*
 import kotlinx.android.synthetic.main.widget_viewmangainfo.*
+import top.fumiama.copymanga.MainActivity
 import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.template.general.TitleActivityTemplate
 import top.fumiama.copymanga.template.http.AutoDownloadThread
@@ -41,7 +44,6 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.InputStream
 import java.lang.ref.WeakReference
-import top.fumiama.copymanga.ui.settings.SettingsFragment.Companion.settingsPref
 import java.util.concurrent.FutureTask
 import java.util.zip.ZipFile
 
@@ -89,6 +91,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
     override fun onCreate(savedInstanceState: Bundle?) {
         setContentView(R.layout.activity_viewmanga)
         super.onCreate(savedInstanceState)
+        val settingsPref =  MainActivity.mainWeakReference?.get()?.let { PreferenceManager.getDefaultSharedPreferences(it) }
         va = WeakReference(this)
         //dlZip2View = intent.getStringExtra("callFrom") == "Dl" || p["dlZip2View"] == "true"
         //zipFirst = intent.getStringExtra("callFrom") == "zipFirst"

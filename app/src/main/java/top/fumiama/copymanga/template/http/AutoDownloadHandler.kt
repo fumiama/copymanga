@@ -41,13 +41,15 @@ open class AutoDownloadHandler(private val url: String, private val jsonClass: C
         timeThread?.start()
     }
     private fun dlThread() {
-        DownloadTools.getHttpContent(url,
-            mainWeakReference?.get()?.getString(R.string.referUrl)!!,
-            mainWeakReference?.get()?.getString(R.string.pc_ua)!!
-        )?.let {
+        DownloadTools.getHttpContent(url, null, mainWeakReference?.get()?.getString(R.string.pc_ua)!!)?.let {
             if(exit) return
             val fi = it.inputStream()
-            val pass = setGsonItem(Gson().fromJson(fi.reader(), jsonClass))
+            var pass = true
+            try {
+                pass = setGsonItem(Gson().fromJson(fi.reader(), jsonClass))
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
             fi.close()
             if(!pass) {
                 dlThread()
