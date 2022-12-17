@@ -39,16 +39,19 @@ import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.nav_header_main.*
 import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.tools.api.UITools
+import top.fumiama.copymanga.ui.book.BookFragment.Companion.bookHandler
+import top.fumiama.copymanga.ui.comicdl.ComicDlFragment
 import top.fumiama.copymanga.ui.download.DownloadFragment
 import top.fumiama.copymanga.update.Update
 import java.io.File
 import java.io.FileInputStream
+import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 
 class MainActivity : AppCompatActivity() {
     var isDrawerClosed = true
-    var menuMain: Menu? = null
-    var navController: NavController? = null
+    private var menuMain: Menu? = null
+    private var navController: NavController? = null
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var headPic: File
@@ -102,6 +105,40 @@ class MainActivity : AppCompatActivity() {
         checkUpdate(false)
 
         ime = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+
+        navController!!.addOnDestinationChangedListener { _, destination, _ ->
+            Thread {
+                sleep(1000)
+                runOnUiThread {
+                    when (destination.id) {
+                        R.id.nav_home -> {
+                            Log.d("MyMA", "enter home")
+                            menuMain?.findItem(R.id.action_info)?.isVisible = true
+                            menuMain?.findItem(R.id.action_download)?.isVisible = false
+                            menuMain?.findItem(R.id.action_sort)?.isVisible = false
+                        }
+                        R.id.nav_book -> {
+                            Log.d("MyMA", "enter book")
+                            menuMain?.findItem(R.id.action_info)?.isVisible = false
+                            menuMain?.findItem(R.id.action_download)?.isVisible = true
+                            menuMain?.findItem(R.id.action_sort)?.isVisible = false
+                        }
+                        R.id.nav_group -> {
+                            Log.d("MyMA", "enter group")
+                            menuMain?.findItem(R.id.action_info)?.isVisible = false
+                            menuMain?.findItem(R.id.action_download)?.isVisible = false
+                            menuMain?.findItem(R.id.action_sort)?.isVisible = true
+                        }
+                        else -> {
+                            Log.d("MyMA", "enter others")
+                            menuMain?.findItem(R.id.action_info)?.isVisible = false
+                            menuMain?.findItem(R.id.action_download)?.isVisible = false
+                            menuMain?.findItem(R.id.action_sort)?.isVisible = false
+                        }
+                    }
+                }
+            }.start()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -109,6 +146,24 @@ class MainActivity : AppCompatActivity() {
         menuInflater.inflate(R.menu.main, menu)
         menuMain = menu
         return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_info -> {
+                showAbout()
+                true
+            }
+            R.id.action_download -> {
+                bookHandler?.sendEmptyMessage(6)
+                true
+            }
+            R.id.action_sort -> {
+                ComicDlFragment.handler?.sendEmptyMessage(13)
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -250,7 +305,7 @@ class MainActivity : AppCompatActivity() {
         }.start()
     }
 
-    fun showAbout(item: MenuItem) {
+    private fun showAbout() {
         val dl = android.app.AlertDialog.Builder(this)
         dl.setMessage(R.string.app_description)
         dl.setTitle(R.string.action_info)

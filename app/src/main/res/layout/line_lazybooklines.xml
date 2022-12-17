@@ -25,7 +25,8 @@
                 android:id="@+id/mydll"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical" />
+                android:orientation="vertical"
+                android:paddingBottom="@dimen/global_content_padding_bottom"/>
         </androidx.core.widget.NestedScrollView>
 
     </com.liaoinstan.springview.widget.SpringView>

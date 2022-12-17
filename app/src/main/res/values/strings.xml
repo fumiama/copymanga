@@ -3,11 +3,12 @@
     <string name="action_settings">设定</string>
     <string name="action_info">关于</string>
     <string name="action_download">下载</string>
+    <string name="action_sort">整理</string>
 
     <string name="menu_home">主页</string>
     <string name="menu_sort">分类</string>
     <string name="menu_rank">排行</string>
-    <string name="app_description">©2022源文雨@CoolApk\n本应用为拷贝漫画的第三方客户端，数据均来源于网络，作者不对其中所呈现的任何内容负责。</string>
+    <string name="app_description">©2022源文雨\n本应用为拷贝漫画的第三方客户端，数据均来源于网络，作者不对其中所呈现的任何内容负责。</string>
     <string name="menu_history">浏览历史</string>
     <string name="menu_sub">我的订阅</string>
     <string name="menu_download">我的下载</string>

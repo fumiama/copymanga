@@ -4,30 +4,13 @@ import android.content.Context
 import android.util.Log
 import androidx.preference.PreferenceManager
 import top.fumiama.copymanga.MainActivity
-import top.fumiama.copymanga.tools.ssl.AllTrustManager
-import top.fumiama.copymanga.tools.ssl.IgnoreHostNameVerifier
 import java.net.HttpURLConnection
 import java.net.URL
-import java.net.URLEncoder
-import java.security.SecureRandom
 import java.util.concurrent.Callable
 import java.util.concurrent.FutureTask
 import javax.net.ssl.HttpsURLConnection
-import javax.net.ssl.SSLContext
 
 object DownloadTools {
-    private val trustManager = AllTrustManager()
-    private val sslContext: SSLContext = SSLContext.getInstance("SSL").let {
-        it.init(null, arrayOf(trustManager), SecureRandom())
-        it
-    }
-    private val ignoreHostNameVerifier = IgnoreHostNameVerifier()
-
-    init {
-        HttpsURLConnection.setDefaultHostnameVerifier(ignoreHostNameVerifier)
-        HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.socketFactory)
-    }
-
     fun getConnection(url: String?, method: String = "GET", refer: String? = null, ua: String? = null) =
         url?.let {
             val connection = URL(url).openConnection() as HttpURLConnection
@@ -35,6 +18,7 @@ object DownloadTools {
             connection.connectTimeout = 20000
             connection.readTimeout = 20000
             connection.apply {
+                setRequestProperty("host", url.substringAfter("://").substringBefore("/"))
                 ua?.let { setRequestProperty("user-agent", it) }
                 refer?.let { setRequestProperty("referer", it) }
                 setRequestProperty("source", "copyApp")
@@ -51,8 +35,19 @@ object DownloadTools {
                         }
                     }
                 }
-                setRequestProperty("host", url.substringAfter("://").substringBefore("/"))
                 setRequestProperty("platform", "3")
+            }
+        }
+
+    private fun getNormalConnection(url: String?, method: String = "GET", ua: String? = null) =
+        url?.let {
+            val connection = URL(url).openConnection() as HttpURLConnection
+            connection.requestMethod = method
+            connection.connectTimeout = 20000
+            connection.readTimeout = 20000
+            connection.apply {
+                setRequestProperty("host", url.substringAfter("://").substringBefore("/"))
+                ua?.let { setRequestProperty("user-agent", it) }
             }
         }
 
@@ -79,16 +74,12 @@ object DownloadTools {
         }
     }
 
-    fun getHttpContent(Url: String, readSize: Int, refer: String? = "https://api.copymanga.com"): ByteArray? {
+    fun getHttpContent(Url: String, readSize: Int): ByteArray? {
         Log.d("Mydl", "getHttp: $Url")
         var ret: ByteArray? = null
         val task = FutureTask(Callable {
             try {
-                val connection = getConnection(Url, "GET", refer)?.apply {
-                    ret = inputStream.readBytes()
-                    disconnect()
-                }
-
+                val connection = getNormalConnection(Url, "GET")
                 val ci = connection?.inputStream
                 if(readSize > 0) {
                     ret = ByteArray(readSize)
@@ -110,16 +101,13 @@ object DownloadTools {
         }
     }
 
-    fun touch(url: String?, refer: String? = "https://api.copymanga.com"): FutureTask<ByteArray?>? =
+    fun touch(url: String?): FutureTask<ByteArray?>? =
         url?.let {
             Log.d("Mydl", "touchHttp: $it")
             var ret: ByteArray? = null
             val task = FutureTask(Callable {
                 try {
-                    val connection = getConnection(it, "GET", refer)?.apply {
-                        ret = inputStream.readBytes()
-                        disconnect()
-                    }
+                    val connection = getNormalConnection(it, "GET")
 
                     val ci = connection?.inputStream
                     ret = ci?.readBytes()
@@ -134,10 +122,10 @@ object DownloadTools {
             task
         }
 
-    private fun replaceChineseCharacters(string: String?) : String? {
+    /*private fun replaceChineseCharacters(string: String?) : String? {
         if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.M) return string
         else return string?.replace(Regex("(?<=/)[\\w\\s\\d\\u4e00-\\u9fa5.-]+(?=/?)")) { match ->
             return@replace URLEncoder.encode(match.value, "UTF-8")
         }
-    }
+    }*/
 }

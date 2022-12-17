@@ -1,7 +1,5 @@
 package top.fumiama.copymanga.ui.book
 
-import android.content.Context.MODE_PRIVATE
-import android.content.Intent
 import android.os.Bundle
 import android.os.Looper
 import android.os.Message
@@ -44,12 +42,12 @@ import java.io.File
 import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 
-class BookHandler(that: WeakReference<BookFragment>, private val path: String)
+class BookHandler(private val th: WeakReference<BookFragment>, private val path: String)
     : AutoDownloadHandler(
-    that.get()?.getString(R.string.bookInfoApiUrl)?.let { String.format(it, path) } ?: "",
+    th.get()?.getString(R.string.bookInfoApiUrl)?.let { String.format(it, path) } ?: "",
     BookInfoStructure::class.java,
     Looper.myLooper()!!){
-    private val that = that.get()
+    private val that get() = th.get()
     private var hasToastedError = false
     get(){
         val re = field
@@ -57,7 +55,6 @@ class BookHandler(that: WeakReference<BookFragment>, private val path: String)
         return re
     }
     var book: BookInfoStructure? = null
-    var fbibinfo:View? = null
     var complete = false
     var ads = emptyArray<AutoDownloadThread>()
     var gpws = arrayOf<String>()
@@ -65,8 +62,7 @@ class BookHandler(that: WeakReference<BookFragment>, private val path: String)
     var cnts = intArrayOf()
     var vols: Array<VolumeStructure>? = null
     var chapterNames = arrayOf<String>()
-    private val divider get() = that?.layoutInflater?.inflate(R.layout.div_h, that.fbl, false)
-    private var fbtinfo: View? = null
+    private val divider get() = that?.layoutInflater?.inflate(R.layout.div_h, that?.fbl, false)
 
     override fun handleMessage(msg: Message) {
         super.handleMessage(msg)
@@ -74,9 +70,10 @@ class BookHandler(that: WeakReference<BookFragment>, private val path: String)
             //0 -> setLayouts()
             1 -> setCover()
             2 -> setTexts()
-            3 -> fbibinfo?.let { setInfoHeight(it) }
+            3 -> that?.fbibinfo?.let { setInfoHeight(it) }
             4 -> setThemes()
             5 -> setOverScale()
+            6 -> if(complete) that?.navigate2dl()
         }
     }
 
@@ -120,12 +117,12 @@ class BookHandler(that: WeakReference<BookFragment>, private val path: String)
     }
 
     private fun inflateComponents(){
-        fbibinfo = that?.layoutInflater?.inflate(R.layout.line_bookinfo, that.fbl, false)
-        fbtinfo = that?.layoutInflater?.inflate(R.layout.line_text_info, that.fbl, false)
+        that?.fbibinfo = that?.layoutInflater?.inflate(R.layout.line_bookinfo, that?.fbl, false)
+        that?.fbtinfo = that?.layoutInflater?.inflate(R.layout.line_text_info, that?.fbl, false)
     }
 
     private fun setOverScale(){
-        that?.fbov?.setScaleView(that.lbibg)
+        that?.fbov?.setScaleView(that!!.lbibg)
     }
 
     private fun setCover(){
@@ -164,8 +161,8 @@ class BookHandler(that: WeakReference<BookFragment>, private val path: String)
             book?.results?.comic?.status?.display
         ) }?:""
         that?.bttime?.text = book?.results?.comic?.datetime_updated
-        (fbtinfo as TextView).text = book?.results?.comic?.brief
-        that?.fbl?.addView(fbtinfo)
+        (that?.fbtinfo as TextView).text = book?.results?.comic?.brief
+        that?.fbl?.addView(that?.fbtinfo)
         that?.fbl?.addView(divider)
     }
 
@@ -190,7 +187,7 @@ class BookHandler(that: WeakReference<BookFragment>, private val path: String)
         themeStructure.onEachIndexed { i, it ->
             if(line == null) {
                 if(i == last) {
-                    line = that?.layoutInflater?.inflate(R.layout.line_chapter, that.fbl, false)
+                    line = that?.layoutInflater?.inflate(R.layout.line_chapter, that!!.fbl, false)
                     line?.lcc?.apply {
                         lct.text = it.name
                         setOnClickListener { _ ->
@@ -199,7 +196,7 @@ class BookHandler(that: WeakReference<BookFragment>, private val path: String)
                     }
                     that?.fbl?.addView(line)
                 } else {
-                    line = that?.layoutInflater?.inflate(R.layout.line_2chapters, that.fbl, false)
+                    line = that?.layoutInflater?.inflate(R.layout.line_2chapters, that!!.fbl, false)
                     line?.l2cl?.apply {
                         lct.text = it.name
                         setOnClickListener { _ ->
@@ -250,14 +247,14 @@ class BookHandler(that: WeakReference<BookFragment>, private val path: String)
                                 chapterNames += it.name
                                 if(line == null) {
                                     if(i == last) {
-                                        line = layoutInflater.inflate(R.layout.line_chapter, that.fbl, false)
+                                        line = layoutInflater.inflate(R.layout.line_chapter, that!!.fbl, false)
                                         line?.lcc?.apply {
                                             lct.text = it.name
                                             setOnClickListener { Reader.viewMangaAt(book!!.results.comic.name, i) }
                                         }
                                         fbl?.addView(line)
                                     } else {
-                                        line = layoutInflater.inflate(R.layout.line_2chapters, that.fbl, false)
+                                        line = layoutInflater.inflate(R.layout.line_2chapters, that!!.fbl, false)
                                         line?.l2cl?.apply {
                                             lct.text = it.name
                                             setOnClickListener { Reader.viewMangaAt(book!!.results.comic.name, i) }
@@ -271,11 +268,6 @@ class BookHandler(that: WeakReference<BookFragment>, private val path: String)
                                 }
                             }
                         }
-                        // padding
-                        val line = layoutInflater.inflate(R.layout.line_chapter, that.fbl, false)
-                        line.lci.visibility = View.INVISIBLE
-                        line.isClickable = false
-                        fbl?.addView(line)
                         endSetLayouts()
                     }
                 }

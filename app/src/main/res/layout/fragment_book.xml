@@ -13,7 +13,8 @@
             android:id="@+id/fbl"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" />
+            android:orientation="vertical"
+            android:paddingBottom="@dimen/global_content_padding_bottom"/>
     </top.fumiama.copymanga.views.OverScrollView>
 
     <ProgressBar

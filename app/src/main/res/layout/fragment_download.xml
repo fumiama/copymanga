@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ListView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:fillViewport="true"
+    android:id="@+id/mylv"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:id="@+id/mylv">
-</ListView>
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/global_content_padding_bottom"/>

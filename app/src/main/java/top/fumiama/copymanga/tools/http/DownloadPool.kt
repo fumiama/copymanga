@@ -62,11 +62,11 @@ class DownloadPool(folder: String) {
                 for(index in imgUrls.indices) {
                     while (wait && !exit) sleep(1000)
                     if(exit) break
-                    zip.putNextEntry(ZipEntry("$index.jpg"))
+                    zip.putNextEntry(ZipEntry("$index.${if(imgUrls[index].contains(".webp")) "webp" else "jpg"}"))
                     var tryTimes = 3
                     var s = false
                     while (!s && tryTimes-- > 0){
-                        s = (DownloadTools.getHttpContent(imgUrls[index], -1, refer)) ?.let { zip.write(it); true }?:false
+                        s = (DownloadTools.getHttpContent(imgUrls[index], -1))?.let { zip.write(it); true }?:false
                         if (!s) sleep(2000)
                     }
                     if(!s && tryTimes <= 0) {

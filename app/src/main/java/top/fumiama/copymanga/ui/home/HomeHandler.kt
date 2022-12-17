@@ -8,10 +8,12 @@ import android.os.Message
 import android.util.Log
 import android.view.View
 import android.view.ViewTreeObserver
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.cardview.widget.CardView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.navigation.Navigation
+import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
 import com.to.aboomy.pager2banner.Banner
@@ -30,19 +32,19 @@ import top.fumiama.copymanga.tools.api.UITools
 import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 
-class HomeHandler(that: WeakReference<HomeFragment>) : AutoDownloadHandler(
+class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadHandler(
     that.get()?.getString(R.string.mainPageApiUrl) ?: "",
     IndexStructure::class.java,
     Looper.myLooper()!!,
     9
 ) {
-    private val homeF = that.get()
+    private val homeF get() = that.get()
     var index: IndexStructure? = null
     var fhib: View? = null
         get() {
             Log.d("MyHH", "Get fhib.")
             if(field == null){
-                field = homeF?.layoutInflater?.inflate(R.layout.viewpage_banner, homeF.fhl, false)
+                field = homeF?.layoutInflater?.inflate(R.layout.viewpage_banner, homeF?.fhl, false)
                 Thread{homeF?.homeHandler?.sendEmptyMessage(3)}.start()
             }
             return field
@@ -72,7 +74,15 @@ class HomeHandler(that: WeakReference<HomeFragment>) : AutoDownloadHandler(
                 }
             }
             7 -> inflateBanner()
-            8 -> homeF?.fhl?.addView(indexLines[msg.arg1])
+            8 -> {
+                try {
+                    homeF?.fhl?.addView(indexLines[msg.arg1])
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    (indexLines[msg.arg1].parent as LinearLayout).removeAllViews()
+                    homeF?.fhl?.addView(indexLines[msg.arg1])
+                }
+            }
             //9 -> checkIndex()
         }
     }
@@ -159,7 +169,7 @@ class HomeHandler(that: WeakReference<HomeFragment>) : AutoDownloadHandler(
             }
         }
         if(comics.size == 9) allocateLine(homeF?.getString(R.string.rank_list)?:"", R.drawable.img_novel_bill, comics) {
-            mainWeakReference?.get()?.navController?.navigate(R.id.nav_rank)
+            that.get()?.findNavController()?.navigate(R.id.nav_rank)
         }
     }
 
@@ -201,6 +211,7 @@ class HomeHandler(that: WeakReference<HomeFragment>) : AutoDownloadHandler(
     }
 
     private fun inflateCardLines() {
+        if (indexLines.isNotEmpty()) indexLines = arrayOf()
         inflateRec()
         inflateTopics()
         inflateHot()
@@ -208,7 +219,10 @@ class HomeHandler(that: WeakReference<HomeFragment>) : AutoDownloadHandler(
         inflateFinish()
         inflateRank()
         Thread{
-            for(i in indexLines.indices) obtainMessage(8, i, 0).sendToTarget()
+            for(i in indexLines.indices) {
+                obtainMessage(8, i, 0).sendToTarget()
+                sleep(512)
+            }
             obtainMessage(-1, false).sendToTarget()                 //closeLoad
         }.start()
     }
@@ -233,11 +247,11 @@ class HomeHandler(that: WeakReference<HomeFragment>) : AutoDownloadHandler(
                 .addPageTransformer(ScaleInTransformer())
                 .setPageMargin(it.dp2px(20) ?: 0, it.dp2px(10) ?: 0)
                 .setIndicator(
-                    IndicatorView(homeF.context)
+                    IndicatorView(homeF!!.context)
                         .setIndicatorColor(Color.DKGRAY)
                         .setIndicatorSelectorColor(Color.WHITE)
                         .setIndicatorStyle(IndicatorView.IndicatorStyle.INDICATOR_BEZIER)
-                ).adapter = homeF.ViewData(v).RecyclerViewAdapter()
+                ).adapter = homeF?.ViewData(v)?.RecyclerViewAdapter()
         }
         v.invalidate()
         homeF?.fhov?.swipeRefreshLayout = homeF?.swiperefresh
@@ -265,7 +279,7 @@ class HomeHandler(that: WeakReference<HomeFragment>) : AutoDownloadHandler(
                 2 -> R.layout.line_2bookline
                 3 -> R.layout.line_3bookline
                 else -> return -1
-            }, homeF.fhl, false)?.apply {
+            }, homeF!!.fhl, false)?.apply {
             scanCards(this, comics, finish, isTopic)
             rttitle.text = title
             ir.setImageResource(iconResId)

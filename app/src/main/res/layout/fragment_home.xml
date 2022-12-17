@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-            <FrameLayout  xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:app="http://schemas.android.com/apk/res-auto"
-                xmlns:tools="http://schemas.android.com/tools"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                tools:context="top.fumiama.copymanga.ui.home.HomeFragment"
-                android:focusableInTouchMode="true">
-
+<FrameLayout  xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="top.fumiama.copymanga.ui.home.HomeFragment"
+    android:focusableInTouchMode="true">
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swiperefresh"
@@ -29,7 +28,8 @@
                 android:id="@+id/fhl"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:paddingBottom="@dimen/global_content_padding_bottom">
 
             </LinearLayout>
         </top.fumiama.copymanga.views.ScrollRefreshView>

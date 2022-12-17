@@ -14,7 +14,6 @@ import android.view.ViewTreeObserver
 import android.widget.Toast
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.fragment_book.*
-import kotlinx.android.synthetic.main.fragment_chapters.*
 import kotlinx.android.synthetic.main.line_chapter.view.*
 import kotlinx.android.synthetic.main.widget_downloadbar.*
 import kotlinx.android.synthetic.main.fragment_dlcomic.*
@@ -36,14 +35,14 @@ import top.fumiama.copymanga.views.LazyScrollView
 import java.io.File
 import java.lang.ref.WeakReference
 
-class ComicDlHandler(looper: Looper, that: WeakReference<ComicDlFragment>, private val vols: Array<VolumeStructure>, private val comicName: String, private val groupNames: Array<String>?):Handler(looper) {
-    constructor(looper: Looper, that: WeakReference<ComicDlFragment>, comicName: String) : this(looper, that, arrayOf(), comicName, null) {
+class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragment>, private val vols: Array<VolumeStructure>, private val comicName: String, private val groupNames: Array<String>?):Handler(looper) {
+    constructor(looper: Looper, th: WeakReference<ComicDlFragment>, comicName: String) : this(looper, th, arrayOf(), comicName, null) {
         isOld = true
     }
     private var isOld = false
     var complete = false
-    private val that = that.get()
-    private val toolsBox = UITools(that.get()?.context)
+    private val that get() = th.get()
+    private val toolsBox = UITools(th.get()?.context)
     private var btnNumPerRow = 4
     private var btnw = 0
     private var cdwnWidth = 0
@@ -56,7 +55,6 @@ class ComicDlHandler(looper: Looper, that: WeakReference<ComicDlFragment>, priva
     private var isNewTitle = false
     val mangaDlTools = MangaDlTools()
     private var multiSelect = false
-    private var ltbtn: View? = null
     private var finishMap = arrayOf<Boolean?>()
     var downloading = false
 
@@ -95,10 +93,11 @@ class ComicDlHandler(looper: Looper, that: WeakReference<ComicDlFragment>, priva
             }
             6 -> that?.tdwn?.text = "${dldChapter}/${checkedChapter}"
             7 -> deleteChapters(msg.obj as File, msg.arg1)
-            9 -> that?.cdwn?.setCardBackgroundColor(that.resources.getColor(R.color.colorGreen))
+            9 -> that?.cdwn?.setCardBackgroundColor(that!!.resources.getColor(R.color.colorGreen))
             10 -> addTbtn(msg.obj as Array<String>)
             11 -> addCaption(msg.obj as String)
             12 -> addDiv()
+            13 -> if(complete) showMultiSelectInfo()
         }
     }
 
@@ -128,7 +127,7 @@ class ComicDlHandler(looper: Looper, that: WeakReference<ComicDlFragment>, priva
     }
     private fun addDiv(){
         that?.ldwn?.addView(
-            that.layoutInflater.inflate(R.layout.div_h, that.ldwn, false),
+            that!!.layoutInflater.inflate(R.layout.div_h, that!!.ldwn, false),
             ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
@@ -136,7 +135,7 @@ class ComicDlHandler(looper: Looper, that: WeakReference<ComicDlFragment>, priva
         )
     }
     private fun addCaption(title: String){
-        val tc = that?.layoutInflater?.inflate(R.layout.line_caption, that.ldwn, false)
+        val tc = that?.layoutInflater?.inflate(R.layout.line_caption, that!!.ldwn, false)
         tc?.tcptn?.text = title
         that?.ldwn?.addView(
             tc,
@@ -191,9 +190,9 @@ class ComicDlHandler(looper: Looper, that: WeakReference<ComicDlFragment>, priva
         dl?.setContentView(R.layout.dialog_unzipping)
         that?.dlsdwn?.viewTreeObserver?.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener{
             override fun onGlobalLayout() {
-                cdwnWidth = that.dlsdwn.width
+                cdwnWidth = that!!.dlsdwn.width
                 Log.d("MyDl", "Get dlsdwn height: $cdwnWidth")
-                that.dlsdwn.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                that!!.dlsdwn.viewTreeObserver.removeOnGlobalLayoutListener(this)
             }
         })
         that?.dllazys?.onScrollListener = object : LazyScrollView.OnScrollListener{
@@ -204,10 +203,10 @@ class ComicDlHandler(looper: Looper, that: WeakReference<ComicDlFragment>, priva
             }
         }
         that?.cdwn?.setOnClickListener {
-            if(that.dlsdwn.translationX != 0f) showDlCard()
+            if(that!!.dlsdwn.translationX != 0f) showDlCard()
             else if(checkedChapter == 0) hideDlCard()
             else{
-                that.pdwn.progress = 0
+                that!!.pdwn.progress = 0
                 if (downloading || checkedChapter == 0) {
                    mangaDlTools.wait = !mangaDlTools.wait!!
                 } else {
@@ -251,7 +250,8 @@ class ComicDlHandler(looper: Looper, that: WeakReference<ComicDlFragment>, priva
             }
         }
     }
-    fun showMultiSelectInfo() {
+
+    private fun showMultiSelectInfo() {
         toolsBox.buildInfo("进入多选模式？", "之后可以对已下载漫画进行批量删除/重新下载",
             "确定", null, "取消", { multiSelect = true })
     }
@@ -314,12 +314,12 @@ class ComicDlHandler(looper: Looper, that: WeakReference<ComicDlFragment>, priva
     @SuppressLint("SetTextI18n")
     private fun addTbtn(title: String, uuid: String, caption: String, url: String) {
         if ((tbtncnt % btnNumPerRow == 0) || isNewTitle) {
-            ltbtn = that?.layoutInflater?.inflate(R.layout.line_horizonal_empty, that.ldwn, false)
-            that?.ldwn?.addView(ltbtn)
+            that?.ltbtn = that?.layoutInflater?.inflate(R.layout.line_horizonal_empty, that!!.ldwn, false)
+            that?.ldwn?.addView(that!!.ltbtn)
             tbtncnt = 0
             isNewTitle = false
         }
-        that?.layoutInflater?.inflate(R.layout.button_tbutton, ltbtn?.ltbtn, false)?.let { tbv ->
+        that?.layoutInflater?.inflate(R.layout.button_tbutton, that!!.ltbtn?.ltbtn, false)?.let { tbv ->
             tbv.tbtn.index = tbtnlist.size
             tbtnlist += tbv.tbtn
             tbtncnt++
@@ -330,15 +330,15 @@ class ComicDlHandler(looper: Looper, that: WeakReference<ComicDlFragment>, priva
             //tbv.tbtn.hint = caption
             tbv.tbtn.caption = caption
             tbv.tbtn.layoutParams.width = btnw
-            val zipf = CMApi.getZipFile(that.context?.getExternalFilesDir(""), comicName, caption, title)
+            val zipf = CMApi.getZipFile(that!!.context?.getExternalFilesDir(""), comicName, caption, title)
             Log.d("MyCD", "Get zipf: $zipf")
             ViewMangaActivity.fileArray += zipf
             if (zipf.exists()) {
                 tbv.tbtn.setBackgroundResource(R.drawable.rndbg_checked)
                 tbv.tbtn.isChecked = false
             }
-            ltbtn?.ltbtn?.addView(tbv)
-            ltbtn?.invalidate()
+            that?.ltbtn?.ltbtn?.addView(tbv)
+            that?.ltbtn?.invalidate()
             tbv.tbtn.setOnClickListener {
                 if (zipf.exists() && !multiSelect) {
                     it.tbtn.setBackgroundResource(R.drawable.rndbg_checked)
@@ -348,13 +348,13 @@ class ComicDlHandler(looper: Looper, that: WeakReference<ComicDlFragment>, priva
                     ViewMangaActivity.position = it.tbtn.index
                     dl?.show()
 
-                    that.startActivity(Intent(that.context, ViewMangaActivity::class.java)
+                    that?.startActivity(Intent(that!!.context, ViewMangaActivity::class.java)
                         .putExtra("callFrom", "zipFirst")
                     )
                 } else {
                     it.tbtn.setBackgroundResource(R.drawable.toggle_button)
-                    if (it.tbtn.isChecked) that.tdwn?.text = "$dldChapter/${++checkedChapter}"
-                    else that.tdwn.text = "$dldChapter/${--checkedChapter}"
+                    if (it.tbtn.isChecked) that?.tdwn?.text = "$dldChapter/${++checkedChapter}"
+                    else that?.tdwn?.text = "$dldChapter/${--checkedChapter}"
                 }
             }
             tbv.tbtn.setOnLongClickListener {
@@ -377,7 +377,7 @@ class ComicDlHandler(looper: Looper, that: WeakReference<ComicDlFragment>, priva
                             ViewMangaActivity.position = it.tbtn.index
                             dl?.show()
 
-                            that.startActivity(Intent(that.context, ViewMangaActivity::class.java))
+                            that?.startActivity(Intent(that?.context, ViewMangaActivity::class.java))
                         }, null, null
                     )
                 }
@@ -389,17 +389,17 @@ class ComicDlHandler(looper: Looper, that: WeakReference<ComicDlFragment>, priva
     private fun analyzeOldStructure() = Thread{
         Gson().fromJson(json?.reader(), Array<ComicStructureOld>::class.java)?.let {
             for (group in it) {
-                that?.layoutInflater?.inflate(R.layout.line_caption, that.ldwn, false)?.let { tc ->
+                that?.layoutInflater?.inflate(R.layout.line_caption, that!!.ldwn, false)?.let { tc ->
                     tc.tcptn.text = group.name
-                    that.ldwn.addView(
+                    that!!.ldwn.addView(
                         tc,
                         ViewGroup.LayoutParams(
                             ViewGroup.LayoutParams.MATCH_PARENT,
                             ViewGroup.LayoutParams.WRAP_CONTENT
                         )
                     )
-                    that.ldwn.addView(
-                        that.layoutInflater.inflate(R.layout.div_h, that.ldwn, false),
+                    that!!.ldwn.addView(
+                        that!!.layoutInflater.inflate(R.layout.div_h, that!!.ldwn, false),
                         ViewGroup.LayoutParams(
                             ViewGroup.LayoutParams.MATCH_PARENT,
                             ViewGroup.LayoutParams.WRAP_CONTENT

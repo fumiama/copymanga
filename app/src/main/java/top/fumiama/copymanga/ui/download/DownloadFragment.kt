@@ -32,7 +32,7 @@ class DownloadFragment: NoBackRefreshFragment(R.layout.fragment_download) {
         }
     }
 
-    fun scanFile(cd: File?){
+    private fun scanFile(cd: File?){
         val isRoot = cd == context?.getExternalFilesDir("")
         val jsonFile = File(cd, "info.bin")
         if(isRoot || !jsonFile.exists()) cd?.list()?.sortedArrayWith { o1, o2 ->

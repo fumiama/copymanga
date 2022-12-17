@@ -360,7 +360,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
             val re = tasks?.get(index2load)
             if (re != null) Thread{
                 val data = re.get()
-                if(data != null) {
+                if(data != null && data.isNotEmpty()) {
                     BitmapFactory.decodeByteArray(data, 0, data.size)?.let {
                         loadImg(imgView, it, isLast, useCut, isLeft)
                         Log.d("MyVM", "Load from task")

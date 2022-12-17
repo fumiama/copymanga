@@ -76,12 +76,6 @@
     </fragment>
 
     <fragment
-        android:id="@+id/nav_sub"
-        android:name="top.fumiama.copymanga.ui.sub.SubFragment"
-        android:label="@string/menu_sub"
-        tools:layout="@layout/fragment_sub" />
-
-    <fragment
         android:id="@+id/nav_history"
         android:name="top.fumiama.copymanga.ui.cardflow.history.HistoryFragment"
         android:label="@string/menu_history"
@@ -129,13 +123,6 @@
         android:label="@string/page_book"
         tools:layout="@layout/fragment_book" >
         <action
-            android:id="@+id/action_nav_book_to_nav_chapter"
-            app:destination="@id/nav_chapter"
-            app:enterAnim="@anim/slide_in_right"
-            app:exitAnim="@anim/slide_out_left"
-            app:popEnterAnim="@anim/slide_out_left_exit"
-            app:popExitAnim="@anim/slide_in_right_exit"/>
-        <action
             android:id="@+id/action_nav_book_to_nav_group"
             app:destination="@id/nav_group"
             app:enterAnim="@anim/slide_in_right"
@@ -156,13 +143,6 @@
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_out_left_exit"
             app:popExitAnim="@anim/slide_in_right_exit"/>
-    </fragment>
-
-    <fragment
-        android:id="@+id/nav_chapter"
-        android:name="top.fumiama.copymanga.ui.chapter.ChapterFragment"
-        android:label="@string/page_chapter"
-        tools:layout="@layout/fragment_chapters" >
     </fragment>
 
     <fragment

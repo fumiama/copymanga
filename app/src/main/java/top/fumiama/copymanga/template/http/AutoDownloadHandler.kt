@@ -41,8 +41,12 @@ open class AutoDownloadHandler(private val url: String, private val jsonClass: C
         timeThread?.start()
     }
     private fun dlThread() {
-        DownloadTools.getHttpContent(url, null, mainWeakReference?.get()?.getString(R.string.pc_ua)!!)?.let {
+        DownloadTools.getHttpContent(url, null, mainWeakReference?.get()?.getString(R.string.pc_ua)!!).let {
             if(exit) return
+            if(it == null) {
+                dlThread()
+                return
+            }
             val fi = it.inputStream()
             var pass = true
             try {

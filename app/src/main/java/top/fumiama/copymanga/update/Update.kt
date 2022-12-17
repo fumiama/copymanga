@@ -18,7 +18,7 @@ import java.security.MessageDigest
 
 object Update {
     fun checkUpdate(activity: Activity, toolsBox: UITools, ignoreSkip: Boolean = false) = activity.apply{
-        val client = Client("copymanga.v6.army", 12315)
+        val client = Client("copymanga.v6.army", 12316)
         val progressBar = layoutInflater.inflate(R.layout.dialog_progress, null, false)
         val progressHandler = object : Client.Progress{
             override fun notify(progressPercentage: Int) {

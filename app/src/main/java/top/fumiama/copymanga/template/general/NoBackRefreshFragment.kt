@@ -1,6 +1,7 @@
 package top.fumiama.copymanga.template.general
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,7 +18,11 @@ open class NoBackRefreshFragment(private val layoutToLoad: Int):Fragment() {
         if(rootView == null){
             isFirstInflate = true
             rootView = inflater.inflate(layoutToLoad, container, false)
-        } else isFirstInflate = false
+            Log.d("MyNBRF", "is first inflate")
+        } else {
+            isFirstInflate = false
+            Log.d("MyNBRF", "not first inflate")
+        }
         return rootView
     }
     override fun onDestroyView() {

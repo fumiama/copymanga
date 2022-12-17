@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu
+<menu xmlns:tools="http://schemas.android.com/tools"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
@@ -10,9 +10,15 @@
         android:visible="false"
         app:showAsAction="ifRoom" />
     <item
-        android:id="@+id/action_info"
-        android:onClick="showAbout"
+        android:id="@+id/action_sort"
+        android:icon="@drawable/ic_menu_sort"
         android:orderInCategory="200"
+        android:title="@string/action_sort"
+        android:visible="false"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_info"
+        android:orderInCategory="300"
         android:title="@string/action_info"
         app:showAsAction="never" />
 </menu>

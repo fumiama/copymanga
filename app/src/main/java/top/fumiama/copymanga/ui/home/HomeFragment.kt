@@ -38,7 +38,7 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        if(isFirstInflate){
+        if(isFirstInflate) {
             val theme = resources.newTheme()
             swiperefresh.setColorSchemeColors(
                 resources.getColor(R.color.colorAccent, theme),

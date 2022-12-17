@@ -18,7 +18,7 @@ import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 
 class ComicDlFragment: NoBackRefreshFragment(R.layout.fragment_dlcomic) {
-    var handler: ComicDlHandler? = null
+    var ltbtn: View? = null
     var ads = emptyArray<AutoDownloadThread>()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -43,7 +43,6 @@ class ComicDlFragment: NoBackRefreshFragment(R.layout.fragment_dlcomic) {
                 )
             }
         }
-        mainWeakReference?.get()?.menuMain?.let { setMenuVisible(it) }
     }
 
     override fun onDestroy() {
@@ -80,19 +79,6 @@ class ComicDlFragment: NoBackRefreshFragment(R.layout.fragment_dlcomic) {
 
     private fun loadFromJson() = Gson().fromJson(json, Array<VolumeStructure>::class.java)
     private fun loadGroupsFromFile(file: File) = Gson().fromJson(file.reader(), Array<String>::class.java)
-
-    private fun setMenuVisible(menu: Menu) {
-        val dl = menu.findItem(R.id.action_download)
-        dl?.isVisible = true
-        dl?.setIcon(R.drawable.ic_menu_sort)
-        dl?.setOnMenuItemClickListener {
-            if(handler?.complete == true && it.itemId == R.id.action_download){
-                handler?.showMultiSelectInfo()
-                true
-            }
-            else it.itemId == R.id.action_download
-        }
-    }
 
     /*private fun setMenuInvisible(menu: Menu){
         menu.findItem(R.id.action_download)?.isVisible = false
@@ -167,6 +153,7 @@ class ComicDlFragment: NoBackRefreshFragment(R.layout.fragment_dlcomic) {
     }
 
     companion object {
+        var handler: ComicDlHandler? = null
         var json: String? = null
         var exit = false
     }

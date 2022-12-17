@@ -11,23 +11,32 @@
         <entry key="app/src/main/res/layout/activity_login.xml" value="0.49592391304347827" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.5095108695652174" />
         <entry key="app/src/main/res/layout/activity_viewmanga.xml" value="0.5395833333333333" />
+        <entry key="app/src/main/res/layout/anchor_popular.xml" value="0.3807291666666667" />
         <entry key="app/src/main/res/layout/app_bar_main.xml" value="0.5095108695652174" />
         <entry key="app/src/main/res/layout/card_book.xml" value="0.49592391304347827" />
         <entry key="app/src/main/res/layout/card_book_plain.xml" value="0.49592391304347827" />
         <entry key="app/src/main/res/layout/content_main.xml" value="0.49592391304347827" />
         <entry key="app/src/main/res/layout/fragment_book.xml" value="0.49592391304347827" />
         <entry key="app/src/main/res/layout/fragment_chapters.xml" value="0.49592391304347827" />
+        <entry key="app/src/main/res/layout/fragment_dlcomic.xml" value="0.5172101449275363" />
         <entry key="app/src/main/res/layout/fragment_download.xml" value="0.49592391304347827" />
         <entry key="app/src/main/res/layout/fragment_history.xml" value="0.5395833333333333" />
         <entry key="app/src/main/res/layout/fragment_home.xml" value="0.4376278118609407" />
         <entry key="app/src/main/res/layout/fragment_newest.xml" value="0.5395833333333333" />
+        <entry key="app/src/main/res/layout/fragment_rank.xml" value="0.5172101449275363" />
+        <entry key="app/src/main/res/layout/fragment_reader.xml" value="0.5172101449275363" />
+        <entry key="app/src/main/res/layout/fragment_recommend.xml" value="0.5172101449275363" />
         <entry key="app/src/main/res/layout/fragment_settings.xml" value="0.5255208333333333" />
+        <entry key="app/src/main/res/layout/fragment_sort.xml" value="0.5172101449275363" />
+        <entry key="app/src/main/res/layout/fragment_statuscardflow.xml" value="0.5172101449275363" />
+        <entry key="app/src/main/res/layout/fragment_sub.xml" value="0.5172101449275363" />
         <entry key="app/src/main/res/layout/line_1bookline.xml" value="0.49592391304347827" />
         <entry key="app/src/main/res/layout/line_bookinfo.xml" value="0.49592391304347827" />
         <entry key="app/src/main/res/layout/line_bookinfo_text.xml" value="0.5395833333333333" />
         <entry key="app/src/main/res/layout/line_booktandb.xml" value="0.48596014492753625" />
         <entry key="app/src/main/res/layout/line_chapter.xml" value="0.48596014492753625" />
         <entry key="app/src/main/res/layout/line_choice_list.xml" value="0.49592391304347827" />
+        <entry key="app/src/main/res/layout/line_lazybooklines.xml" value="0.5172101449275363" />
         <entry key="app/src/main/res/layout/line_rank.xml" value="0.5395833333333333" />
         <entry key="app/src/main/res/layout/line_sort.xml" value="0.5395833333333333" />
         <entry key="app/src/main/res/layout/line_text_info.xml" value="0.49592391304347827" />
@@ -35,7 +44,10 @@
         <entry key="app/src/main/res/layout/nav_header_main.xml" value="0.48596014492753625" />
         <entry key="app/src/main/res/layout/viewpage_banner.xml" value="0.49592391304347827" />
         <entry key="app/src/main/res/layout/viewpage_horizonal.xml" value="0.49592391304347827" />
+        <entry key="app/src/main/res/layout/widget_finalmark.xml" value="0.5172101449275363" />
         <entry key="app/src/main/res/layout/widget_infodrawer.xml" value="0.5395833333333333" />
+        <entry key="app/src/main/res/layout/widget_titlebar.xml" value="0.5172101449275363" />
+        <entry key="app/src/main/res/layout/widget_viewmangainfo.xml" value="0.5172101449275363" />
         <entry key="app/src/main/res/menu/activity_main_drawer.xml" value="0.5395833333333333" />
         <entry key="app/src/main/res/menu/main.xml" value="0.5395833333333333" />
         <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.5572916666666666" />

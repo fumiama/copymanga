@@ -11,4 +11,6 @@
     <dimen name="global_alpha">0.8</dimen>
     <dimen name="global_radius">16dp</dimen>
     <dimen name="global_card_elevation">4dp</dimen>
+
+    <dimen name="global_content_padding_bottom">48dp</dimen>
 </resources>
