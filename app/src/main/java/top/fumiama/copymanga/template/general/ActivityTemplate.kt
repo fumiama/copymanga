@@ -8,7 +8,6 @@ import top.fumiama.copymanga.tools.api.UITools
 
 open class ActivityTemplate:Activity() {
     lateinit var toolsBox: UITools
-    val p = IntPref()
     val pb = BoolPref()
     private val allFullScreen
         get() = getPreferences(MODE_PRIVATE).getBoolean("allFullScreen", false)
@@ -22,14 +21,6 @@ open class ActivityTemplate:Activity() {
         super.onWindowFocusChanged(hasFocus)
         if(allFullScreen) window.decorView.systemUiVisibility =
             View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-    }
-
-    inner class IntPref {
-        operator fun get(key: String) = getPreferences(MODE_PRIVATE).getInt(key, -5)
-        operator fun set(key: String, value: Int) = getPreferences(MODE_PRIVATE).edit {
-            putInt(key, value)
-            apply()
-        }
     }
 
     inner class BoolPref {

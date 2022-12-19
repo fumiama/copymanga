@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
-import androidx.navigation.Navigation
+import androidx.navigation.fragment.findNavController
 import com.google.gson.Gson
 import top.fumiama.copymanga.json.BookListStructure
 import top.fumiama.copymanga.json.HistoryBookListStructure
@@ -83,7 +83,7 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
                         v.setOnClickListener {
                             val bundle = Bundle()
                             bundle.putString("path", path)
-                            rootView?.let { Navigation.findNavController(it).navigate(navId, bundle) }
+                            findNavController().navigate(navId, bundle)
                         }
                     }
                 }

@@ -143,7 +143,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
                 comics += rec.comic
             }
             if(comics.size == 3) allocateLine(homeF?.getString(R.string.manga_rec)?:"", R.drawable.img_master_work, comics) {
-                homeF?.rootView?.apply { Navigation.findNavController(this).navigate(R.id.action_nav_home_to_nav_recommend) }
+                homeF?.findNavController()?.navigate(R.id.action_nav_home_to_nav_recommend)
             }
         }
     }
@@ -169,7 +169,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
             }
         }
         if(comics.size == 9) allocateLine(homeF?.getString(R.string.rank_list)?:"", R.drawable.img_novel_bill, comics) {
-            that.get()?.findNavController()?.navigate(R.id.nav_rank)
+            homeF?.findNavController()?.navigate(R.id.nav_rank)
         }
     }
 
@@ -192,7 +192,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
                 comics += rec.comic
             }
             if(comics.size == 9) allocateLine(homeF?.getString(R.string.new_list)?:"", R.drawable.img_latest_pub, comics) {
-                homeF?.rootView?.apply { Navigation.findNavController(this).navigate(R.id.action_nav_home_to_nav_newest) }
+                homeF?.findNavController()?.navigate(R.id.action_nav_home_to_nav_newest)
             }
         }
     }
@@ -205,7 +205,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
                 comics += rec
             }
             if(comics.size == 6) allocateLine(homeF?.getString(R.string.complete)?:"", R.drawable.img_novel_eye, comics, true) {
-                homeF?.rootView?.apply { Navigation.findNavController(this).navigate(R.id.action_nav_home_to_nav_finish) }
+                homeF?.findNavController()?.navigate(R.id.action_nav_home_to_nav_finish)
             }
         }
     }
@@ -290,29 +290,6 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
         return p
     }
 
-    /*private fun setLines(v: View, position: Int) {
-        lines?.let {
-            v.rttitle.text = it[position].title
-            v.ir.setImageResource(
-                when (position) {
-                    1 -> R.drawable.img_novel_refresh
-                    2 -> R.drawable.img_novel_more
-                    3 -> R.drawable.img_novel_play
-                    4 -> R.drawable.img_novel_eye
-                    else -> R.drawable.img_novel_refresh
-                }
-            )
-            Thread{this.obtainMessage(4, position, 0, v).sendToTarget()}.start()    //scanCards
-            setLineHeight(v, if (position == 4) 2 else 1)
-            if(position == 4) {
-                Thread{ this.obtainMessage(-1, false).sendToTarget() }.start()    //closeLoad
-            }
-            if(position == 1) v.setOnClickListener {
-                Navigation.findNavController(it).navigate(R.id.action_nav_home_to_nav_latest)
-            }else v.rimore.visibility = View.GONE
-        }
-    }*/
-
     private fun scanCards(v: View, comics: Array<ComicStructure>, finish: Boolean, isTopic: Boolean){
         var id = v.rc1.id
         var card = v.findViewById<ConstraintLayout>(id)
@@ -340,7 +317,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
         cv.setOnClickListener {
             val bundle = Bundle()
             bundle.putString("path", pw)
-            homeF?.rootView?.let { Navigation.findNavController(it).navigate(if(isTopic) R.id.action_nav_home_to_nav_topic else R.id.action_nav_home_to_nav_book, bundle) }
+            homeF?.findNavController()?.navigate(if(isTopic) R.id.action_nav_home_to_nav_topic else R.id.action_nav_home_to_nav_book, bundle)
         }
     }
 

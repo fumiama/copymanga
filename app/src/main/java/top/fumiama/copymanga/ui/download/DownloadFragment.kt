@@ -3,19 +3,18 @@ package top.fumiama.copymanga.ui.download
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
-import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Toast
-import androidx.navigation.Navigation
+import androidx.navigation.fragment.findNavController
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.fragment_download.*
-import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.template.general.NoBackRefreshFragment
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment
 import top.fumiama.copymanga.ui.vm.ViewMangaActivity
+import top.fumiama.dmzj.copymanga.R
 import java.io.File
 import java.util.regex.Pattern
 import java.util.zip.ZipInputStream
@@ -98,10 +97,8 @@ class DownloadFragment: NoBackRefreshFragment(R.layout.fragment_download) {
         bundle.putString("name", jsonFile.parentFile?.name?:"Null")
         ComicDlFragment.json = jsonFile.readText()
         Log.d("MyDF", "root view: $rootView")
-        rootView?.let {
-            Log.d("MyDF", "action_nav_download_to_nav_group")
-            Navigation.findNavController(it).navigate(R.id.action_nav_download_to_nav_group, bundle)
-        }
+        Log.d("MyDF", "action_nav_download_to_nav_group")
+        findNavController().navigate(R.id.action_nav_download_to_nav_group, bundle)
     }
 
     private fun callSelf(title: String){
@@ -109,10 +106,8 @@ class DownloadFragment: NoBackRefreshFragment(R.layout.fragment_download) {
         bundle.putString("title", title)
         Log.d("MyDF", "Call self to $title")
         Log.d("MyDF", "root view: $rootView")
-        rootView?.let {
-            Log.d("MyDF", "action_nav_download_self")
-            Navigation.findNavController(it).navigate(R.id.action_nav_download_self, bundle)
-        }
+        Log.d("MyDF", "action_nav_download_self")
+        findNavController().navigate(R.id.action_nav_download_self, bundle)
     }
 
     private fun findNullWebpZipFileInDir(f: File){

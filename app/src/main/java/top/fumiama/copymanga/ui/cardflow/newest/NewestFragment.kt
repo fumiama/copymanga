@@ -16,7 +16,7 @@ class NewestFragment : InfoCardLoader(R.layout.fragment_newest, R.id.action_nav_
     override fun onLoadFinish() {
         super.onLoadFinish()
         mainWeakReference?.get()?.runOnUiThread {
-            mypl.visibility = View.GONE
+            if(ad?.exit == false) mypl.visibility = View.GONE
         }
     }
 }

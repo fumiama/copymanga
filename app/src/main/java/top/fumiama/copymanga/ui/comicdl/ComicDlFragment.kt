@@ -54,6 +54,7 @@ class ComicDlFragment: NoBackRefreshFragment(R.layout.fragment_dlcomic) {
             it.exit = true
         }
         exit = true
+        handler = null
     }
 
     private fun start2load(volumes: Array<VolumeStructure>, isFromFile: Boolean = false, groupArray: Array<String>? =null){

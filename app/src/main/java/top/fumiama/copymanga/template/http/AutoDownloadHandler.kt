@@ -7,12 +7,13 @@ import android.util.Log
 import com.google.gson.Gson
 import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
-import top.fumiama.copymanga.json.Chapter2Return
 import top.fumiama.copymanga.json.ReturnBase
 import top.fumiama.copymanga.tools.http.DownloadTools
 import top.fumiama.copymanga.tools.thread.TimeThread
+import java.io.File
+import java.security.MessageDigest
 
-open class AutoDownloadHandler(private val url: String, private val jsonClass: Class<*>, looper: Looper, private val callCheckMsg: Int = -1): Handler(looper) {
+open class AutoDownloadHandler(private val url: String, private val jsonClass: Class<*>, looper: Looper, private val callCheckMsg: Int = -1, private val loadFromCache: Boolean = false, private val customCacheFile: File? = null): Handler(looper) {
     var exit = false
     private var timeThread: TimeThread? = null
     private var checkTimes = 0
@@ -40,7 +41,34 @@ open class AutoDownloadHandler(private val url: String, private val jsonClass: C
         timeThread?.canDo = true
         timeThread?.start()
     }
+    private fun toHexStr(byteArray: ByteArray) =
+        with(StringBuilder()) {
+            byteArray.forEach {
+                val hex = it.toInt() and (0xFF)
+                val hexStr = Integer.toHexString(hex)
+                if (hexStr.length == 1) append("0").append(hexStr)
+                else append(hexStr)
+            }
+            toString()
+        }
     private fun dlThread() {
+        val cacheName = toHexStr(MessageDigest.getInstance("MD5").digest(url.encodeToByteArray()))
+        val cacheFile = customCacheFile?:(mainWeakReference?.get()?.externalCacheDir?.let { File(it, cacheName) })
+        if(loadFromCache) {
+            cacheFile?.let {
+                if (it.exists()) {
+                    var pass = true
+                    val fi = it.inputStream()
+                    try {
+                        pass = setGsonItem(Gson().fromJson(fi.reader(), jsonClass))
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                    fi.close()
+                    if (pass) return
+                }
+            }
+        }
         DownloadTools.getHttpContent(url, null, mainWeakReference?.get()?.getString(R.string.pc_ua)!!).let {
             if(exit) return
             if(it == null) {
@@ -51,6 +79,9 @@ open class AutoDownloadHandler(private val url: String, private val jsonClass: C
             var pass = true
             try {
                 pass = setGsonItem(Gson().fromJson(fi.reader(), jsonClass))
+                if (pass && loadFromCache) {
+                    cacheFile?.writeBytes(it)
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
             }

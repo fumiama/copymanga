@@ -40,7 +40,7 @@ class RankFragment : InfoCardLoader(R.layout.fragment_rank, R.id.action_nav_rank
     override fun onLoadFinish() {
         super.onLoadFinish()
         mainWeakReference?.get()?.runOnUiThread {
-            mypl.visibility = View.GONE
+            if(ad?.exit == false) mypl.visibility = View.GONE
         }
     }
 
@@ -48,7 +48,7 @@ class RankFragment : InfoCardLoader(R.layout.fragment_rank, R.id.action_nav_rank
         sortValue = value
         Thread{
             sleep(400)
-            mh?.sendEmptyMessage(4)
+            if(ad?.exit == false) mh?.sendEmptyMessage(4)
         }.start()
     }
 }

@@ -27,15 +27,17 @@ class CardList(
     private var index = 0
     private var count = 0
     var initClickListeners: InitClickListeners? = null
+    var exitCardList = false
 
     fun reset(){
         rows = arrayOfNulls(20)
         index = 0
         count = 0
+        exitCardList = false
     }
 
     private fun manageRow(){
-        if(count++ % cardPerRow == 0) inflateRow()
+        if(!exitCardList && count++ % cardPerRow == 0) inflateRow()
         Log.d("MyCL", "index: $index, cardPR: $cardPerRow")
     }
 
@@ -43,9 +45,9 @@ class CardList(
         that?.layoutInflater?.inflate(R.layout.line_horizonal_empty, that.mydll, false)?.let {
             it.layoutParams.height = cardHeight + 16
             mainWeakReference?.get()?.runOnUiThread {
-                that.mydll.addView(it)
+                if(!exitCardList) that.mydll.addView(it)
             }
-            recycleOneRow(it)
+            if(!exitCardList) recycleOneRow(it)
         }
     }
     private fun recycleOneRow(v:View?){
@@ -54,7 +56,7 @@ class CardList(
         else {
             val victim = rows[relativeIndex]
             mainWeakReference?.get()?.runOnUiThread {
-                that?.apply {
+                if(!exitCardList) that?.apply {
                     mydll?.removeView(victim)
                     mys?.scrollY = that.mys?.scrollY?.minus(cardHeight + 16)?:0
                 }
@@ -65,8 +67,8 @@ class CardList(
 
     @ExperimentalStdlibApi
     fun addCard(name: String, append: String? = null, head: String? = null, path: String? = null, chapterUUID: String? = null, pn: Int? = null, isFinish: Boolean = false){
-        manageRow()
-        that?.layoutInflater?.inflate(R.layout.card_book, that.mydll.ltbtn, false)?.let {
+        if(!exitCardList) manageRow()
+        if(!exitCardList) that?.layoutInflater?.inflate(R.layout.card_book, that.mydll.ltbtn, false)?.let {
             val card = it.cic
             card.name = name
             card.append = append
@@ -77,7 +79,7 @@ class CardList(
             card.pageNumber = pn
             card.isFinish = isFinish
             mainWeakReference?.get()?.runOnUiThread{
-                addCard(it)
+                if(!exitCardList) addCard(it)
             }
         }
     }
@@ -88,11 +90,11 @@ class CardList(
         val name = card.name + (card.append?:"")
         val head = card.headImageUrl
         val file = File(that?.context?.getExternalFilesDir(""), card.name)
-        cardFrame.let {
+        if(!exitCardList) cardFrame.let {
             it.tic.text = name
             if(!file.exists()){
                 that?.context?.let { context ->
-                    Glide.with(context).load(GlideUrl(head, CMApi.myGlideHeaders)).into(it.imic)
+                    if(!exitCardList) Glide.with(context).load(GlideUrl(head, CMApi.myGlideHeaders)).into(it.imic)
                 }
             }else {
                 val img = File(file, "head.jpg")

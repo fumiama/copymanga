@@ -32,7 +32,7 @@ class TopicFragment : InfoCardLoader(R.layout.fragment_topic, R.id.action_nav_to
                 topic?.apply {
                     if(ad?.exit == true) return@AutoDownloadThread
                     mainWeakReference?.get()?.let {
-                        it.runOnUiThread {
+                        if(ad?.exit == false) it.runOnUiThread {
                             it.toolbar.title = results.title
                             ftttime.text = results.datetime_created
                             fttintro.text = results.intro
@@ -47,7 +47,7 @@ class TopicFragment : InfoCardLoader(R.layout.fragment_topic, R.id.action_nav_to
     override fun onLoadFinish() {
         super.onLoadFinish()
         mainWeakReference?.get()?.runOnUiThread {
-            mypl.visibility = View.GONE
+            if(ad?.exit == false) mypl.visibility = View.GONE
         }
     }
 }

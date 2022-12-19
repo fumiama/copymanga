@@ -40,6 +40,14 @@ open class MangaPagesFragmentTemplate(inflateRes:Int, val isLazy: Boolean = true
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        cardList.exitCardList = true
+        mh = null
+        row = null
+        jsonReaderNow = null
+    }
+
     fun setLayouts() {
         val toolsBox = this.context?.let { UITools(it) }
         val widthData = toolsBox?.calcWidthFromDp(8, 135)

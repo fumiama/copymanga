@@ -41,7 +41,7 @@ class SortFragment : InfoCardLoader(R.layout.fragment_sort, R.id.action_nav_sort
                 filter = Gson().fromJson(it.inputStream().reader(), FilterStructure::class.java)
                 if(ad?.exit == true) return@AutoDownloadThread
                 mainWeakReference?.get()?.runOnUiThread{
-                    setClasses()
+                    if(ad?.exit == false) setClasses()
                 }
             }
         }.start()
@@ -50,7 +50,7 @@ class SortFragment : InfoCardLoader(R.layout.fragment_sort, R.id.action_nav_sort
     override fun onLoadFinish() {
         super.onLoadFinish()
         mainWeakReference?.get()?.runOnUiThread {
-            mypl.visibility = View.GONE
+            if(ad?.exit == false) mypl.visibility = View.GONE
         }
     }
 

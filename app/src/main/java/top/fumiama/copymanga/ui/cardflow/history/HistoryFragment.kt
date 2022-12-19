@@ -16,7 +16,7 @@ class HistoryFragment : InfoCardLoader(R.layout.fragment_history, R.id.action_na
     override fun onLoadFinish() {
         super.onLoadFinish()
         MainActivity.mainWeakReference?.get()?.runOnUiThread {
-            mypl.visibility = View.GONE
+            if(ad?.exit == false) mypl.visibility = View.GONE
         }
     }
 }

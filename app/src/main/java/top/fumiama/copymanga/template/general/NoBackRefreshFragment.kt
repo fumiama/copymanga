@@ -7,17 +7,18 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 
-open class NoBackRefreshFragment(private val layoutToLoad: Int):Fragment() {
-    var rootView: View? = null
+open class NoBackRefreshFragment(private val layoutToLoad: Int): Fragment() {
+    private var _rootView: View? = null
+    val rootView: View get() = _rootView!!
     var isFirstInflate = true
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        if(rootView == null){
+        if(_rootView == null){
             isFirstInflate = true
-            rootView = inflater.inflate(layoutToLoad, container, false)
+            _rootView = inflater.inflate(layoutToLoad, container, false)
             Log.d("MyNBRF", "is first inflate")
         } else {
             isFirstInflate = false
@@ -25,9 +26,9 @@ open class NoBackRefreshFragment(private val layoutToLoad: Int):Fragment() {
         }
         return rootView
     }
-    override fun onDestroyView() {
-        super.onDestroyView()
-        rootView = null
+    override fun onDestroy() {
+        super.onDestroy()
+        _rootView = null
         isFirstInflate = true
     }
 }

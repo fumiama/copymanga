@@ -4,6 +4,7 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="../../.gradle/caches/transforms-3/530137dbe1613faf299d06bd64f02665/transformed/jetified-search-2.4.1/res/layout/search_view.xml" value="0.46557971014492755" />
+        <entry key="../../Library/Android/sdk/platforms/android-33/data/res/drawable-car/car_button_background.xml" value="0.316" />
         <entry key="app/src/main/res/drawable-anydpi/ic_like.xml" value="0.5572916666666666" />
         <entry key="app/src/main/res/drawable-anydpi/ic_setting_search.xml" value="0.5572916666666666" />
         <entry key="app/src/main/res/layout/activity_dl.xml" value="0.5025484199796126" />

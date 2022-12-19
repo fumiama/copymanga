@@ -5,26 +5,22 @@ import android.os.Looper
 import android.os.Message
 import android.util.Log
 import android.view.View
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
-import androidx.core.content.edit
-import androidx.navigation.Navigation
+import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.request.RequestOptions
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.app_bar_main.*
-import kotlinx.android.synthetic.main.button_tbutton.view.*
 import kotlinx.android.synthetic.main.card_book.*
 import kotlinx.android.synthetic.main.fragment_book.*
 import kotlinx.android.synthetic.main.line_2chapters.view.*
 import kotlinx.android.synthetic.main.line_bookinfo.*
 import kotlinx.android.synthetic.main.line_bookinfo_text.*
-import kotlinx.android.synthetic.main.line_booktandb.*
 import kotlinx.android.synthetic.main.line_caption.view.*
 import kotlinx.android.synthetic.main.line_chapter.view.*
-import kotlinx.android.synthetic.main.widget_downloadbar.*
-import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.json.BookInfoStructure
 import top.fumiama.copymanga.json.ChapterStructure
@@ -38,6 +34,7 @@ import top.fumiama.copymanga.tools.api.GlideBlurTransformation
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment.Companion.json
 import top.fumiama.copymanga.ui.vm.ViewMangaActivity
+import top.fumiama.dmzj.copymanga.R
 import java.io.File
 import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
@@ -82,9 +79,7 @@ class BookHandler(private val th: WeakReference<BookFragment>, private val path:
         if(exit) return
         if(!hasToastedError) {
             Toast.makeText(that?.context, R.string.null_book, Toast.LENGTH_SHORT).show()
-            that?.rootView?.let { it1 ->
-                Navigation.findNavController(it1).navigateUp()
-            }
+            that?.apply { findNavController().popBackStack() }
         }
     }
 
@@ -99,14 +94,17 @@ class BookHandler(private val th: WeakReference<BookFragment>, private val path:
         super.doWhenFinishDownload()
         if(exit) return
         inflateComponents()
-        book?.results?.groups?.values?.forEach{
+        if(keys.isEmpty()) book?.results?.groups?.values?.forEach{
             keys += it.name
             gpws += it.path_word
             cnts += it.count
             Log.d("MyBFH", "Add caption: ${it.name} @ ${it.path_word} of ${it.count}")
         }
-        initComicData()
-        Thread{ for (i in 1..5) sendEmptyMessage(i) }.start()
+        if(vols?.isEmpty() != false) initComicData()
+        Thread{ for (i in 1..5) {
+            sleep(512)
+            sendEmptyMessage(i)
+        } }.start()
     }
 
     private fun endSetLayouts(){
@@ -117,8 +115,8 @@ class BookHandler(private val th: WeakReference<BookFragment>, private val path:
     }
 
     private fun inflateComponents(){
-        that?.fbibinfo = that?.layoutInflater?.inflate(R.layout.line_bookinfo, that?.fbl, false)
-        that?.fbtinfo = that?.layoutInflater?.inflate(R.layout.line_text_info, that?.fbl, false)
+        if(that?.fbibinfo == null) that?.fbibinfo = that?.layoutInflater?.inflate(R.layout.line_bookinfo, that?.fbl, false)
+        if(that?.fbtinfo == null) that?.fbtinfo = that?.layoutInflater?.inflate(R.layout.line_text_info, that?.fbl, false)
     }
 
     private fun setOverScale(){
@@ -127,7 +125,13 @@ class BookHandler(private val th: WeakReference<BookFragment>, private val path:
 
     private fun setCover(){
         that?.apply {
-            fbl.addView(fbibinfo)
+            try {
+                fbl.addView(fbibinfo)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                (fbibinfo!!.parent as LinearLayout).removeAllViews()
+                fbl.addView(fbibinfo)
+            }
             val load = Glide.with(this).load(
                 GlideUrl(book?.results?.comic?.cover, CMApi.myGlideHeaders)
             ).timeout(10000)
@@ -281,7 +285,7 @@ class BookHandler(private val th: WeakReference<BookFragment>, private val path:
             val bundle = Bundle()
             bundle.putString("name", name)
             bundle.putString("path", path)
-            that?.rootView?.let { Navigation.findNavController(it).navigate(nav, bundle) }
+            that?.apply { findNavController().navigate(nav, bundle) }
         }
     }
 

@@ -2,16 +2,13 @@ package top.fumiama.copymanga.ui.book
 
 import android.content.Context.MODE_PRIVATE
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import androidx.navigation.Navigation
-import kotlinx.android.synthetic.main.app_bar_main.*
+import androidx.navigation.fragment.findNavController
 import kotlinx.android.synthetic.main.line_booktandb.*
-import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.manga.Reader
 import top.fumiama.copymanga.template.general.NoBackRefreshFragment
+import top.fumiama.dmzj.copymanga.R
 import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 
@@ -31,14 +28,14 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
         }
     }
 
-    override fun onResume() {
+    /*override fun onResume() {
         super.onResume()
         mainWeakReference?.get()?.apply {
             toolbar.title = bookHandler?.book?.results?.comic?.name
         }
         setStartRead()
         fbibinfo?.layoutParams?.height = ((fbibinfo?.width?:0) * 4.0 / 9.0 + 0.5).toInt()
-    }
+    }*/
 
     override fun onDestroy() {
         super.onDestroy()
@@ -78,7 +75,7 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
         bundle.putStringArray("group", bookHandler!!.gpws)
         bundle.putStringArray("groupNames", bookHandler!!.keys)
         bundle.putIntArray("count", bookHandler!!.cnts)
-        rootView?.let { Navigation.findNavController(it).navigate(R.id.action_nav_book_to_nav_group, bundle) }
+        findNavController().navigate(R.id.action_nav_book_to_nav_group, bundle)
     }
 
     companion object {

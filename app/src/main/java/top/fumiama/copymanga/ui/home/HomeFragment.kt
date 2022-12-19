@@ -11,7 +11,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.ImageButton
 import androidx.appcompat.view.ContextThemeWrapper
-import androidx.navigation.Navigation
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -20,7 +20,6 @@ import com.google.gson.Gson
 import com.lapism.search.internal.SearchLayout
 import kotlinx.android.synthetic.main.card_book_plain.view.*
 import kotlinx.android.synthetic.main.fragment_home.*
-import kotlinx.android.synthetic.main.line_text_info.view.*
 import kotlinx.android.synthetic.main.line_word.view.*
 import kotlinx.android.synthetic.main.viewpage_horizonal.view.*
 import top.fumiama.copymanga.MainActivity.Companion.ime
@@ -160,7 +159,7 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                 holder.itemView.vpc.setOnClickListener {
                     val bundle = Bundle()
                     homeHandler.index?.results?.banners?.get(position)?.comic?.path_word?.let { it1 -> bundle.putString("path", it1) }
-                    rootView?.let { it1 -> Navigation.findNavController(it1).navigate(R.id.action_nav_home_to_nav_book, bundle) }
+                    findNavController().navigate(R.id.action_nav_home_to_nav_book, bundle)
                 }
             }
 
@@ -199,7 +198,7 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                     holder.itemView.lwc.setOnClickListener {
                             val bundle = Bundle()
                             bundle.putString("path", path_word)
-                            rootView?.let { r -> Navigation.findNavController(r).navigate(R.id.action_nav_home_to_nav_book, bundle) }
+                            findNavController().navigate(R.id.action_nav_home_to_nav_book, bundle)
                     }
                     holder.itemView.lwc.layoutParams.height = fhs.width / 4
                 }
