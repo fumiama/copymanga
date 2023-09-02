@@ -28,15 +28,17 @@ object DownloadTools {
                         setRequestProperty("region", if(!getBoolean("settings_cat_net_sw_use_foreign", false)) "1" else "0")
                     }
                     it.getPreferences(Context.MODE_PRIVATE).apply {
-                        setRequestProperty("version", getString("app_ver", "1.4.4"))
+                        setRequestProperty("version", getString("app_ver", "2.0.7"))
                         getString("token", "")?.let {
                             if(it != "") setRequestProperty("authorization", "Token $it")
-                            else setRequestProperty("authorization", "Token")
+                            else setRequestProperty("authorization", "Token ")
                         }
                     }
                 }
                 setRequestProperty("platform", "3")
             }
+            Log.d("Mydl", "getHttp: ${connection.getRequestProperties().map({ "${it.key}: ${it.value}" }).joinToString("\n")}")
+            connection
         }
 
     private fun getNormalConnection(url: String?, method: String = "GET", ua: String? = null) =
