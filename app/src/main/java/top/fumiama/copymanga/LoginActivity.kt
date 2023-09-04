@@ -33,7 +33,7 @@ class LoginActivity:Activity() {
                                             putString("username", it.results?.username)
                                             putString("nickname", it.results?.nickname)
                                             apply()
-                                            DownloadTools.getHttpContent(getString(R.string.memberInfoApiUrl))?.decodeToString()?.let {
+                                            DownloadTools.getHttpContent(getString(R.string.memberInfoApiUrl).format(CMApi.myHostApiUrl))?.decodeToString()?.let {
                                                 val l = Gson().fromJson(it, LoginInfoStructure::class.java)
                                                 if(l.code == 200) {
                                                     putString("avatar", l.results.avatar)

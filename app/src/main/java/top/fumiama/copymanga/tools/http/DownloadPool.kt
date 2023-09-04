@@ -1,6 +1,7 @@
 package top.fumiama.copymanga.tools.http
 
 import android.util.Log
+import top.fumiama.copymanga.tools.api.CMApi
 import java.io.File
 import java.lang.Thread.sleep
 import java.util.zip.CRC32
@@ -66,7 +67,8 @@ class DownloadPool(folder: String) {
                     var tryTimes = 3
                     var s = false
                     while (!s && tryTimes-- > 0){
-                        s = (DownloadTools.getHttpContent(imgUrls[index], -1))?.let { zip.write(it); true }?:false
+                        val u = imgUrls[index]
+                        s = (DownloadTools.getHttpContent(CMApi.proxy?.wrap(u)?:u, -1))?.let { zip.write(it); true }?:false
                         if (!s) sleep(2000)
                     }
                     if(!s && tryTimes <= 0) {

@@ -58,10 +58,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        mainWeakReference = WeakReference(this)
+
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
         //translucentStatusBar()
-        coordiv.layoutParams.height = getStatusBarHeight()
+        //coordiv.layoutParams.height = getStatusBarHeight()
 
         navController = findNavController(R.id.nav_host_fragment)
         appBarConfiguration = AppBarConfiguration(
@@ -79,7 +82,6 @@ class MainActivity : AppCompatActivity() {
         nav_view.setupWithNavController(navController!!)
 
         headPic = File(getExternalFilesDir(""), "headPic")
-        mainWeakReference = WeakReference(this)
         drawer_layout.addDrawerListener(object : DrawerLayout.DrawerListener {
             override fun onDrawerClosed(drawerView: View) {
                 Log.d("MyMain", "onDrawerClosed")
@@ -290,14 +292,14 @@ class MainActivity : AppCompatActivity() {
         coordiv.layoutParams.height = getStatusBarHeight()
     }*/
 
-    private fun getStatusBarHeight() =
+    /*private fun getStatusBarHeight() =
         resources.getDimensionPixelOffset(
             resources.getIdentifier(
                 "status_bar_height",
                 "dimen",
                 "android"
             )
-        )
+        )*/
 
     private fun checkUpdate(ignoreSkip: Boolean) {
         Thread{

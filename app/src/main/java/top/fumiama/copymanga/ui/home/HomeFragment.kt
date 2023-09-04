@@ -152,7 +152,7 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                 thisBanner?.cover?.let {
                     //Log.d("MyHomeFVP", "Load img: $it")
                     Glide.with(this@HomeFragment).load(
-                        GlideUrl(it, CMApi.myGlideHeaders)
+                        GlideUrl(CMApi.proxy?.wrap(it)?:it, CMApi.myGlideHeaders)
                     ).timeout(10000).into(holder.itemView.vpi)
                 }
                 holder.itemView.vpt.text = thisBanner?.brief
@@ -193,7 +193,7 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                     }
                     holder.itemView.tb.text = popular.toString()
                     context?.let {
-                        Glide.with(it).load(GlideUrl(cover, CMApi.myGlideHeaders)).into(holder.itemView.imic)
+                        Glide.with(it).load(GlideUrl(CMApi.proxy?.wrap(cover)?:cover, CMApi.myGlideHeaders)).into(holder.itemView.imic)
                     }
                     holder.itemView.lwc.setOnClickListener {
                             val bundle = Bundle()
@@ -208,7 +208,7 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
 
             fun refresh(query: CharSequence) {
                 mainWeakReference?.get()?.apply {
-                    AutoDownloadThread(String.format(getString(R.string.searchApiUrl), 0, query, type)) {
+                    AutoDownloadThread(getString(R.string.searchApiUrl).format(CMApi.myHostApiUrl, 0, query, type)) {
                         results = Gson().fromJson(it?.decodeToString(), BookListStructure::class.java)
                         runOnUiThread { notifyDataSetChanged() }
                     }.start()

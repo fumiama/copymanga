@@ -8,7 +8,6 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import android.util.Log
-import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.widget.Toast
@@ -116,7 +115,7 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
                     data += chapter.name
                     data += chapter.uuid
                     data += caption
-                    data += CMApi.getApiUrl(R.string.chapterInfoApiUrl, chapter.comic_path_word, chapter.uuid)?:""
+                    data += CMApi.getChapterInfoApiUrl(chapter.comic_path_word, chapter.uuid)?:""
                     obtainMessage(10, data).sendToTarget()
                 }
                 sendEmptyMessage(12)                            //addDiv
@@ -407,7 +406,10 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
                     )
                     isNewTitle = true
                     for (chapter in group.chapters) {
-                        val newUrl = CMApi.getApiUrl(R.string.chapterInfoApiUrl, chapter.url.substringAfter("/comic/").substringBefore('/'), chapter.url.substringAfterLast('/'))?:""
+                        val newUrl = CMApi.getChapterInfoApiUrl(
+                            chapter.url.substringAfter("/comic/").substringBefore('/'),
+                            chapter.url.substringAfterLast('/')
+                        )?:""
                         Log.d("MyCD", "Generate new url: $newUrl")
                         obtainMessage(10, arrayOf(chapter.name, "", group.name, newUrl)).sendToTarget()
                     }

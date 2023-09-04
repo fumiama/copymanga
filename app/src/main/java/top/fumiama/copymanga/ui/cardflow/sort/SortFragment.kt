@@ -12,6 +12,7 @@ import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.json.FilterStructure
 import top.fumiama.copymanga.template.http.AutoDownloadThread
 import top.fumiama.copymanga.template.ui.InfoCardLoader
+import top.fumiama.copymanga.tools.api.CMApi
 import java.lang.Thread.sleep
 
 @ExperimentalStdlibApi
@@ -22,20 +23,18 @@ class SortFragment : InfoCardLoader(R.layout.fragment_sort, R.id.action_nav_sort
     private var filter: FilterStructure? = null
 
     override fun getApiUrl() =
-        getString(R.string.sortApiUrl).let {
-            String.format(
-                it,
+        getString(R.string.sortApiUrl).format(
+                CMApi.myHostApiUrl,
                 page * 21,
                 sortWay[sortValue],
                 if(theme >= 0) (filter?.results?.theme?.get(theme)?.path_word ?: "") else ""
             )
-        }
 
     override fun setListeners() {
         super.setListeners()
         setUpdate()
         setHot()
-        AutoDownloadThread(getString(R.string.filterApiUrl)) {
+        AutoDownloadThread(getString(R.string.filterApiUrl).format(CMApi.myHostApiUrl)) {
             if(ad?.exit == true) return@AutoDownloadThread
             it?.let {
                 filter = Gson().fromJson(it.inputStream().reader(), FilterStructure::class.java)

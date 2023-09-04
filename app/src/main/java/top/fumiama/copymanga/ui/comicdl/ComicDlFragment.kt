@@ -3,7 +3,6 @@ package top.fumiama.copymanga.ui.comicdl
 import android.os.Bundle
 import android.os.Looper
 import android.util.Log
-import android.view.Menu
 import android.view.View
 import com.google.gson.Gson
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
@@ -97,7 +96,7 @@ class ComicDlFragment: NoBackRefreshFragment(R.layout.fragment_dlcomic) {
                 Log.d("MyCDF", "${i}卷共${if(times == 0) 1 else times}次加载")
                 do {
                     counts?.set(i, counts[i] - 100)
-                    CMApi.getApiUrl(R.string.groupInfoApiUrl, pw, gpw, offset)?.let {
+                    CMApi.getGroupInfoApiUrl(pw, gpw, offset)?.let {
                         if(exit) return
                         val ad = AutoDownloadThread(it) { result ->
                             Log.d("MyCDF", "第${i}卷返回")

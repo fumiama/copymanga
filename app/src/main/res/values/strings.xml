@@ -1,3 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE resources [
+    <!ENTITY hosturl "api.mangacopy.com">
+    ]>
 <resources>
     <string name="app_name">拷贝漫画</string>
     <string name="action_settings">设定</string>
@@ -8,7 +12,7 @@
     <string name="menu_home">主页</string>
     <string name="menu_sort">分类</string>
     <string name="menu_rank">排行</string>
-    <string name="app_description">©2022源文雨\n本应用为拷贝漫画的第三方客户端，数据均来源于网络，作者不对其中所呈现的任何内容负责。</string>
+    <string name="app_description">©2022–2023源文雨\n本应用为拷贝漫画的第三方客户端，数据均来源于网络，作者不对其中所呈现的任何内容负责。</string>
     <string name="menu_history">浏览历史</string>
     <string name="menu_sub">我的订阅</string>
     <string name="menu_download">我的下载</string>
@@ -31,26 +35,28 @@
     <string name="null_book">获取图书信息失败</string>
     <string name="web_error">网络错误</string>
 
-    <string name="mainPageApiUrl">https://api.copymanga.info/api/v3/h5/homeIndex?platform=3</string>
-    <string name="referUrl">"https://api.copymanga.info"</string>
-    <string name="hostUrl">"api.copymanga.info"</string>
-    <string name="rankApiUrl">https://api.copymanga.info/api/v3/ranks?limit=21&amp;offset=%1$d&amp;date_type=%2$s&amp;platform=3</string>
-    <string name="searchApiUrl">https://api.copymanga.info/api/v3/search/comic?limit=21&amp;offset=%1$d&amp;q=%2$s&amp;q_type=%3$s&amp;platform=3</string>
-    <string name="filterApiUrl">https://api.copymanga.info/api/v3/h5/filterIndex/comic/tags?platform=3</string>
-    <string name="sortApiUrl">https://api.copymanga.info/api/v3/comics?limit=21&amp;offset=%1$d&amp;ordering=%2$s&amp;theme=%3$s&amp;platform=3</string>
-    <string name="bookInfoApiUrl">https://api.copymanga.info/api/v3/comic2/%1$s?platform=3</string>
-    <string name="groupInfoApiUrl">https://api.copymanga.info/api/v3/comic/%1$s/group/%2$s/chapters?limit=100&amp;offset=%3$d&amp;platform=3</string>
-    <string name="chapterInfoApiUrl">https://api.copymanga.info/api/v3/comic/%1$s/chapter2/%2$s?platform=3</string>
-    <string name="topicApiUrl">https://api.copymanga.info/api/v3/topic/%1$s?platform=3</string>
-    <string name="topicContentApiUrl">https://api.copymanga.info/api/v3/topic/%1$s/contents?type=%2$d&amp;limit=21&amp;offset=%3$d&amp;platform=3</string>
-    <string name="recommendApiUrl">https://api.copymanga.info/api/v3/recs?pos=3200102&amp;limit=21&amp;offset=%1$d&amp;platform=3</string>
-    <string name="newestApiUrl">https://api.copymanga.info/api/v3/update/newest?limit=21&amp;offset=%1$d&amp;platform=3</string>
-    <string name="finishApiUrl">https://api.copymanga.info/api/v3/comics?limit=21&amp;offset=%1$d&amp;ordering=%2$s&amp;top=finish&amp;platform=3</string>
-    <string name="authorApiUrl">https://api.copymanga.info/api/v3/comics?limit=21&amp;offset=%1$d&amp;ordering=%2$s&amp;author=%3$s&amp;platform=3</string>
-    <string name="captionApiUrl">https://api.copymanga.info/api/v3/comics?limit=21&amp;offset=%1$d&amp;ordering=%2$s&amp;theme=%3$s&amp;platform=3</string>
-    <string name="loginApiUrl">https://api.copymanga.info/api/v3/login?platform=3</string>
-    <string name="memberInfoApiUrl">https://api.copymanga.info/api/v3/member/info?platform=3</string>
-    <string name="historyApiUrl">https://api.copymanga.info/api/v3/member/browse/comics?limit=21&amp;offset=%1$d&amp;platform=3</string>
+    <string name="mainPageApiUrl">https://%1$s/api/v3/h5/homeIndex?platform=3</string>
+    <string name="referUrl">https://%1$s</string>
+    <string name="hostUrl">&hosturl;</string>
+    <string name="rankApiUrl">https://%1$s/api/v3/ranks?limit=21&amp;offset=%2$d&amp;date_type=%3$s&amp;platform=3</string>
+    <string name="searchApiUrl">https://%1$s/api/v3/search/comic?limit=21&amp;offset=%2$d&amp;q=%3$s&amp;q_type=%4$s&amp;platform=3</string>
+    <string name="filterApiUrl">https://%1$s/api/v3/h5/filterIndex/comic/tags?platform=3</string>
+    <string name="sortApiUrl">https://%1$s/api/v3/comics?limit=21&amp;offset=%2$d&amp;ordering=%3$s&amp;theme=%4$s&amp;platform=3</string>
+    <string name="bookInfoApiUrl">https://%1$s/api/v3/comic2/%2$s?platform=3</string>
+    <string name="groupInfoApiUrl">https://%1$s/api/v3/comic/%2$s/group/%3$s/chapters?limit=100&amp;offset=%4$d&amp;platform=3</string>
+    <string name="chapterInfoApiUrl">https://%1$s/api/v3/comic/%2$s/chapter2/%3$s?platform=3</string>
+    <string name="topicApiUrl">https://%1$s/api/v3/topic/%2$s?platform=3</string>
+    <string name="topicContentApiUrl">https://%1$s/api/v3/topic/%2$s/contents?type=%3$d&amp;limit=21&amp;offset=%4$d&amp;platform=3</string>
+    <string name="recommendApiUrl">https://%1$s/api/v3/recs?pos=3200102&amp;limit=21&amp;offset=%2$d&amp;platform=3</string>
+    <string name="newestApiUrl">https://%1$s/api/v3/update/newest?limit=21&amp;offset=%2$d&amp;platform=3</string>
+    <string name="finishApiUrl">https://%1$s/api/v3/comics?limit=21&amp;offset=%2$d&amp;ordering=%3$s&amp;top=finish&amp;platform=3</string>
+    <string name="authorApiUrl">https://%1$s/api/v3/comics?limit=21&amp;offset=%2$d&amp;ordering=%3$s&amp;author=%4$s&amp;platform=3</string>
+    <string name="captionApiUrl">https://%1$s/api/v3/comics?limit=21&amp;offset=%2$d&amp;ordering=%3$s&amp;theme=%4$s&amp;platform=3</string>
+    <string name="loginApiUrl">https://%1$s/api/v3/login?platform=3</string>
+    <string name="memberInfoApiUrl">https://%1$s/api/v3/member/info?platform=3</string>
+    <string name="historyApiUrl">https://%1$s/api/v3/member/browse/comics?limit=21&amp;offset=%2$d&amp;platform=3</string>
+
+    <string name="imgProxyApiUrl">https://copymanga.azurewebsites.net/api/img?code=%1$s&amp;url=%2$s</string>
 
     <string name="complete">已完结</string>
 
@@ -90,7 +96,13 @@
 
     <string name="settings_cat_net">网络</string>
     <string name="settings_cat_net_sw_use_foreign">使用海外线路</string>
-    <string name="settings_cat_net_sm_use_foreign">不管使用什么线路, API访问均是海外, 只有图片CDN可能会变化, 请酌情选择使用</string>
+    <string name="settings_cat_net_sm_use_foreign">不管使用什么线路, API访问均是海外, 只有图片CDN可能会变化（也可能不变）, 请酌情选择使用</string>
+    <string name="settings_cat_net_et_title_api_url">请求API网址</string>
+    <string name="settings_cat_net_et_summary_api_url">一般无需更改，除非拷贝漫画官方更改网址，默认：&hosturl;</string>
+    <string name="settings_cat_net_sw_use_img_proxy">使用图床代理（重启生效）</string>
+    <string name="settings_cat_net_sm_use_img_proxy">作者自建的图床代理，可缓解国内图片无法加载问题，但不保证100%解决，也不保证一直可用</string>
+    <string name="settings_cat_net_et_title_img_proxy">图床代理密钥（重启生效）</string>
+    <string name="settings_cat_net_et_summary_img_proxy">为避免滥用，代理密钥需加群（559748702）获得，且随时可能会刷新</string>
 
     <string name="settings_cat_vm">漫画浏览</string>
     <string name="settings_cat_vm_sw_vol_turn">音量键翻页</string>

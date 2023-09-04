@@ -10,6 +10,33 @@
             app:selectable="true"
             app:summary="@string/settings_cat_net_sm_use_foreign"
             app:title="@string/settings_cat_net_sw_use_foreign" />
+        <EditTextPreference
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:defaultValue="@string/hostUrl"
+            android:selectAllOnFocus="false"
+            android:singleLine="true"
+            android:title="@string/settings_cat_net_et_title_api_url"
+            android:summary="@string/settings_cat_net_et_summary_api_url"
+            app:enableCopying="true"
+            app:iconSpaceReserved="false"
+            app:key="settings_cat_net_et_api_url" />
+        <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
+            app:key="settings_cat_net_sw_use_img_proxy"
+            app:selectable="true"
+            app:summary="@string/settings_cat_net_sm_use_img_proxy"
+            app:title="@string/settings_cat_net_sw_use_img_proxy" />
+        <EditTextPreference
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:selectAllOnFocus="false"
+            android:singleLine="true"
+            android:title="@string/settings_cat_net_et_title_img_proxy"
+            android:summary="@string/settings_cat_net_et_summary_img_proxy"
+            app:enableCopying="true"
+            app:iconSpaceReserved="false"
+            app:key="settings_cat_net_et_img_proxy_code" />
     </PreferenceCategory>
     <PreferenceCategory
         app:iconSpaceReserved="false"

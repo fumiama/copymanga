@@ -6,6 +6,7 @@ import kotlinx.android.synthetic.main.anchor_popular.view.*
 import kotlinx.android.synthetic.main.line_finish.*
 import kotlinx.android.synthetic.main.line_lazybooklines.*
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
+import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.dmzj.copymanga.R
 
 @ExperimentalStdlibApi
@@ -14,13 +15,11 @@ open class StatusCardFlow(private val api: Int, nav: Int) : InfoCardLoader(R.lay
     var sortValue = 0
 
     override fun getApiUrl() =
-        getString(api).let {
-            String.format(
-                it,
-                page * 21,
-                sortWay[sortValue]
-            )
-        }
+        getString(api).format(
+            CMApi.myHostApiUrl,
+            page * 21,
+            sortWay[sortValue]
+        )
 
     override fun setListeners() {
         super.setListeners()

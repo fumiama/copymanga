@@ -8,7 +8,6 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.util.concurrent.Callable
 import java.util.concurrent.FutureTask
-import javax.net.ssl.HttpsURLConnection
 
 object DownloadTools {
     fun getConnection(url: String?, method: String = "GET", refer: String? = null, ua: String? = null) =
@@ -37,7 +36,7 @@ object DownloadTools {
                 }
                 setRequestProperty("platform", "3")
             }
-            Log.d("Mydl", "getHttp: ${connection.getRequestProperties().map({ "${it.key}: ${it.value}" }).joinToString("\n")}")
+            Log.d("Mydl", "getHttp: ${connection.requestProperties.map { "${it.key}: ${it.value}" }.joinToString("\n")}")
             connection
         }
 
@@ -53,12 +52,12 @@ object DownloadTools {
             }
         }
 
-    fun getHttpContent(Url: String, refer: String? = null, ua: String? = null): ByteArray? {
-        Log.d("Mydl", "getHttp: $Url")
+    fun getHttpContent(u: String, refer: String? = null, ua: String? = null): ByteArray? {
+        Log.d("Mydl", "getHttp: $u")
         var ret: ByteArray? = null
         val task = FutureTask(Callable {
             try {
-                getConnection(Url, "GET", refer, ua)?.apply {
+                getConnection(u, "GET", refer, ua)?.apply {
                     ret = inputStream.readBytes()
                     disconnect()
                 }
@@ -76,12 +75,12 @@ object DownloadTools {
         }
     }
 
-    fun getHttpContent(Url: String, readSize: Int): ByteArray? {
-        Log.d("Mydl", "getHttp: $Url")
+    fun getHttpContent(u: String, readSize: Int): ByteArray? {
+        Log.d("Mydl", "getHttp: $u")
         var ret: ByteArray? = null
         val task = FutureTask(Callable {
             try {
-                val connection = getNormalConnection(Url, "GET")
+                val connection = getNormalConnection(u, "GET")
                 val ci = connection?.inputStream
                 if(readSize > 0) {
                     ret = ByteArray(readSize)

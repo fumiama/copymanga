@@ -33,7 +33,7 @@ import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 
 class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadHandler(
-    that.get()?.getString(R.string.mainPageApiUrl) ?: "",
+    that.get()?.getString(R.string.mainPageApiUrl)!!.format(CMApi.myHostApiUrl),
     IndexStructure::class.java,
     Looper.myLooper()!!,
     9
@@ -310,7 +310,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
         cv.tic.text = name
         homeF?.let {
             if(img.startsWith("http")) {
-                Glide.with(it).load(GlideUrl(img, CMApi.myGlideHeaders)).timeout(20000).into(cv.imic)
+                Glide.with(it).load(GlideUrl(CMApi.proxy?.wrap(img)?:img, CMApi.myGlideHeaders)).timeout(20000).into(cv.imic)
             }
         }
         if (isFinal) cv.sgnic.visibility = View.VISIBLE

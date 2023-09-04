@@ -94,7 +94,10 @@ class CardList(
             it.tic.text = name
             if(!file.exists()){
                 that?.context?.let { context ->
-                    if(!exitCardList) Glide.with(context).load(GlideUrl(head, CMApi.myGlideHeaders)).into(it.imic)
+                    if(!exitCardList && head != null)
+                        Glide.with(context).load(
+                            GlideUrl(CMApi.proxy?.wrap(head)?:head, CMApi.myGlideHeaders)
+                        ).into(it.imic)
                 }
             }else {
                 val img = File(file, "head.jpg")

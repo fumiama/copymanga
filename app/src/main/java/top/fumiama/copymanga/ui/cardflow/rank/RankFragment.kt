@@ -7,6 +7,7 @@ import kotlinx.android.synthetic.main.line_lazybooklines.*
 import kotlinx.android.synthetic.main.line_rank.view.*
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.template.ui.InfoCardLoader
+import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.dmzj.copymanga.R
 import java.lang.Thread.sleep
 
@@ -16,13 +17,11 @@ class RankFragment : InfoCardLoader(R.layout.fragment_rank, R.id.action_nav_rank
     private var sortValue = 0
 
     override fun getApiUrl() =
-        getString(R.string.rankApiUrl).let {
-            String.format(
-                it,
+        getString(R.string.rankApiUrl).format(
+                CMApi.myHostApiUrl,
                 page * 21,
                 sortWay[sortValue]
             )
-        }
 
     override fun setListeners() {
         super.setListeners()

@@ -40,8 +40,7 @@ import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 
 class BookHandler(private val th: WeakReference<BookFragment>, private val path: String)
-    : AutoDownloadHandler(
-    th.get()?.getString(R.string.bookInfoApiUrl)?.let { String.format(it, path) } ?: "",
+    : AutoDownloadHandler(th.get()?.getString(R.string.bookInfoApiUrl)?.format(CMApi.myHostApiUrl, path)?: "",
     BookInfoStructure::class.java,
     Looper.myLooper()!!){
     private val that get() = th.get()
@@ -132,13 +131,15 @@ class BookHandler(private val th: WeakReference<BookFragment>, private val path:
                 (fbibinfo!!.parent as LinearLayout).removeAllViews()
                 fbl.addView(fbibinfo)
             }
-            val load = Glide.with(this).load(
-                GlideUrl(book?.results?.comic?.cover, CMApi.myGlideHeaders)
-            ).timeout(10000)
-            load.into(imic)
-            context?.let { it1 -> GlideBlurTransformation(it1) }
-                ?.let { it2 -> RequestOptions.bitmapTransform(it2) }
-                ?.let { it3 -> load.apply(it3).into(lbibg) }
+            book?.results?.comic?.cover?.let { cover ->
+                val load = Glide.with(this).load(
+                    GlideUrl(CMApi.proxy?.wrap(cover)?:cover, CMApi.myGlideHeaders)
+                ).timeout(10000)
+                load.into(imic)
+                context?.let { it1 -> GlideBlurTransformation(it1) }
+                    ?.let { it2 -> RequestOptions.bitmapTransform(it2) }
+                    ?.let { it3 -> load.apply(it3).into(lbibg) }
+            }
             imf.visibility = View.GONE
             fbl.addView(divider)
         }
@@ -246,7 +247,10 @@ class BookHandler(private val th: WeakReference<BookFragment>, private val path:
                             var line: View? = null
                             val last = v.results.list.size - 1
                             v.results.list.onEachIndexed { i, it ->
-                                ViewMangaActivity.urlArray += CMApi.getApiUrl(R.string.chapterInfoApiUrl, comic.path_word, it.uuid)?:""
+                                ViewMangaActivity.urlArray += CMApi.getChapterInfoApiUrl(
+                                    comic.path_word,
+                                    it.uuid
+                                )?:""
                                 ViewMangaActivity.fileArray += CMApi.getZipFile(context?.getExternalFilesDir(""), comic.name, keys[iv], it.name)
                                 chapterNames += it.name
                                 if(line == null) {
@@ -301,7 +305,7 @@ class BookHandler(private val th: WeakReference<BookFragment>, private val path:
             Log.d("MyBFH", "${i}卷共${if(times == 0) 1 else times}次加载")
             do {
                 counts[i] = counts[i] - 100
-                CMApi.getApiUrl(R.string.groupInfoApiUrl, path, gpw, offset)?.let {
+                CMApi.getGroupInfoApiUrl(path, gpw, offset)?.let {
                     Log.d("MyBFH", "get api: $it")
                     if(ComicDlFragment.exit) return
                     val ad = AutoDownloadThread(it) { result ->

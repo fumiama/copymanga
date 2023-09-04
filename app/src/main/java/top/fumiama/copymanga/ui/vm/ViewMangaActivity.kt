@@ -170,8 +170,10 @@ class ViewMangaActivity : TitleActivityTemplate() {
                 for (i in right until it.size) {
                     if(destroy) break
                     tasks?.let { tasks ->
-                        tasks[i] = DownloadTools.touch(it[i])
-                        Thread.sleep(1000)
+                        it[i]?.let { u ->
+                            tasks[i] = DownloadTools.touch(CMApi.proxy?.wrap(u)?:u)
+                            Thread.sleep(1000)
+                        }
                     }
                 }
             }.start()
@@ -180,8 +182,10 @@ class ViewMangaActivity : TitleActivityTemplate() {
                 for (i in left downTo 0) {
                     if(destroy) break
                     tasks?.let { tasks ->
-                        tasks[i] = DownloadTools.touch(it[i])
-                        Thread.sleep(1000)
+                        it[i]?.let { u ->
+                            tasks[i] = DownloadTools.touch(CMApi.proxy?.wrap(u)?:u)
+                            Thread.sleep(1000)
+                        }
                     }
                 }
             }.start()
@@ -198,7 +202,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
                 forEachIndexed{ i, it ->
                     if(it != null) {
                         Thread{
-                            DownloadTools.getHttpContent(it, 1024)?.inputStream()?.let {
+                            DownloadTools.getHttpContent(CMApi.proxy?.wrap(it)?:it, 1024)?.inputStream()?.let {
                                 isCut[i] = canCut(it)
                                 analyzedCnt[i] = true
                             }
@@ -635,12 +639,12 @@ class ViewMangaActivity : TitleActivityTemplate() {
                         val thisOneI = holder.itemView.onei
                         Glide.with(this@ViewMangaActivity)
                             .asBitmap()
-                            .load(GlideUrl(it, CMApi.myGlideHeaders)
+                            .load(GlideUrl(CMApi.proxy?.wrap(it)?:it, CMApi.myGlideHeaders)
                             ).into(object : SimpleTarget<Bitmap>() {
                                 override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
                                     thisOneI.setImageBitmap(cutBitmap(resource, isLeft))
                                 } })
-                    } else Glide.with(this@ViewMangaActivity).load(GlideUrl(it, CMApi.myGlideHeaders)).into(holder.itemView.onei)
+                    } else Glide.with(this@ViewMangaActivity).load(GlideUrl(CMApi.proxy?.wrap(it)?:it, CMApi.myGlideHeaders)).into(holder.itemView.onei)
                 }
             }
 
