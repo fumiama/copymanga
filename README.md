@@ -1,17 +1,13 @@
 <div align="center">
   <img src=".github/komako.jpg" width = "300" height = "300" alt="Komako"><br>
   <h1>copymanga 拷贝漫画</h1>
-
+  拷贝漫画的第三方APP，优化阅读/下载体验<br><br>
 
   [![qq](https://img.shields.io/badge/%E4%BA%A4%E6%B5%81%E7%BE%A4-559748702-red?style=for-the-badge&labelColor=orange&logo=tencent-qq)](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=oOqUXGFiSRjuZ7K1GPATRuITmE-Hdj_o&authKey=p0ZT8UhPrYLUtvVdm38lMzpT4Mmw8mnqyU3%2FWXbZgUJVd7o18l0HXFaqxMqgXaNN&noverify=0&group_code=559748702)
-
-
-  拷贝漫画的第三方APP，优化阅读/下载体验<br><br>
 
   [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
     alt="Get it on F-Droid"
     height="80">](https://f-droid.org/packages/top.fumiama.copymanga)
-
 
 </div>
 
