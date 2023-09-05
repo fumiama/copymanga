@@ -87,11 +87,11 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                     val types = arrayOf("", "name", "author", "local")
                     var i = 0
                     override fun onMicClick() {
-                        val typenames = resources.getStringArray(R.array.search_types)
+                        val typeNames = resources.getStringArray(R.array.search_types)
                         AlertDialog.Builder(ContextThemeWrapper(context, R.style.AlertDialogTheme))
                             .setTitle(R.string.set_search_types)
                             .setIcon(R.mipmap.ic_launcher)
-                            .setSingleChoiceItems(ArrayAdapter(context, R.layout.line_choice_list, typenames), i){ d, p ->
+                            .setSingleChoiceItems(ArrayAdapter(context, R.layout.line_choice_list, typeNames), i){ d, p ->
                                 adapter.type = types[p]
                                 i = p
                                 d.cancel()

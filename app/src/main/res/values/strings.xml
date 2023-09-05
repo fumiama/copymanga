@@ -57,6 +57,12 @@
     <string name="historyApiUrl">https://%1$s/api/v3/member/browse/comics?limit=21&amp;offset=%2$d&amp;platform=3</string>
 
     <string name="imgProxyApiUrl">https://copymanga.azurewebsites.net/api/img?code=%1$s&amp;url=%2$s</string>
+    <string name="imgProxyApiPrefix">https://hi77-overseas.mangafuna.xyz/</string>
+    <string name="imgProxyKeyID">settings_cat_net_et_img_proxy_code</string>
+    <!--
+    <string name="apiProxyApiUrl">https://copymanga.azurewebsites.net/api/api?url=%1$s</string>
+    <string name="apiProxyApiPrefix">https://api.mangacopy.com/api/</string>
+    -->
 
     <string name="complete">已完结</string>
 
@@ -99,6 +105,8 @@
     <string name="settings_cat_net_sm_use_foreign">不管使用什么线路, API访问均是海外, 只有图片CDN可能会变化（也可能不变）, 请酌情选择使用</string>
     <string name="settings_cat_net_et_title_api_url">请求API网址</string>
     <string name="settings_cat_net_et_summary_api_url">一般无需更改，除非拷贝漫画官方更改网址，默认：&hosturl;</string>
+    <string name="settings_cat_net_sw_use_api_proxy">使用API代理（重启生效）</string>
+    <string name="settings_cat_net_sm_use_api_proxy">作者自建的API代理，可缓解国内图书详情加载问题，但不保证100%解决，也不保证一直可用</string>
     <string name="settings_cat_net_sw_use_img_proxy">使用图床代理（重启生效）</string>
     <string name="settings_cat_net_sm_use_img_proxy">作者自建的图床代理，可缓解国内图片无法加载问题，但不保证100%解决，也不保证一直可用</string>
     <string name="settings_cat_net_et_title_img_proxy">图床代理密钥（重启生效）</string>

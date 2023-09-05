@@ -21,6 +21,14 @@
             app:enableCopying="true"
             app:iconSpaceReserved="false"
             app:key="settings_cat_net_et_api_url" />
+        <!--
+        <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
+            app:key="settings_cat_net_sw_use_api_proxy"
+            app:selectable="true"
+            app:summary="@string/settings_cat_net_sm_use_api_proxy"
+            app:title="@string/settings_cat_net_sw_use_api_proxy" />
+        -->
         <SwitchPreferenceCompat
             app:iconSpaceReserved="false"
             app:key="settings_cat_net_sw_use_img_proxy"

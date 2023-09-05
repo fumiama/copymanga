@@ -11,17 +11,18 @@ import java.io.File
 import java.net.URLEncoder
 
 object CMApi {
-    var proxy = if(Proxy.useProxy) Proxy() else null
+    var proxy = if(Proxy.useImageProxy) Proxy(R.string.imgProxyApiUrl, R.string.imgProxyApiPrefix, R.string.imgProxyKeyID) else null
     var myGlideHeaders: LazyHeaders? = null
         get() {
             MainActivity.mainWeakReference?.get()?.let {
                 PreferenceManager.getDefaultSharedPreferences(it).apply {
                     if(field === null)
                         field = LazyHeaders.Builder()
-                            .addHeader("referer", MainActivity.mainWeakReference?.get()?.getString(R.string.referUrl)!!)
+                            .addHeader("referer", MainActivity.mainWeakReference?.get()?.getString(R.string.referer)!!)
                             .addHeader("User-Agent", MainActivity.mainWeakReference?.get()?.getString(R.string.pc_ua)!!)
                             .addHeader("source", "copyApp")
                             .addHeader("webp", "1")
+                            .addHeader("version", MainActivity.mainWeakReference?.get()?.getString(R.string.app_ver)!!)
                             .addHeader("region", if(!getBoolean("settings_cat_net", false)) "1" else "0")
                             .addHeader("platform", "3")
                             .build()

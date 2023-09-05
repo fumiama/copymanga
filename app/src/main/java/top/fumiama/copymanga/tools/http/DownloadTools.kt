@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.preference.PreferenceManager
 import top.fumiama.copymanga.MainActivity
+import top.fumiama.dmzj.copymanga.R
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.concurrent.Callable
@@ -27,10 +28,9 @@ object DownloadTools {
                         setRequestProperty("region", if(!getBoolean("settings_cat_net_sw_use_foreign", false)) "1" else "0")
                     }
                     it.getPreferences(Context.MODE_PRIVATE).apply {
-                        setRequestProperty("version", getString("app_ver", "2.0.7"))
-                        getString("token", "")?.let {
-                            if(it != "") setRequestProperty("authorization", "Token $it")
-                            else setRequestProperty("authorization", "Token ")
+                        setRequestProperty("version", it.getString(R.string.app_ver))
+                        getString("token", "")?.let { tk ->
+                            setRequestProperty("authorization", "Token $tk")
                         }
                     }
                 }

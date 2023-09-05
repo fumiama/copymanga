@@ -13,7 +13,7 @@ class AutoDownloadThread(private val url: String, private val whenFinish: (resul
         var c = 0
         while (!exit && re == null && c++ < 3){
             re = DownloadTools.getHttpContent(url,
-                mainWeakReference?.get()?.getString(R.string.referUrl)!!.format(CMApi.myHostApiUrl),
+                mainWeakReference?.get()?.getString(R.string.referer)!!,
                 mainWeakReference?.get()?.getString(R.string.pc_ua)!!
             )
         }

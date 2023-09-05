@@ -8,6 +8,7 @@ import kotlinx.android.synthetic.main.line_booktandb.*
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.manga.Reader
 import top.fumiama.copymanga.template.general.NoBackRefreshFragment
+import top.fumiama.copymanga.ui.comicdl.ComicDlFragment
 import top.fumiama.dmzj.copymanga.R
 import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
@@ -18,6 +19,8 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        ComicDlFragment.exit = false
 
         if(isFirstInflate) {
             bookHandler = BookHandler(WeakReference(this), arguments?.getString("path")?:"null")

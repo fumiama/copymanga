@@ -316,6 +316,7 @@ class BookHandler(private val th: WeakReference<BookFragment>, private val path:
                     ads += ad
                     ad.start()
                     offset += 100
+                    sleep(1000)
                 }
             } while (counts[i] > 0)
             Thread {
@@ -325,7 +326,7 @@ class BookHandler(private val th: WeakReference<BookFragment>, private val path:
                     if(ComicDlFragment.exit) return@Thread
                     if(re.all { it != null }) break
                 }
-                if(re.size > 1) {
+                if(re.isNotEmpty()) {
                     val r = re[0]
                     var s = emptyArray<ChapterStructure>()
                     re.forEach {

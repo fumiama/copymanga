@@ -196,6 +196,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
     private fun doPrepareWebImg() {
         getImgUrlArray()?.apply {
             if(cut) {
+                Log.d("MyVM", "is cut, load all pages...")
                 handler.sendEmptyMessage(7)     //showDl
                 isCut = BooleanArray(size)
                 val analyzedCnt = BooleanArray(size)
@@ -217,6 +218,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
                     if(b) indexMap += -(index+1)
                 }
                 handler.sendEmptyMessage(15)     //hideDl
+                Log.d("MyVM", "load all pages finished")
             }
             count = size
             runOnUiThread { prepareItems() }
@@ -347,7 +349,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
 
     private fun loadImgUrlInto(imgView: ScaleImageView, url: String, isLast: Int = 0, useCut: Boolean, isLeft: Boolean){
         Log.d("MyVM", "Load from adt: $url")
-        AutoDownloadThread(url) {
+        AutoDownloadThread(CMApi.proxy?.wrap(url)?:url) {
             it?.let { loadImg(imgView, BitmapFactory.decodeByteArray(it, 0, it.size), isLast, useCut, isLeft) }
         }.start()
     }

@@ -43,7 +43,7 @@
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
         <activity
             android:name="top.fumiama.copymanga.ui.vm.ViewMangaActivity"
-            android:theme="@style/AppTheme.Default"/>
+            android:theme="@style/AppTheme.NoActionBar"/>
     </application>
 
 </manifest>
