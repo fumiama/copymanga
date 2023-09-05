@@ -3,13 +3,17 @@
   <h1>copymanga 拷贝漫画</h1>
   拷贝漫画的第三方APP，优化阅读/下载体验<br><br>
 
+  [![qgroup559748702](https://img.shields.io/badge/%E4%BA%A4%E6%B5%81%E7%BE%A4-559748702-red?style=for-the-badge&labelColor=orange&logo=tencent-qq)](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=oOqUXGFiSRjuZ7K1GPATRuITmE-Hdj_o&authKey=p0ZT8UhPrYLUtvVdm38lMzpT4Mmw8mnqyU3%2FWXbZgUJVd7o18l0HXFaqxMqgXaNN&noverify=0&group_code=559748702)
+
   [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
     alt="Get it on F-Droid"
     height="80">](https://f-droid.org/packages/top.fumiama.copymanga)
 
 </div>
 
+
 <div align=center> <a href="#"> <img src="https://counter.seku.su/cmoe?name=copymanga&theme=gb" /> </a> </div>
+
 
 ## 提示
 漫画数据均来源于拷贝漫画官方，作者不对其中呈现的任何内容负责。
