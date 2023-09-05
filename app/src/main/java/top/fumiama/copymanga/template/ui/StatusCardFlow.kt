@@ -27,13 +27,6 @@ open class StatusCardFlow(private val api: Int, nav: Int) : InfoCardLoader(R.lay
         setHot(line_finish_pop)
     }
 
-    override fun onLoadFinish() {
-        super.onLoadFinish()
-        mainWeakReference?.get()?.runOnUiThread {
-            mypl.visibility = View.GONE
-        }
-    }
-
     open fun setUpdate(that: View) {
         that.apply {
             apt.setText(R.string.menu_update_time)

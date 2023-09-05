@@ -36,13 +36,6 @@ class RankFragment : InfoCardLoader(R.layout.fragment_rank, R.id.action_nav_rank
         })
     }
 
-    override fun onLoadFinish() {
-        super.onLoadFinish()
-        mainWeakReference?.get()?.runOnUiThread {
-            if(ad?.exit == false) mypl.visibility = View.GONE
-        }
-    }
-
     private fun setSortValue(value: Int) {
         sortValue = value
         Thread{

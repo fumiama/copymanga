@@ -111,6 +111,27 @@
     </fragment>
 
     <fragment
+        android:id="@+id/nav_new_download"
+        android:name="top.fumiama.copymanga.ui.download.NewDownloadFragment"
+        android:label="@string/menu_download"
+        tools:layout="@layout/fragment_newdownload" >
+        <action
+            android:id="@+id/action_nav_new_download_to_nav_group"
+            app:destination="@id/nav_group"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_out_left_exit"
+            app:popExitAnim="@anim/slide_in_right_exit"/>
+        <action
+            android:id="@+id/action_nav_new_download_to_nav_download"
+            app:destination="@id/nav_download"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_out_left_exit"
+            app:popExitAnim="@anim/slide_in_right_exit"/>
+    </fragment>
+
+    <fragment
         android:id="@+id/nav_settings"
         android:name="top.fumiama.copymanga.ui.settings.SettingsFragment"
         android:label="@string/action_settings"

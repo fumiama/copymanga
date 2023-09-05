@@ -74,7 +74,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_rank,
                 R.id.nav_sub,
                 R.id.nav_history,
-                R.id.nav_download,
+                R.id.nav_new_download,
                 R.id.nav_settings
             ), drawer_layout
         )

@@ -6,6 +6,8 @@ import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.gson.Gson
+import kotlinx.android.synthetic.main.line_lazybooklines.*
+import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.json.BookListStructure
 import top.fumiama.copymanga.json.HistoryBookListStructure
 import top.fumiama.copymanga.json.TypeBookListStructure
@@ -98,7 +100,11 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
 
     open fun setListeners(){}
 
-    open fun onLoadFinish(){}
+    open fun onLoadFinish(){
+        MainActivity.mainWeakReference?.get()?.runOnUiThread {
+            if(ad?.exit == false) mypl.visibility = View.GONE
+        }
+    }
 
     override fun onDestroy() {
         super.onDestroy()

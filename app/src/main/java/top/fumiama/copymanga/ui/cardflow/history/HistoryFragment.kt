@@ -11,11 +11,4 @@ import top.fumiama.dmzj.copymanga.R
 class HistoryFragment : InfoCardLoader(R.layout.fragment_history, R.id.action_nav_history_to_nav_book, isHistoryBook = true) {
     override fun getApiUrl() =
         getString(R.string.historyApiUrl).format(CMApi.myHostApiUrl, page * 21)
-
-    override fun onLoadFinish() {
-        super.onLoadFinish()
-        MainActivity.mainWeakReference?.get()?.runOnUiThread {
-            if(ad?.exit == false) mypl.visibility = View.GONE
-        }
-    }
 }

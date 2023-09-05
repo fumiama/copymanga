@@ -1,5 +1,6 @@
 package top.fumiama.copymanga.ui.book
 
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.os.Looper
 import android.os.Message
@@ -8,6 +9,7 @@ import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.graphics.drawable.toBitmap
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
@@ -21,6 +23,7 @@ import kotlinx.android.synthetic.main.line_bookinfo.*
 import kotlinx.android.synthetic.main.line_bookinfo_text.*
 import kotlinx.android.synthetic.main.line_caption.view.*
 import kotlinx.android.synthetic.main.line_chapter.view.*
+import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.json.BookInfoStructure
 import top.fumiama.copymanga.json.ChapterStructure
@@ -51,7 +54,7 @@ class BookHandler(private val th: WeakReference<BookFragment>, private val path:
         return re
     }
     var book: BookInfoStructure? = null
-    var complete = false
+    private var complete = false
     var ads = emptyArray<AutoDownloadThread>()
     var gpws = arrayOf<String>()
     var keys = arrayOf<String>()
@@ -363,6 +366,20 @@ class BookHandler(private val th: WeakReference<BookFragment>, private val path:
                 json = Gson().toJson(volumes)
                 File(mangaFolder, "info.json").writeText(json!!)
                 File(mangaFolder, "grps.json").writeText(Gson().toJson(keys))
+                that?.apply {
+                    File(mangaFolder, "head.jpg").let { head ->
+                        val fo = head.outputStream()
+                        try {
+                            imic.drawable.toBitmap().compress(Bitmap.CompressFormat.JPEG, 90, fo)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            mainWeakReference?.get()?.apply {
+                                Toast.makeText(this, R.string.download_cover_error, Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                        fo.close()
+                    }
+                }
             }
         }
         vols = volumes

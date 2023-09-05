@@ -11,11 +11,4 @@ import top.fumiama.dmzj.copymanga.R
 class RecFragment : InfoCardLoader(R.layout.fragment_recommend, R.id.action_nav_recommend_to_nav_book, true) {
     override fun getApiUrl() =
         getString(R.string.recommendApiUrl).format(CMApi.myHostApiUrl, page * 21)
-
-    override fun onLoadFinish() {
-        super.onLoadFinish()
-        mainWeakReference?.get()?.runOnUiThread {
-            if(ad?.exit == false) mypl.visibility = View.GONE
-        }
-    }
 }

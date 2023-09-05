@@ -46,13 +46,6 @@ class SortFragment : InfoCardLoader(R.layout.fragment_sort, R.id.action_nav_sort
         }.start()
     }
 
-    override fun onLoadFinish() {
-        super.onLoadFinish()
-        mainWeakReference?.get()?.runOnUiThread {
-            if(ad?.exit == false) mypl.visibility = View.GONE
-        }
-    }
-
     private fun setUpdate(){
         if(ad?.exit == true) return
         line_sort_time.apt.setText(R.string.menu_update_time)

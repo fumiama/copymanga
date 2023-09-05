@@ -93,13 +93,17 @@ class CardList(
         if(!exitCardList) cardFrame.let {
             it.tic.text = name
             if(!file.exists()){
-                that?.context?.let { context ->
-                    if(!exitCardList && head != null)
-                        Glide.with(context).load(
-                            GlideUrl(CMApi.proxy?.wrap(head)?:head, CMApi.myGlideHeaders)
-                        ).into(it.imic)
+                if(head != null) {
+                    that?.context?.let { context ->
+                        if(!exitCardList)
+                            Glide.with(context).load(
+                                GlideUrl(CMApi.proxy?.wrap(head)?:head, CMApi.myGlideHeaders)
+                            ).into(it.imic)
+                    }
+                } else {
+                    if(!exitCardList) it.imic.setImageResource(R.drawable.img_defmask)
                 }
-            }else {
+            } else {
                 val img = File(file, "head.jpg")
                 if(img.exists()) it.imic.setImageURI(Uri.fromFile(img))
             }

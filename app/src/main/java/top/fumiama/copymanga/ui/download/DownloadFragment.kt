@@ -17,10 +17,8 @@ import top.fumiama.copymanga.ui.vm.ViewMangaActivity
 import top.fumiama.dmzj.copymanga.R
 import java.io.File
 import java.util.regex.Pattern
-import java.util.zip.ZipInputStream
 
 class DownloadFragment: NoBackRefreshFragment(R.layout.fragment_download) {
-    private var nullZipDirStr = emptyArray<String>()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         if(isFirstInflate) {
@@ -69,7 +67,7 @@ class DownloadFragment: NoBackRefreshFragment(R.layout.fragment_download) {
                         AlertDialog.Builder(context)
                             .setIcon(R.drawable.ic_launcher_foreground).setMessage("删除?")
                             .setTitle("提示").setPositiveButton(android.R.string.ok) { _, _ ->
-                                if (chosenFile.exists()) rmrf(chosenFile)
+                                if (chosenFile.exists()) recursiveRemove(chosenFile)
                                 scanFile(cd)
                             }.setNegativeButton(android.R.string.cancel) { _, _ -> }
                             .show()
@@ -81,10 +79,10 @@ class DownloadFragment: NoBackRefreshFragment(R.layout.fragment_download) {
     }
 
 
-    fun rmrf(f: File) {
+    private fun recursiveRemove(f: File) {
         if (f.isDirectory) f.listFiles()?.let {
             for (i in it)
-                if (i.isDirectory) rmrf(i)
+                if (i.isDirectory) recursiveRemove(i)
                 else i.delete()
         }
         f.delete()
@@ -108,57 +106,6 @@ class DownloadFragment: NoBackRefreshFragment(R.layout.fragment_download) {
         Log.d("MyDF", "root view: $rootView")
         Log.d("MyDF", "action_nav_download_self")
         findNavController().navigate(R.id.action_nav_download_self, bundle)
-    }
-
-    private fun findNullWebpZipFileInDir(f: File){
-        if (f.isDirectory) f.listFiles()?.let {
-            for (i in it)
-                if (i.isDirectory) findNullWebpZipFileInDir(i)
-                else if(!checkZip(i)) nullZipDirStr += i.path.substringAfterLast(context?.getExternalFilesDir("").toString())
-        }
-    }
-
-    private fun checkZip(f: File): Boolean{
-        return try {
-            val exist = f.exists()
-            if (!exist) true
-            else {
-                var re = true
-                val zip = ZipInputStream(f.inputStream().buffered())
-                var entry = zip.nextEntry
-                while (entry != null) {
-                    if (!entry.isDirectory){
-                        if(zip.read() == -1 && entry.size == 0L){
-                            re = false
-                            break
-                        }
-                    }
-                    entry = zip.nextEntry
-                }
-                zip.closeEntry()
-                zip.close()
-                re
-            }
-        } catch (e: Exception) {
-            Toast.makeText(context, "读取${f.name}错误!", Toast.LENGTH_SHORT).show()
-            true
-        }
-    }
-
-    private fun showErrorZip(msg: CharSequence) = AlertDialog.Builder(context)
-        .setIcon(R.drawable.ic_launcher_foreground)
-        .setTitle("找到以下错误文件,是否删除?")
-        .setMessage(msg)
-        .setPositiveButton(android.R.string.ok){_, _ -> deleteErrorZip()}
-        .setNegativeButton(android.R.string.cancel){_, _ ->}
-        .show()
-
-    private fun deleteErrorZip(){
-        val exf = context?.getExternalFilesDir("")
-        for(i in nullZipDirStr){
-            val f = File(exf, i)
-            if(f.exists()) f.delete()
-        }
     }
 
     private fun getFloat(oldString: String): Float {

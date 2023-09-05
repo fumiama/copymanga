@@ -40,11 +40,4 @@ class TopicFragment : InfoCardLoader(R.layout.fragment_topic, R.id.action_nav_to
             }
         }.start()
     }
-
-    override fun onLoadFinish() {
-        super.onLoadFinish()
-        mainWeakReference?.get()?.runOnUiThread {
-            if(ad?.exit == false) mypl.visibility = View.GONE
-        }
-    }
 }

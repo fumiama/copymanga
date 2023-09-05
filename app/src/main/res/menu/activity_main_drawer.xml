@@ -35,7 +35,7 @@
         android:id="@+id/menugroup_dl"
         android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_download"
+            android:id="@+id/nav_new_download"
             android:icon="@drawable/ic_menu_download"
             android:title="@string/menu_download" />
     </group>
