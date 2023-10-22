@@ -10,13 +10,14 @@ import kotlinx.android.synthetic.main.line_lazybooklines.*
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.json.BookListStructure
 import top.fumiama.copymanga.json.HistoryBookListStructure
+import top.fumiama.copymanga.json.ShelfStructure
 import top.fumiama.copymanga.json.TypeBookListStructure
 import top.fumiama.copymanga.template.general.MangaPagesFragmentTemplate
 import top.fumiama.copymanga.template.http.AutoDownloadThread
 import java.lang.ref.WeakReference
 
 @ExperimentalStdlibApi
-open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isTypeBook: Boolean = false,private val isHistoryBook: Boolean = false): MangaPagesFragmentTemplate(inflateRes) {
+open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isTypeBook: Boolean = false, private val isHistoryBook: Boolean = false, private val isShelfBook: Boolean = false): MangaPagesFragmentTemplate(inflateRes) {
     var offset = 0
     private val subUrl get() = getApiUrl()
     var ad: AutoDownloadThread? = null
@@ -36,7 +37,7 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
                                 if(code == 200) {
                                     results.list.forEach { book ->
                                         if(ad?.exit == true) return@AutoDownloadThread
-                                        cardList.addCard(book.comic.name, null, book.comic.cover, book.comic.path_word, null, null, false)
+                                        cardList?.addCard(book.comic.name, null, book.comic.cover, book.comic.path_word, null, null, false)
                                     }
                                     offset += results.list.size
                                 }
@@ -51,7 +52,22 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
                                 if(code == 200) {
                                     results.list.forEach{ book ->
                                         if(ad?.exit == true) return@AutoDownloadThread
-                                        cardList.addCard(book.comic.name, null, book.comic.cover, book.comic.path_word, null, null, false)
+                                        cardList?.addCard(book.comic.name, null, book.comic.cover, book.comic.path_word, null, null, false)
+                                    }
+                                    offset += results.list.size
+                                }
+                            }
+                            page++
+                        }
+                    } else if (isShelfBook) {
+                        val bookList = Gson().fromJson(it?.decodeToString(), ShelfStructure::class.java)
+                        bookList?.apply {
+                            Log.d("MyICL", "offset:${results.offset}, total:${results.total}")
+                            if(results.offset < results.total) {
+                                if(code == 200) {
+                                    results.list.forEach{ book ->
+                                        if(ad?.exit == true) return@AutoDownloadThread
+                                        cardList?.addCard(book.comic.name, null, book.comic.cover, book.comic.path_word, null, null, false)
                                     }
                                     offset += results.list.size
                                 }
@@ -66,7 +82,7 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
                                 if(code == 200) {
                                     results.list.forEach{ book ->
                                         if(ad?.exit == true) return@AutoDownloadThread
-                                        cardList.addCard(book.name, null, book.cover, book.path_word, null, null, false)
+                                        cardList?.addCard(book.name, null, book.cover, book.path_word, null, null, false)
                                     }
                                     offset += results.list.size
                                 }
@@ -80,7 +96,7 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
             }
             override fun initCardList(weakReference: WeakReference<Fragment>) {
                 cardList = CardList(weakReference, cardWidth, cardHeight, cardPerRow)
-                cardList.initClickListeners = object : CardList.InitClickListeners {
+                cardList?.initClickListeners = object : CardList.InitClickListeners {
                     override fun prepareListeners(v: View, name: String, path: String?, chapterUUID: String?, pn: Int?) {
                         v.setOnClickListener {
                             val bundle = Bundle()
@@ -102,8 +118,18 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
 
     open fun onLoadFinish(){
         MainActivity.mainWeakReference?.get()?.runOnUiThread {
-            if(ad?.exit == false) mypl.visibility = View.GONE
+            if(ad?.exit != true) mypl.visibility = View.GONE
         }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        ad?.exit = false
+    }
+
+    override fun onResume() {
+        super.onResume()
+        ad?.exit = false
     }
 
     override fun onDestroy() {

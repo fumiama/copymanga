@@ -28,9 +28,12 @@
     <string name="navTextInfoInputHint">请设定提示文字内容</string>
     <string name="clearHeadImgMsg">清除设定的图片?</string>
 
+    <string name="login">登录</string>
+    <string name="logout">注销</string>
+
     <string name="permissionDenied">权限被拒绝</string>
     <string name="noLogin">未登录</string>
-    <string name="load_home_error">"加载主页控件出错"</string>
+    <string name="load_home_error">加载主页控件出错</string>
     <string name="text_null">N/A</string>
     <string name="null_book">获取图书信息失败</string>
     <string name="web_error">网络错误</string>
@@ -56,6 +59,7 @@
     <string name="loginApiUrl">https://%1$s/api/v3/login?platform=3</string>
     <string name="memberInfoApiUrl">https://%1$s/api/v3/member/info?platform=3</string>
     <string name="historyApiUrl">https://%1$s/api/v3/member/browse/comics?limit=21&amp;offset=%2$d&amp;platform=3</string>
+    <string name="shelfApiUrl">https://%1$s/api/v3/member/collect/comics?limit=21&amp;offset=%2$d&amp;free_type=1&amp;ordering=%3$s&amp;platform=3</string>
 
     <string name="imgProxyApiUrl">https://copymanga.azurewebsites.net/api/img?code=%1$s&amp;url=%2$s</string>
     <string name="imgProxyApiPrefix">https://hi77-overseas.mangafuna.xyz/</string>
@@ -80,6 +84,8 @@
 
     <string name="menu_update_time">更新时间</string>
     <string name="menu_hot">热度</string>
+    <string name="menu_add_time">加入时间</string>
+    <string name="menu_read_time">阅读时间</string>
 
     <string name="button_sub">加入书架</string>
     <string name="button_start">开始阅读</string>
@@ -125,6 +131,7 @@
     <string name="login_null_username">用户名为空</string>
     <string name="login_null_pwd">密码为空</string>
     <string name="login_get_conn_failed">连接失败</string>
+    <string name="login_restart_to_apply">重启应用以彻底退出登录</string>
 
     <string name="old_download_card_name">前往旧版下载</string>
 </resources>

@@ -1,23 +1,21 @@
 package top.fumiama.copymanga.ui.cardflow.sort
 
 import android.animation.ObjectAnimator
-import android.view.View
 import com.github.zawadz88.materialpopupmenu.popupMenu
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.anchor_popular.view.*
-import kotlinx.android.synthetic.main.line_lazybooklines.*
 import kotlinx.android.synthetic.main.line_sort.*
-import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.json.FilterStructure
 import top.fumiama.copymanga.template.http.AutoDownloadThread
 import top.fumiama.copymanga.template.ui.InfoCardLoader
 import top.fumiama.copymanga.tools.api.CMApi
+import top.fumiama.dmzj.copymanga.R
 import java.lang.Thread.sleep
 
 @ExperimentalStdlibApi
 class SortFragment : InfoCardLoader(R.layout.fragment_sort, R.id.action_nav_sort_to_nav_book) {
-    private val sortWay = listOf("-datetime_updated", "datetime_updated", "popular", "-popular")
+    private val sortWay = listOf("-datetime_updated", "datetime_updated", "-popular", "popular")
     private var theme = -1
     private var sortValue = 0
     private var filter: FilterStructure? = null
@@ -40,7 +38,7 @@ class SortFragment : InfoCardLoader(R.layout.fragment_sort, R.id.action_nav_sort
                 filter = Gson().fromJson(it.inputStream().reader(), FilterStructure::class.java)
                 if(ad?.exit == true) return@AutoDownloadThread
                 mainWeakReference?.get()?.runOnUiThread{
-                    if(ad?.exit == false) setClasses()
+                    if(ad?.exit != true) setClasses()
                 }
             }
         }.start()
@@ -109,10 +107,10 @@ class SortFragment : InfoCardLoader(R.layout.fragment_sort, R.id.action_nav_sort
         line_sort_hot.setOnClickListener {
             sortValue = if (it.apim.rotation == 0f) {
                 ObjectAnimator.ofFloat(it.apim, "rotation", 0f, 180f).setDuration(233).start()
-                1
+                3
             } else {
                 ObjectAnimator.ofFloat(it.apim, "rotation", 180f, 0f).setDuration(233).start()
-                0
+                2
             }
             Thread {
                 sleep(400)

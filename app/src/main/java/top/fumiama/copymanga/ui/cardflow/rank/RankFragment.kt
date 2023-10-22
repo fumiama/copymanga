@@ -1,11 +1,8 @@
 package top.fumiama.copymanga.ui.cardflow.rank
 
-import android.view.View
 import com.google.android.material.tabs.TabLayout
 import kotlinx.android.synthetic.main.fragment_rank.*
-import kotlinx.android.synthetic.main.line_lazybooklines.*
 import kotlinx.android.synthetic.main.line_rank.view.*
-import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.template.ui.InfoCardLoader
 import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.dmzj.copymanga.R
@@ -40,7 +37,7 @@ class RankFragment : InfoCardLoader(R.layout.fragment_rank, R.id.action_nav_rank
         sortValue = value
         Thread{
             sleep(400)
-            if(ad?.exit == false) mh?.sendEmptyMessage(4)
+            if(ad?.exit != true) mh?.sendEmptyMessage(4)
         }.start()
     }
 }

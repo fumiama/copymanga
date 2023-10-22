@@ -28,10 +28,10 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
                         sortedBookList = extDir?.listFiles()?.sorted()
                     }
                     Log.d("MyNDF", "Start drawing cards")
-                    cardList.addCard(oldDlCardName, path = oldDlCardName)
+                    cardList?.addCard(oldDlCardName, path = oldDlCardName)
                     sortedBookList?.let {
                         for(i in it.listIterator(page)) {
-                            if(cardList.exitCardList) return
+                            if(cardList?.exitCardList != false) return
                             page++ // page is actually count
                             val chosenJson = File(i, "info.bin")
                             val newJson = File(i, "info.json")
@@ -39,8 +39,8 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
                             when{
                                 chosenJson.exists() -> continue // unsupported old folder
                                 newJson.exists() -> {
-                                    if(cardList.exitCardList) return
-                                    cardList.addCard(i.name, " ${bookSize}MB")
+                                    if(cardList?.exitCardList != false) return
+                                    cardList?.addCard(i.name, " ${bookSize}MB")
                                 }
                             }
                         }
@@ -54,7 +54,7 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
 
             override fun initCardList(weakReference: WeakReference<Fragment>) {
                 cardList = CardList(weakReference, cardWidth, cardHeight, cardPerRow)
-                cardList.initClickListeners = object : CardList.InitClickListeners {
+                cardList?.initClickListeners = object : CardList.InitClickListeners {
                     override fun prepareListeners(v: View, name: String, path: String?, chapterUUID: String?, pn: Int?) {
                         v.setOnClickListener {
                             if(name==oldDlCardName && path == oldDlCardName) {
@@ -84,7 +84,7 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
 
     private fun onLoadFinish() {
         MainActivity.mainWeakReference?.get()?.runOnUiThread {
-            if(!cardList.exitCardList) mypl.visibility = View.GONE
+            if(cardList?.exitCardList == false) mypl.visibility = View.GONE
         }
     }
 

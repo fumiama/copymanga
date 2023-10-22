@@ -1,6 +1,7 @@
 package top.fumiama.copymanga
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -33,6 +34,8 @@ import androidx.navigation.ui.setupWithNavController
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.input.input
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CircleCrop
+import com.bumptech.glide.request.RequestOptions
 import com.yalantis.ucrop.UCrop
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
@@ -92,13 +95,7 @@ class MainActivity : AppCompatActivity() {
                 Log.d("MyMain", "onDrawerOpened")
                 isDrawerClosed = false
                 DownloadFragment.currentDir = getExternalFilesDir("")
-                getPreferences(MODE_PRIVATE)?.apply {
-                    val name = getString("nickname", getString("username", ""))
-                    val avatar = getString("avatar", "")
-                    if(name != "") navttitle.text = name
-                    else navttitle.setText(R.string.noLogin)
-                    if(avatar != "") Glide.with(this@MainActivity).load(avatar).into(navhicon)
-                }
+                refreshUserInfo()
             }
 
             override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
@@ -197,7 +194,7 @@ class MainActivity : AppCompatActivity() {
                 navhbg.setImageBitmap(BitmapFactory.decodeStream(fi))
                 fi.close()
             }
-            1 -> {
+            MSG_CROP_IMAGE -> {
                 data?.data?.let {
                     saveFile(it)
                     cropImageUri()
@@ -213,10 +210,23 @@ class MainActivity : AppCompatActivity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
-            1 -> {
+            MSG_CROP_IMAGE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) pickPicture()
                 else Toast.makeText(this, R.string.permissionDenied, Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+
+    fun refreshUserInfo() {
+        getPreferences(MODE_PRIVATE)?.apply {
+            val name = getString("nickname", getString("username", ""))
+            val avatar = getString("avatar", "")
+            if(name != "") navttitle.text = name
+            else navttitle.setText(R.string.noLogin)
+            if(avatar != "")
+                Glide.with(this@MainActivity).load(avatar)
+                    .apply(RequestOptions.bitmapTransform(CircleCrop()))
+                    .into(navhicon)
         }
     }
 
@@ -228,16 +238,17 @@ class MainActivity : AppCompatActivity() {
         ) {
             ActivityCompat.requestPermissions(
                 this,
-                arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), 1
+                arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), MSG_CROP_IMAGE
             )
             false
         } else true
     }
 
+    @SuppressLint("IntentReset")
     private fun pickPicture() {
         val i = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
         i.type = "image/*"
-        startActivityForResult(i, 1)
+        startActivityForResult(i, MSG_CROP_IMAGE)
     }
 
     private fun saveFile(uri: Uri) {
@@ -263,7 +274,11 @@ class MainActivity : AppCompatActivity() {
         val r = navhbg.width.toFloat() / navhbg.height.toFloat()
         Log.d("MyMain", "Img info: (${navhbg.width}, ${navhbg.height})")
         Log.d("MyMain", "Result code: ${UCrop.REQUEST_CROP}")
-        op.setCompressionFormat(Bitmap.CompressFormat.WEBP)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            op.setCompressionFormat(Bitmap.CompressFormat.WEBP_LOSSY)
+        } else {
+            op.setCompressionFormat(Bitmap.CompressFormat.WEBP)
+        }
         op.setStatusBarColor(resources.getColor(R.color.colorPrimaryDark, theme))
         op.setToolbarColor(resources.getColor(R.color.colorPrimary, theme))
         op.setActiveControlsWidgetColor(resources.getColor(R.color.colorAccent, theme))
@@ -319,6 +334,7 @@ class MainActivity : AppCompatActivity() {
         dl.show()
     }
 
+    @SuppressLint("CheckResult")
     fun onNavTInfoClicked(it: View) {
         MaterialDialog(this).show {
             input(prefill = (it as TextView).text) { _, charSequence ->
@@ -344,5 +360,6 @@ class MainActivity : AppCompatActivity() {
     companion object{
         var mainWeakReference: WeakReference<MainActivity>? = null
         var ime: InputMethodManager? = null
+        const val MSG_CROP_IMAGE = 1
     }
 }

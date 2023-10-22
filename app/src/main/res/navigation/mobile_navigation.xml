@@ -76,6 +76,20 @@
     </fragment>
 
     <fragment
+        android:id="@+id/nav_sub"
+        android:name="top.fumiama.copymanga.ui.cardflow.shelf.ShelfFragment"
+        android:label="@string/menu_sub"
+        tools:layout="@layout/fragment_shelf" >
+        <action
+            android:id="@+id/action_nav_sub_to_nav_book"
+            app:destination="@id/nav_book"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_out_left_exit"
+            app:popExitAnim="@anim/slide_in_right_exit"/>
+    </fragment>
+
+    <fragment
         android:id="@+id/nav_history"
         android:name="top.fumiama.copymanga.ui.cardflow.history.HistoryFragment"
         android:label="@string/menu_history"

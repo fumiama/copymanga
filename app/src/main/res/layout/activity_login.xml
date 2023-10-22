@@ -137,13 +137,13 @@
             android:orientation="horizontal">
 
             <Button
+                android:id="@+id/alblogin"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/alblogin"
                 android:layout_marginLeft="16dp"
                 android:background="@drawable/buttonshapewhitebg"
                 android:fontFamily="@font/calibri"
-                android:text="Sign in"
+                android:text="@string/login"
                 android:textAllCaps="false"
                 android:textColor="@android:color/white"
                 android:textSize="16dp"

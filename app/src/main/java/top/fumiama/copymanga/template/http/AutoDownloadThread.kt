@@ -1,9 +1,9 @@
 package top.fumiama.copymanga.template.http
 
-import top.fumiama.dmzj.copymanga.R
+import android.util.Log
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
-import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.copymanga.tools.http.DownloadTools
+import top.fumiama.dmzj.copymanga.R
 
 class AutoDownloadThread(private val url: String, private val whenFinish: (result: ByteArray?)->Unit): Thread() {
     var exit = false
@@ -18,5 +18,6 @@ class AutoDownloadThread(private val url: String, private val whenFinish: (resul
             )
         }
         if(!exit) whenFinish(re)
+        Log.d("MyADT", "found exit = $exit")
     }
 }

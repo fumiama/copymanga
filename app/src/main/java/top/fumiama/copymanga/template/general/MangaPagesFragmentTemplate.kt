@@ -18,7 +18,7 @@ open class MangaPagesFragmentTemplate(inflateRes:Int, val isLazy: Boolean = true
     var cardPerRow = 3
     var cardWidth = 0
     var cardHeight = 0
-    lateinit var cardList: CardList
+    var cardList: CardList? = null
     var mh: MPATHandler? = null
     var row: View? = null
     var isEnd = false
@@ -42,7 +42,7 @@ open class MangaPagesFragmentTemplate(inflateRes:Int, val isLazy: Boolean = true
 
     override fun onDestroy() {
         super.onDestroy()
-        cardList.exitCardList = true
+        cardList?.exitCardList = true
         mh = null
         row = null
         jsonReaderNow = null
