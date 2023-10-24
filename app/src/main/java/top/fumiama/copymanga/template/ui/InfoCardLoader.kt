@@ -14,6 +14,7 @@ import top.fumiama.copymanga.json.ShelfStructure
 import top.fumiama.copymanga.json.TypeBookListStructure
 import top.fumiama.copymanga.template.general.MangaPagesFragmentTemplate
 import top.fumiama.copymanga.template.http.AutoDownloadThread
+import top.fumiama.copymanga.tools.api.Navigate
 import java.lang.ref.WeakReference
 
 @ExperimentalStdlibApi
@@ -101,7 +102,7 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
                         v.setOnClickListener {
                             val bundle = Bundle()
                             bundle.putString("path", path)
-                            findNavController().navigate(navId, bundle)
+                            Navigate.safeNavigateTo(findNavController(), navId, bundle)
                         }
                     }
                 }

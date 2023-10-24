@@ -12,6 +12,7 @@ import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.fragment_download.*
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.template.general.NoBackRefreshFragment
+import top.fumiama.copymanga.tools.api.Navigate
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment
 import top.fumiama.copymanga.ui.vm.ViewMangaActivity
 import top.fumiama.dmzj.copymanga.R
@@ -96,7 +97,7 @@ class DownloadFragment: NoBackRefreshFragment(R.layout.fragment_download) {
         ComicDlFragment.json = jsonFile.readText()
         Log.d("MyDF", "root view: $rootView")
         Log.d("MyDF", "action_nav_download_to_nav_group")
-        findNavController().navigate(R.id.action_nav_download_to_nav_group, bundle)
+        Navigate.safeNavigateTo(findNavController(), R.id.action_nav_download_to_nav_group, bundle)
     }
 
     private fun callSelf(title: String){
@@ -105,7 +106,7 @@ class DownloadFragment: NoBackRefreshFragment(R.layout.fragment_download) {
         Log.d("MyDF", "Call self to $title")
         Log.d("MyDF", "root view: $rootView")
         Log.d("MyDF", "action_nav_download_self")
-        findNavController().navigate(R.id.action_nav_download_self, bundle)
+        Navigate.safeNavigateTo(findNavController(), R.id.action_nav_download_self, bundle)
     }
 
     private fun getFloat(oldString: String): Float {

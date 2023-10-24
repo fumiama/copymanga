@@ -60,6 +60,7 @@
     <string name="memberInfoApiUrl">https://%1$s/api/v3/member/info?platform=3</string>
     <string name="historyApiUrl">https://%1$s/api/v3/member/browse/comics?limit=21&amp;offset=%2$d&amp;platform=3</string>
     <string name="shelfApiUrl">https://%1$s/api/v3/member/collect/comics?limit=21&amp;offset=%2$d&amp;free_type=1&amp;ordering=%3$s&amp;platform=3</string>
+    <string name="shelfOperateApiUrl">https://%1$s/api/v3/member/collect/comic</string>
 
     <string name="imgProxyApiUrl">https://copymanga.azurewebsites.net/api/img?code=%1$s&amp;url=%2$s</string>
     <string name="imgProxyApiPrefix">https://hi77-overseas.mangafuna.xyz/</string>
@@ -108,6 +109,8 @@
     <string name="caption">标签</string>
 
     <string name="settings_cat_net">网络</string>
+    <string name="settings_cat_net_sw_use_cellar">总是使用流量观看</string>
+    <string name="settings_cat_net_sm_use_cellar">打开后不再在开始阅读时提示</string>
     <string name="settings_cat_net_sw_use_foreign">使用海外线路</string>
     <string name="settings_cat_net_sm_use_foreign">不管使用什么线路, API访问均是海外, 只有图片CDN可能会变化（也可能不变）, 请酌情选择使用</string>
     <string name="settings_cat_net_et_title_api_url">请求API网址</string>
@@ -120,6 +123,8 @@
     <string name="settings_cat_net_et_summary_img_proxy">为避免滥用，代理密钥需加群（559748702）获得，且随时可能会刷新</string>
 
     <string name="settings_cat_vm">漫画浏览</string>
+    <string name="settings_cat_vm_sw_hide_info">隐藏底部时间栏</string>
+    <string name="settings_cat_vm_sm_hide_info">打开后不再在底部显示时间和网络状态</string>
     <string name="settings_cat_vm_sw_vol_turn">音量键翻页</string>
     <string name="settings_cat_vm_sm_vol_turn">使用音量上下键前后翻页</string>
     <string name="settings_cat_vm_sb_vertical_max">竖向翻页一次加载页数</string>

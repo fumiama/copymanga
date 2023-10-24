@@ -19,8 +19,8 @@ class PagesManager(w: WeakReference<ViewMangaActivity>) {
     fun toNextPage(){
         toPage(v?.r2l!=true)
     }
-    private fun judgePrevious() = v?.pageNum?:0 > 1
-    private fun judgeNext() = v?.pageNum?:0 < v?.realCount?:0
+    private fun judgePrevious() = (v?.pageNum ?: 0) > 1
+    private fun judgeNext() = (v?.pageNum ?: 0) < (v?.realCount ?: 0)
     @ExperimentalStdlibApi
     fun toPage(goNext:Boolean){
         if (v?.clicked == false) {

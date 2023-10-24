@@ -9,6 +9,7 @@ import kotlinx.android.synthetic.main.line_lazybooklines.*
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.template.general.MangaPagesFragmentTemplate
 import top.fumiama.copymanga.template.ui.CardList
+import top.fumiama.copymanga.tools.api.Navigate
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment
 import top.fumiama.dmzj.copymanga.R
 import java.io.File
@@ -58,7 +59,7 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
                     override fun prepareListeners(v: View, name: String, path: String?, chapterUUID: String?, pn: Int?) {
                         v.setOnClickListener {
                             if(name==oldDlCardName && path == oldDlCardName) {
-                                findNavController().navigate(R.id.action_nav_new_download_to_nav_download)
+                                Navigate.safeNavigateTo(findNavController(), R.id.action_nav_new_download_to_nav_download)
                                 return@setOnClickListener
                             }
                             callDownloadFragment(name)
@@ -79,12 +80,13 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
         ComicDlFragment.json = File(File(extDir, name), "info.json").readText()
         Log.d("MyNDF", "root view: $rootView")
         Log.d("MyNDF", "action_nav_new_download_to_nav_group")
-        findNavController().navigate(R.id.action_nav_new_download_to_nav_group, bundle)
+        Navigate.safeNavigateTo(findNavController(), R.id.action_nav_new_download_to_nav_group, bundle)
     }
 
     private fun onLoadFinish() {
         MainActivity.mainWeakReference?.get()?.runOnUiThread {
-            if(cardList?.exitCardList == false) mypl.visibility = View.GONE
+            if(cardList?.exitCardList != false) return@runOnUiThread
+            mypl.visibility = View.GONE
         }
     }
 

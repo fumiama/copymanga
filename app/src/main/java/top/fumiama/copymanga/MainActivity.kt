@@ -40,6 +40,8 @@ import com.yalantis.ucrop.UCrop
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.nav_header_main.*
+import top.fumiama.copymanga.manga.Shelf
+import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.tools.api.UITools
 import top.fumiama.copymanga.ui.book.BookFragment.Companion.bookHandler
@@ -361,5 +363,16 @@ class MainActivity : AppCompatActivity() {
         var mainWeakReference: WeakReference<MainActivity>? = null
         var ime: InputMethodManager? = null
         const val MSG_CROP_IMAGE = 1
+        var shelf: Shelf? = null
+            get() {
+                if (field != null) return field
+                return mainWeakReference?.get()?.let {
+                    field = Shelf(
+                        it.getPreferences(Context.MODE_PRIVATE).getString("token", "")?:return@let null,
+                        it.getString(R.string.shelfOperateApiUrl).format(CMApi.myHostApiUrl), it.getString(R.string.referer), it.getString(R.string.pc_ua)
+                    )
+                    field
+                }
+            }
     }
 }

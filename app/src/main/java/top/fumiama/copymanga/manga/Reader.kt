@@ -9,12 +9,13 @@ import top.fumiama.copymanga.ui.vm.ViewMangaActivity
 
 object Reader {
     fun viewMangaAt(name: String, pos: Int, from_first_page: Boolean = false) {
+        Log.d("MyR", "viewMangaAt name $name, pos $pos")
         mainWeakReference?.get()?.apply {
             getPreferences(Context.MODE_PRIVATE)?.edit {
                 putInt(name, pos)
                 apply()
                 Log.d("MyR", "记录 $name 阅读到第 ${pos+1} 话")
-            }?: Log.d("MyR", "无法获得main pref")
+            }?: Log.d("MyR", "无法获得 main pref")
             ViewMangaActivity.dlhandler = null
             ViewMangaActivity.position = pos
             ViewMangaActivity.comicName = name

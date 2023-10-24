@@ -3,6 +3,7 @@ package top.fumiama.copymanga.tools.http
 import android.content.Context
 import android.util.Log
 import androidx.preference.PreferenceManager
+import okhttp3.RequestBody
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.dmzj.copymanga.R
 import java.net.HttpURLConnection
@@ -129,4 +130,28 @@ object DownloadTools {
             return@replace URLEncoder.encode(match.value, "UTF-8")
         }
     }*/
+
+    fun requestWithBody(url: String, method: String, body: ByteArray, refer: String? = null, ua: String? = null): ByteArray? {
+        Log.d("Mydl", "$method Http: $url")
+        var ret: ByteArray? = null
+        val task = FutureTask(Callable {
+            try {
+                getConnection(url, method, refer, ua)?.apply {
+                    outputStream.write(body)
+                    ret = inputStream.readBytes()
+                    disconnect()
+                }
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+            }
+            return@Callable ret
+        })
+        Thread(task).start()
+        return try {
+            task.get()
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+            null
+        }
+    }
 }

@@ -88,8 +88,8 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
             }.start()
             9 -> loadScrollMode(msg.arg1)
             10 -> loadScrollMode()
-            11 -> loadImgsIntoLine(msg.arg1)
-            12 -> loadImgsIntoLine()
+            11 -> loadImagesIntoLine(msg.arg1)
+            12 -> loadImagesIntoLine()
             13 -> {
                 dl?.hide()
                 wv.get()?.restorePN()
@@ -100,7 +100,17 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
                 Log.d("MyVMH", "Load page from $item")
             }
             15 -> dl?.hide()
-            //16 -> wv.get()?.prepareItems()
+            16 -> if (infcShowed) {
+                hideInfCardFull(); infcShowed = false
+            }
+            17 -> if (!infcShowed) {
+                showInfCardFull(); infcShowed = true
+            }
+            18 -> infcShowed = if (infcShowed) {
+                hideInfCardFull(); false
+            } else {
+                showInfCardFull(); true
+            }
             22 -> wv.get()?.idtime?.text = SimpleDateFormat("HH:mm").format(Date()) + week + wv.get()?.toolsBox?.netinfo
         }
     }
@@ -163,8 +173,8 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
         wv.get()?.initManga()
         wv.get()?.vprog?.visibility = View.GONE
     }
-    private fun loadImgsIntoLine(item: Int = (wv.get()?.currentItem?:0), maxCount: Int = (wv.get()?.verticalLoadMaxCount?:20)) /*= Thread*/{
-        Log.d("MyVMH", "Fun: loadImgsIntoLine($item, $maxCount)")
+    private fun loadImagesIntoLine(item: Int = (wv.get()?.currentItem?:0), maxCount: Int = (wv.get()?.verticalLoadMaxCount?:20)) /*= Thread*/{
+        Log.d("MyVMH", "Fun: loadImagesIntoLine($item, $maxCount)")
         wv.get()?.realCount?.let { count ->
             if(count > 0){
                 val notFull = item + maxCount > count
@@ -197,8 +207,18 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
         ObjectAnimator.ofFloat(infcard, "translationY", delta, 0F).setDuration(233).start()
     }
 
+    private fun showInfCardFull() {
+        Log.d("MyVMH", "Read info drawer delta: $delta")
+        ObjectAnimator.ofFloat(infcard?.idc, "alpha", 0.0F, 0.8F).setDuration(233).start()
+        ObjectAnimator.ofFloat(infcard, "translationY", delta, 0F).setDuration(233).start()
+    }
+
     private fun hideInfCard() {
         ObjectAnimator.ofFloat(infcard?.idc, "alpha", 0.8F, 0.3F).setDuration(233).start()
+        ObjectAnimator.ofFloat(infcard, "translationY", 0F, delta).setDuration(233).start()
+    }
+    private fun hideInfCardFull() {
+        ObjectAnimator.ofFloat(infcard?.idc, "alpha", 0.8F, 0.0F).setDuration(233).start()
         ObjectAnimator.ofFloat(infcard, "translationY", 0F, delta).setDuration(233).start()
     }
 }

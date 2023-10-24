@@ -28,6 +28,7 @@ import top.fumiama.copymanga.json.BookListStructure
 import top.fumiama.copymanga.template.general.NoBackRefreshFragment
 import top.fumiama.copymanga.template.http.AutoDownloadThread
 import top.fumiama.copymanga.tools.api.CMApi
+import top.fumiama.copymanga.tools.api.Navigate
 import top.fumiama.dmzj.copymanga.R
 import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
@@ -159,7 +160,7 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                 holder.itemView.vpc.setOnClickListener {
                     val bundle = Bundle()
                     homeHandler.index?.results?.banners?.get(position)?.comic?.path_word?.let { it1 -> bundle.putString("path", it1) }
-                    findNavController().navigate(R.id.action_nav_home_to_nav_book, bundle)
+                    Navigate.safeNavigateTo(findNavController(), R.id.action_nav_home_to_nav_book, bundle)
                 }
             }
 
@@ -198,7 +199,7 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                     holder.itemView.lwc.setOnClickListener {
                             val bundle = Bundle()
                             bundle.putString("path", path_word)
-                            findNavController().navigate(R.id.action_nav_home_to_nav_book, bundle)
+                            Navigate.safeNavigateTo(findNavController(), R.id.action_nav_home_to_nav_book, bundle)
                     }
                     holder.itemView.lwc.layoutParams.height = fhs.width / 4
                 }

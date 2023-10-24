@@ -3,11 +3,14 @@ package top.fumiama.copymanga.ui.book
 import android.content.Context.MODE_PRIVATE
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.navigation.fragment.findNavController
 import kotlinx.android.synthetic.main.line_booktandb.*
+import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.manga.Reader
 import top.fumiama.copymanga.template.general.NoBackRefreshFragment
+import top.fumiama.copymanga.tools.api.Navigate
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment
 import top.fumiama.dmzj.copymanga.R
 import java.lang.Thread.sleep
@@ -68,6 +71,20 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
         }
     }
 
+    fun setAddToShelf() {
+        if(bookHandler?.chapterNames?.isNotEmpty() == true)
+            bookHandler?.book?.results?.comic?.let { comic ->
+                this@BookFragment.lbbsub.setOnClickListener {
+                    Thread{
+                        val re = MainActivity.shelf?.add(comic.uuid)
+                        mainWeakReference?.get()?.runOnUiThread {
+                            Toast.makeText(context, re, Toast.LENGTH_SHORT).show()
+                        }
+                    }.start()
+                }
+            }
+    }
+
     fun navigate2dl(){
         val bundle = Bundle()
         bundle.putString("path", arguments?.getString("path")?:"null")
@@ -78,7 +95,9 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
         bundle.putStringArray("group", bookHandler!!.gpws)
         bundle.putStringArray("groupNames", bookHandler!!.keys)
         bundle.putIntArray("count", bookHandler!!.cnts)
-        findNavController().navigate(R.id.action_nav_book_to_nav_group, bundle)
+        findNavController().let {
+            Navigate.safeNavigateTo(it, R.id.action_nav_book_to_nav_group, bundle)
+        }
     }
 
     companion object {

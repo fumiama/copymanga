@@ -36,27 +36,31 @@ class CardList(
         exitCardList = false
     }
 
-    private fun manageRow(){
+    private fun manageRow() {
         if(!exitCardList && count++ % cardPerRow == 0) inflateRow()
         Log.d("MyCL", "index: $index, cardPR: $cardPerRow")
     }
 
     private fun inflateRow(){
         that?.layoutInflater?.inflate(R.layout.line_horizonal_empty, that.mydll, false)?.let {
+            if(exitCardList) return
             it.layoutParams.height = cardHeight + 16
             mainWeakReference?.get()?.runOnUiThread {
-                if(!exitCardList) that.mydll.addView(it)
+                if(exitCardList) return@runOnUiThread
+                that.mydll.addView(it)
             }
-            if(!exitCardList) recycleOneRow(it)
+            recycleOneRow(it)
+            index++
         }
     }
     private fun recycleOneRow(v:View?){
-        val relativeIndex = index++ % 20
+        val relativeIndex = index % 20
         if(rows[relativeIndex] == null) rows[relativeIndex] = v
         else {
             val victim = rows[relativeIndex]
             mainWeakReference?.get()?.runOnUiThread {
-                if(!exitCardList) that?.apply {
+                if(exitCardList) return@runOnUiThread
+                that?.apply {
                     mydll?.removeView(victim)
                     mys?.scrollY = that.mys?.scrollY?.minus(cardHeight + 16)?:0
                 }
@@ -67,8 +71,9 @@ class CardList(
 
     @ExperimentalStdlibApi
     fun addCard(name: String, append: String? = null, head: String? = null, path: String? = null, chapterUUID: String? = null, pn: Int? = null, isFinish: Boolean = false){
-        if(!exitCardList) manageRow()
-        if(!exitCardList) that?.layoutInflater?.inflate(R.layout.card_book, that.mydll.ltbtn, false)?.let {
+        if(exitCardList) return
+        manageRow()
+        that?.layoutInflater?.inflate(R.layout.card_book, that.mydll.ltbtn, false)?.let {
             val card = it.cic
             card.name = name
             card.append = append
@@ -79,7 +84,8 @@ class CardList(
             card.pageNumber = pn
             card.isFinish = isFinish
             mainWeakReference?.get()?.runOnUiThread{
-                if(!exitCardList) addCard(it)
+                if(exitCardList) return@runOnUiThread
+                addCard(it)
             }
         }
     }
@@ -87,21 +93,22 @@ class CardList(
     @ExperimentalStdlibApi
     fun addCard(cardFrame: View) {
         val card = cardFrame.cic
+        if (card.index < 0) return
         val name = card.name + (card.append?:"")
         val head = card.headImageUrl
         val file = File(that?.context?.getExternalFilesDir(""), card.name)
-        if(!exitCardList) cardFrame.let {
+        if(exitCardList) return
+        cardFrame.let {
             it.tic.text = name
             if(!file.exists()){
                 if(head != null) {
                     that?.context?.let { context ->
-                        if(!exitCardList)
-                            Glide.with(context).load(
-                                GlideUrl(CMApi.proxy?.wrap(head)?:head, CMApi.myGlideHeaders)
-                            ).into(it.imic)
+                        Glide.with(context).load(
+                            GlideUrl(CMApi.proxy?.wrap(head)?:head, CMApi.myGlideHeaders)
+                        ).into(it.imic)
                     }
                 } else {
-                    if(!exitCardList) it.imic.setImageResource(R.drawable.img_defmask)
+                    it.imic.setImageResource(R.drawable.img_defmask)
                 }
             } else {
                 val img = File(file, "head.jpg")
@@ -110,8 +117,8 @@ class CardList(
             if(card.isFinish) it.sgnic.visibility = View.VISIBLE
             initClickListeners?.prepareListeners(card, card.name, card.path, card.chapterUUID, card.pageNumber)
             rows[card.index % 20]?.ltbtn?.addView(it)
-            it.layoutParams.height = cardHeight
-            it.layoutParams.width  = cardWidth
+            it.layoutParams?.height = cardHeight
+            it.layoutParams?.width  = cardWidth
         }
     }
     interface InitClickListeners{

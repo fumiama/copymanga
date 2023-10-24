@@ -28,6 +28,7 @@ import top.fumiama.copymanga.json.ComicStructure
 import top.fumiama.copymanga.json.IndexStructure
 import top.fumiama.copymanga.template.http.AutoDownloadHandler
 import top.fumiama.copymanga.tools.api.CMApi
+import top.fumiama.copymanga.tools.api.Navigate
 import top.fumiama.copymanga.tools.api.UITools
 import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
@@ -143,7 +144,9 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
                 comics += rec.comic
             }
             if(comics.size == 3) allocateLine(homeF?.getString(R.string.manga_rec)?:"", R.drawable.img_master_work, comics) {
-                homeF?.findNavController()?.navigate(R.id.action_nav_home_to_nav_recommend)
+                homeF?.findNavController()?.let { nav ->
+                    Navigate.safeNavigateTo(nav, R.id.action_nav_home_to_nav_recommend)
+                }
             }
         }
     }
@@ -192,7 +195,9 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
                 comics += rec.comic
             }
             if(comics.size == 9) allocateLine(homeF?.getString(R.string.new_list)?:"", R.drawable.img_latest_pub, comics) {
-                homeF?.findNavController()?.navigate(R.id.action_nav_home_to_nav_newest)
+                homeF?.findNavController()?.let { nav ->
+                    Navigate.safeNavigateTo(nav, R.id.action_nav_home_to_nav_newest)
+                }
             }
         }
     }
@@ -205,7 +210,9 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
                 comics += rec
             }
             if(comics.size == 6) allocateLine(homeF?.getString(R.string.complete)?:"", R.drawable.img_novel_eye, comics, true) {
-                homeF?.findNavController()?.navigate(R.id.action_nav_home_to_nav_finish)
+                homeF?.findNavController()?.let { nav ->
+                    Navigate.safeNavigateTo(nav, R.id.action_nav_home_to_nav_finish)
+                }
             }
         }
     }
@@ -317,7 +324,9 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
         cv.setOnClickListener {
             val bundle = Bundle()
             bundle.putString("path", pw)
-            homeF?.findNavController()?.navigate(if(isTopic) R.id.action_nav_home_to_nav_topic else R.id.action_nav_home_to_nav_book, bundle)
+            homeF?.findNavController()?.let { nav ->
+                Navigate.safeNavigateTo(nav, if(isTopic) R.id.action_nav_home_to_nav_topic else R.id.action_nav_home_to_nav_book, bundle)
+            }
         }
     }
 

@@ -4,8 +4,13 @@ import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Service
 import android.content.Context
+import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.media.AudioManager
 import android.os.Bundle
 import android.os.Handler
@@ -13,6 +18,7 @@ import android.util.Log
 import android.view.*
 import android.widget.SeekBar
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
@@ -36,6 +42,7 @@ import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.template.general.TitleActivityTemplate
 import top.fumiama.copymanga.template.http.AutoDownloadThread
 import top.fumiama.copymanga.tools.api.CMApi
+import top.fumiama.copymanga.tools.api.Font
 import top.fumiama.copymanga.tools.http.DownloadTools
 import top.fumiama.copymanga.tools.thread.TimeThread
 import top.fumiama.copymanga.views.ScaleImageView
@@ -85,6 +92,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
     private var volTurnPage = false
     private var am: AudioManager? = null
     private var pm: PagesManager? = null
+    private var fullyHideInfo = false
     val realCount get() = if(cut) indexMap.size else count
 
     @SuppressLint("SetTextI18n")
@@ -108,6 +116,8 @@ class ViewMangaActivity : TitleActivityTemplate() {
         tt.start()
         volTurnPage = settingsPref?.getBoolean("settings_cat_vm_sw_vol_turn", false)?:false
         am = getSystemService(Service.AUDIO_SERVICE) as AudioManager
+        if (!noCellarAlert) noCellarAlert = settingsPref?.getBoolean("settings_cat_net_sw_use_cellar", false) == true
+        fullyHideInfo = settingsPref?.getBoolean("settings_cat_vm_sw_hide_info", false) == true
 
         Log.d("MyVM", "Now ZipFile is $zipFile")
         try {
@@ -148,7 +158,10 @@ class ViewMangaActivity : TitleActivityTemplate() {
     }
 
     private fun alertCellar() {
-        toolsBox.buildInfo("注意", "要使用使用流量观看吗？", "确定", "不再提醒", "取消", {handler.startLoad()}, { noCellarAlert = true; handler.startLoad()}, {finish()})
+        toolsBox.buildInfo(
+            "注意", "要使用使用流量观看吗？", "确定", "本次阅读不再提醒", "取消",
+            { handler.startLoad() }, { noCellarAlert = true; handler.startLoad() }, { finish() }
+        )
     }
 
     fun restorePN(){
@@ -354,11 +367,26 @@ class ViewMangaActivity : TitleActivityTemplate() {
         }.start()
     }
 
+    private fun getLoadingBitmap(position: Int): Bitmap {
+        val loading = Bitmap.createBitmap(1024, 256, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(loading)
+        val paint = Paint()
+        paint.color = ContextCompat.getColor(applicationContext, R.color.design_default_color_surface)
+        paint.textSize = 100.0f
+        paint.typeface = Font.nisiTypeFace!!
+        val text = "${position+1}"
+        val x = (canvas.width - paint.measureText(text)) / 2
+        val y = (canvas.height + paint.descent() - paint.ascent()) / 2
+        canvas.drawText(text, x, y, paint)
+        return loading
+    }
+
     fun loadImgOn(imgView: ScaleImageView, position: Int, isLast: Int = 0){
         Log.d("MyVM", "Load img: $position")
         val index2load = if(cut) Math.abs(indexMap[position]) -1 else position
         val useCut = cut && isCut[index2load]
         val isLeft = cut && indexMap[position] > 0
+        loadImg(imgView, getLoadingBitmap(position), isLast, useCut, isLeft)
         if (zipFile?.exists() == true) getImgBitmap(index2load)?.let {
             loadImg(imgView, it, isLast, useCut, isLeft)
         }
@@ -428,6 +456,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         infoDrawerDelta = position.toFloat()
         infcard.translationY = infoDrawerDelta
         Log.d("MyVM", "Set info drawer delta to $infoDrawerDelta")
+        handler.sendEmptyMessage(if (fullyHideInfo) 16 else 1)
     }
 
     @ExperimentalStdlibApi
@@ -538,7 +567,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         })
         isearch.setImageResource(R.drawable.ic_author)
         isearch.setOnClickListener {
-            handler.sendEmptyMessage(3)
+            handler.sendEmptyMessage(if (fullyHideInfo) 18 else 3) // trigger info card
         }
     }
 
@@ -641,12 +670,16 @@ class ViewMangaActivity : TitleActivityTemplate() {
                         val thisOneI = holder.itemView.onei
                         Glide.with(this@ViewMangaActivity)
                             .asBitmap()
-                            .load(GlideUrl(CMApi.proxy?.wrap(it)?:it, CMApi.myGlideHeaders)
-                            ).into(object : SimpleTarget<Bitmap>() {
+                            .load(GlideUrl(CMApi.proxy?.wrap(it)?:it, CMApi.myGlideHeaders))
+                            .placeholder(BitmapDrawable(resources, getLoadingBitmap(pos)))
+                            .into(object : SimpleTarget<Bitmap>() {
                                 override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
                                     thisOneI.setImageBitmap(cutBitmap(resource, isLeft))
                                 } })
-                    } else Glide.with(this@ViewMangaActivity).load(GlideUrl(CMApi.proxy?.wrap(it)?:it, CMApi.myGlideHeaders)).into(holder.itemView.onei)
+                    } else Glide.with(this@ViewMangaActivity)
+                        .load(GlideUrl(CMApi.proxy?.wrap(it)?:it, CMApi.myGlideHeaders))
+                        .placeholder(BitmapDrawable(resources, getLoadingBitmap(pos)))
+                        .into(holder.itemView.onei)
                 }
             }
 
@@ -680,7 +713,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
             infseek.visibility = View.GONE
             isearch.visibility = View.GONE
         }, 300)
-        handler.sendEmptyMessage(1)
+        handler.sendEmptyMessage(if (fullyHideInfo) 16 else 1)
     }
 
     companion object {

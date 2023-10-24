@@ -34,6 +34,7 @@ import top.fumiama.copymanga.template.http.AutoDownloadHandler
 import top.fumiama.copymanga.template.http.AutoDownloadThread
 import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.copymanga.tools.api.GlideBlurTransformation
+import top.fumiama.copymanga.tools.api.Navigate
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment.Companion.json
 import top.fumiama.copymanga.ui.vm.ViewMangaActivity
@@ -113,6 +114,7 @@ class BookHandler(private val th: WeakReference<BookFragment>, private val path:
         that?.fbloading?.visibility = View.GONE
         complete = true
         that?.setStartRead()
+        that?.setAddToShelf()
         Log.d("MyBH", "Set complete: true")
     }
 
@@ -224,6 +226,7 @@ class BookHandler(private val th: WeakReference<BookFragment>, private val path:
     }
 
     private fun setThemes(){
+        if (exit) return
         that?.apply {
             book?.results?.comic?.apply {
                 author?.let { setTheme(getString(R.string.author), it, R.id.action_nav_book_to_nav_author) }
@@ -240,6 +243,7 @@ class BookHandler(private val th: WeakReference<BookFragment>, private val path:
                         if(exit) return@runOnUiThread
                         ViewMangaActivity.fileArray = arrayOf()
                         ViewMangaActivity.urlArray = arrayOf()
+                        var i = 0
                         vols?.forEachIndexed { iv, v ->
                             if(exit) return@runOnUiThread
                             fbl.addView(layoutInflater.inflate(R.layout.div_h, fbl, false))
@@ -249,7 +253,7 @@ class BookHandler(private val th: WeakReference<BookFragment>, private val path:
                             fbl.addView(layoutInflater.inflate(R.layout.div_h, fbl, false))
                             var line: View? = null
                             val last = v.results.list.size - 1
-                            v.results.list.onEachIndexed { i, it ->
+                            v.results.list.forEach {
                                 ViewMangaActivity.urlArray += CMApi.getChapterInfoApiUrl(
                                     comic.path_word,
                                     it.uuid
@@ -261,22 +265,26 @@ class BookHandler(private val th: WeakReference<BookFragment>, private val path:
                                         line = layoutInflater.inflate(R.layout.line_chapter, that!!.fbl, false)
                                         line?.lcc?.apply {
                                             lct.text = it.name
-                                            setOnClickListener { Reader.viewMangaAt(book!!.results.comic.name, i) }
+                                            val index = i
+                                            setOnClickListener { Reader.viewMangaAt(book!!.results.comic.name, index) }
                                         }
                                         fbl?.addView(line)
                                     } else {
                                         line = layoutInflater.inflate(R.layout.line_2chapters, that!!.fbl, false)
                                         line?.l2cl?.apply {
                                             lct.text = it.name
-                                            setOnClickListener { Reader.viewMangaAt(book!!.results.comic.name, i) }
+                                            val index = i
+                                            setOnClickListener { Reader.viewMangaAt(book!!.results.comic.name, index) }
                                         }
                                     }
                                 } else line?.l2cr?.apply {
                                     lct.text = it.name
-                                    setOnClickListener { Reader.viewMangaAt(book!!.results.comic.name, i) }
+                                    val index = i
+                                    setOnClickListener { Reader.viewMangaAt(book!!.results.comic.name, index) }
                                     fbl?.addView(line)
                                     line = null
                                 }
+                                i++
                             }
                         }
                         endSetLayouts()
@@ -292,7 +300,7 @@ class BookHandler(private val th: WeakReference<BookFragment>, private val path:
             val bundle = Bundle()
             bundle.putString("name", name)
             bundle.putString("path", path)
-            that?.apply { findNavController().navigate(nav, bundle) }
+            that?.apply { Navigate.safeNavigateTo(findNavController(), nav, bundle) }
         }
     }
 

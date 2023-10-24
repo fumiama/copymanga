@@ -6,6 +6,12 @@
         app:title="@string/settings_cat_net">
         <SwitchPreferenceCompat
             app:iconSpaceReserved="false"
+            app:key="settings_cat_net_sw_use_cellar"
+            app:selectable="true"
+            app:summary="@string/settings_cat_net_sm_use_cellar"
+            app:title="@string/settings_cat_net_sw_use_cellar" />
+        <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
             app:key="settings_cat_net_sw_use_foreign"
             app:selectable="true"
             app:summary="@string/settings_cat_net_sm_use_foreign"
@@ -49,6 +55,12 @@
     <PreferenceCategory
         app:iconSpaceReserved="false"
         app:title="@string/settings_cat_vm">
+        <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
+            app:key="settings_cat_vm_sw_hide_info"
+            app:selectable="true"
+            app:summary="@string/settings_cat_vm_sm_hide_info"
+            app:title="@string/settings_cat_vm_sw_hide_info" />
         <SwitchPreferenceCompat
             app:iconSpaceReserved="false"
             app:key="settings_cat_vm_sw_vol_turn"
