@@ -18,6 +18,8 @@ import top.fumiama.copymanga.json.ComicStructure
 import top.fumiama.copymanga.template.http.AutoDownloadHandler
 import top.fumiama.copymanga.ui.vm.ViewMangaActivity.Companion.comicName
 import top.fumiama.copymanga.ui.vm.ViewMangaActivity.Companion.pn
+import top.fumiama.copymanga.ui.vm.ViewMangaActivity.Companion.position
+import top.fumiama.copymanga.ui.vm.ViewMangaActivity.Companion.uuidArray
 import top.fumiama.copymanga.views.ScaleImageView
 import java.io.File
 import java.lang.Exception
@@ -33,7 +35,7 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
     private val wv = WeakReference(activity)
     private val infcard = wv.get()?.infcard
     private var infcShowed = false
-    val dl = wv.get()?.let {
+    private val dl = wv.get()?.let {
         val re = Dialog(it)
         re.setContentView(R.layout.dialog_unzipping)
         re
@@ -151,6 +153,7 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
                     it.results.comic.name = file.parentFile?.name
                     it.results.chapter = ChapterWithContent()
                     it.results.chapter.name = file.nameWithoutExtension
+                    it.results.chapter.uuid = uuidArray[position]
                     wv.get()?.countZipEntries { c ->
                         it.results.chapter.size = c
                         prepareManga()

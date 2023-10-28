@@ -2,17 +2,21 @@ package top.fumiama.copymanga.ui.book
 
 import android.content.Context.MODE_PRIVATE
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.navigation.fragment.findNavController
+import com.google.gson.Gson
 import kotlinx.android.synthetic.main.line_booktandb.*
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
+import top.fumiama.copymanga.json.VolumeStructure
 import top.fumiama.copymanga.manga.Reader
 import top.fumiama.copymanga.template.general.NoBackRefreshFragment
 import top.fumiama.copymanga.tools.api.Navigate
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment
 import top.fumiama.dmzj.copymanga.R
+import java.io.File
 import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 
@@ -26,8 +30,33 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
         ComicDlFragment.exit = false
 
         if(isFirstInflate) {
-            bookHandler = BookHandler(WeakReference(this), arguments?.getString("path")?:"null")
-            Thread{
+            var path = ""
+            arguments?.apply {
+                if (getBoolean("loadJson")) {
+                    getString("name")?.let { name ->
+                        mainWeakReference?.get()?.getExternalFilesDir("")?.let {
+                            Gson().fromJson(File(File(it, name), "info.json").readText(), Array<VolumeStructure>::class.java)
+                        }?.apply {
+                            if (isEmpty() || get(0).results.list.isEmpty()) {
+                                findNavController().popBackStack()
+                                return
+                            }
+                            else {
+                                path = get(0).results.list[0].comic_path_word
+                            }
+                        }
+                    }
+                } else getString("path").let {
+                    if (it != null) path = it
+                    else {
+                        findNavController().popBackStack()
+                        return
+                    }
+                }
+            }
+            bookHandler = BookHandler(WeakReference(this), path)
+            Log.d("MyBF", "read path: $path")
+            Thread {
                 sleep(600)
                 bookHandler?.startLoad()
             }.start()
@@ -54,8 +83,8 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
 
     fun setStartRead() {
         if(bookHandler?.chapterNames?.isNotEmpty() == true) mainWeakReference?.get()?.apply {
-            bookHandler?.book?.results?.comic?.name?.let { name ->
-                getPreferences(MODE_PRIVATE).getInt(name, -1).let { p ->
+            bookHandler?.book?.results?.comic?.let { comic ->
+                getPreferences(MODE_PRIVATE).getInt(comic.name, -1).let { p ->
                     this@BookFragment.lbbstart.apply {
                         var i = 0
                         if(p >= 0) {
@@ -63,7 +92,7 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
                             i = p
                         }
                         setOnClickListener {
-                            Reader.viewMangaAt(name, i)
+                            Reader.viewMangaAt(comic.name, i)
                         }
                     }
                 }

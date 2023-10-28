@@ -34,7 +34,7 @@ open class AutoDownloadHandler(private val url: String, private val jsonClass: C
     fun destroy() {
         exit = true
     }
-    private fun download(){
+    private fun download() {
         Thread{ dlThread() }.start()
         checkTimes = 0
         timeThread = TimeThread(this, callCheckMsg)
@@ -91,7 +91,7 @@ open class AutoDownloadHandler(private val url: String, private val jsonClass: C
             }
         }
     }
-    private fun check(){
+    private fun check() {
         val g = getGsonItem()
         if(g != null) {
             timeThread?.canDo = false

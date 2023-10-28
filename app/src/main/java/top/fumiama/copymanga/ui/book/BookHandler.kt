@@ -243,6 +243,7 @@ class BookHandler(private val th: WeakReference<BookFragment>, private val path:
                         if(exit) return@runOnUiThread
                         ViewMangaActivity.fileArray = arrayOf()
                         ViewMangaActivity.urlArray = arrayOf()
+                        ViewMangaActivity.uuidArray = arrayOf()
                         var i = 0
                         vols?.forEachIndexed { iv, v ->
                             if(exit) return@runOnUiThread
@@ -260,13 +261,14 @@ class BookHandler(private val th: WeakReference<BookFragment>, private val path:
                                 )?:""
                                 ViewMangaActivity.fileArray += CMApi.getZipFile(context?.getExternalFilesDir(""), comic.name, keys[iv], it.name)
                                 chapterNames += it.name
+                                ViewMangaActivity.uuidArray += it.uuid
                                 if(line == null) {
                                     if(i == last) {
                                         line = layoutInflater.inflate(R.layout.line_chapter, that!!.fbl, false)
                                         line?.lcc?.apply {
                                             lct.text = it.name
                                             val index = i
-                                            setOnClickListener { Reader.viewMangaAt(book!!.results.comic.name, index) }
+                                            setOnClickListener { Reader.viewMangaAt(comic.name, index) }
                                         }
                                         fbl?.addView(line)
                                     } else {
@@ -274,13 +276,13 @@ class BookHandler(private val th: WeakReference<BookFragment>, private val path:
                                         line?.l2cl?.apply {
                                             lct.text = it.name
                                             val index = i
-                                            setOnClickListener { Reader.viewMangaAt(book!!.results.comic.name, index) }
+                                            setOnClickListener { Reader.viewMangaAt(comic.name, index) }
                                         }
                                     }
                                 } else line?.l2cr?.apply {
                                     lct.text = it.name
                                     val index = i
-                                    setOnClickListener { Reader.viewMangaAt(book!!.results.comic.name, index) }
+                                    setOnClickListener { Reader.viewMangaAt(comic.name, index) }
                                     fbl?.addView(line)
                                     line = null
                                 }
@@ -375,18 +377,22 @@ class BookHandler(private val th: WeakReference<BookFragment>, private val path:
                 File(mangaFolder, "info.json").writeText(json!!)
                 File(mangaFolder, "grps.json").writeText(Gson().toJson(keys))
                 that?.apply {
-                    File(mangaFolder, "head.jpg").let { head ->
-                        val fo = head.outputStream()
-                        try {
-                            imic.drawable.toBitmap().compress(Bitmap.CompressFormat.JPEG, 90, fo)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            mainWeakReference?.get()?.apply {
-                                Toast.makeText(this, R.string.download_cover_error, Toast.LENGTH_SHORT).show()
+                    Thread {
+                        sleep(1000)
+                        if (exit) return@Thread
+                        File(mangaFolder, "head.jpg").let { head ->
+                            val fo = head.outputStream()
+                            try {
+                                imic.drawable.toBitmap().compress(Bitmap.CompressFormat.JPEG, 90, fo)
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                mainWeakReference?.get()?.apply {
+                                    Toast.makeText(this, R.string.download_cover_error, Toast.LENGTH_SHORT).show()
+                                }
                             }
+                            fo.close()
                         }
-                        fo.close()
-                    }
+                    }.start()
                 }
             }
         }

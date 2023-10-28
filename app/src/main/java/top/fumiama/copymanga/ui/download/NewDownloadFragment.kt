@@ -1,15 +1,18 @@
 package top.fumiama.copymanga.ui.download
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.google.gson.Gson
 import kotlinx.android.synthetic.main.line_lazybooklines.*
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.template.general.MangaPagesFragmentTemplate
 import top.fumiama.copymanga.template.ui.CardList
 import top.fumiama.copymanga.tools.api.Navigate
+import top.fumiama.copymanga.tools.file.FileUtils
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment
 import top.fumiama.dmzj.copymanga.R
 import java.io.File
@@ -63,6 +66,42 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
                                 return@setOnClickListener
                             }
                             callDownloadFragment(name)
+                        }
+                        v.setOnLongClickListener {
+                            if (name == oldDlCardName && path == oldDlCardName) {
+                                return@setOnLongClickListener false
+                            }
+                            val chosenFile = File(extDir, name)
+                            AlertDialog.Builder(context)
+                                .setIcon(R.drawable.ic_launcher_foreground)
+                                .setTitle(R.string.new_download_card_option_hint)
+                                .setItems(arrayOf("删除", "前往")) { d, p ->
+                                    d.cancel()
+                                    when (p) {
+                                        0 -> {
+                                            AlertDialog.Builder(context)
+                                                .setIcon(R.drawable.ic_launcher_foreground).setMessage("删除下载的此漫画吗?")
+                                                .setTitle("提示").setPositiveButton(android.R.string.ok) { _, _ ->
+                                                    if (chosenFile.exists()) Thread {
+                                                        FileUtils.recursiveRemove(chosenFile)
+                                                        MainActivity.mainWeakReference?.get()?.runOnUiThread {
+                                                            it.visibility = View.INVISIBLE
+                                                        }
+                                                    }.start()
+                                                }.setNegativeButton(android.R.string.cancel) { _, _ -> }
+                                                .show()
+                                        }
+                                        1 -> {
+                                            val bundle = Bundle()
+                                            bundle.putBoolean("loadJson", true)
+                                            bundle.putString("name", name)
+                                            Navigate.safeNavigateTo(findNavController(), R.id.action_nav_new_download_to_nav_book, bundle)
+                                        }
+                                    }
+                                }
+                                .show()
+
+                            true
                         }
                     }
                 }

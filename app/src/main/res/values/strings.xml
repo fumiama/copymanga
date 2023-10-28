@@ -139,4 +139,5 @@
     <string name="login_restart_to_apply">重启应用以彻底退出登录</string>
 
     <string name="old_download_card_name">前往旧版下载</string>
+    <string name="new_download_card_option_hint">选择您的操作</string>
 </resources>

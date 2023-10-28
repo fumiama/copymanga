@@ -143,6 +143,13 @@
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_out_left_exit"
             app:popExitAnim="@anim/slide_in_right_exit"/>
+        <action
+            android:id="@+id/action_nav_new_download_to_nav_book"
+            app:destination="@id/nav_book"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_out_left_exit"
+            app:popExitAnim="@anim/slide_in_right_exit"/>
     </fragment>
 
     <fragment

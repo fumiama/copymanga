@@ -106,6 +106,7 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
         else Thread{
             ViewMangaActivity.urlArray = arrayOf()
             ViewMangaActivity.fileArray = arrayOf()
+            ViewMangaActivity.uuidArray = arrayOf()
             vols.forEachIndexed { i, vol ->
                 val caption = groupNames?.get(i)?:vol.results.list[0].group_path_word
                 Log.d("MyCDH", "caption: $caption, group name: ${groupNames?.get(i)}")
@@ -324,6 +325,7 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
             tbtncnt++
 
             tbv.tbtn.uuid = uuid
+            ViewMangaActivity.uuidArray += uuid
             tbv.tbtn.chapterName = title
             tbv.tbtn.url = url
             //tbv.tbtn.hint = caption

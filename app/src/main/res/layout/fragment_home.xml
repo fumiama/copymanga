@@ -11,7 +11,7 @@
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swiperefresh"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_marginTop="64dp">
 
         <top.fumiama.copymanga.views.ScrollRefreshView
@@ -27,7 +27,7 @@
             <LinearLayout
                 android:id="@+id/fhl"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:orientation="vertical"
                 android:paddingBottom="@dimen/global_content_padding_bottom">
 

@@ -77,12 +77,15 @@ class ViewMangaActivity : TitleActivityTemplate() {
         get() = getPageNumber()
         set(value) = setPageNumber(value)
     //var pn = 0
-    private val isPnValid: Boolean get(){
-        if(pn == -2) {
+    private val isPnValid: Boolean get() {
+        val re = if(pn == -2) {
             pn = 0
-            return true
+            true
+        } else {
+            intent.getStringExtra("function") == "log" && pn > 0
         }
-        return intent.getStringExtra("function") == "log" && pn > 0
+        Log.d("MyVM", "isPnValid: $re")
+        return re
     }
     private var tasks: Array<FutureTask<ByteArray?>?>? = null
     private var destroy = false
@@ -240,9 +243,14 @@ class ViewMangaActivity : TitleActivityTemplate() {
     }
 
     @OptIn(ExperimentalStdlibApi::class)
-    fun initManga(){
-        handler.manga?.results?.chapter?.uuid?.let {
-            pn = getPreferences(MODE_PRIVATE).getInt(it, pn)
+    fun initManga() {
+        val uuid = handler.manga?.results?.chapter?.uuid
+        Log.d("MyVM", "initManga, chapter uuid: $uuid")
+        if (uuid != null && uuid != "") {
+            pn = getPreferences(MODE_PRIVATE).getInt(uuid, -4)
+            Log.d("MyVM", "load pn from uuid: $pn")
+        } else {
+            pn = -4
         }
         if (zipFile?.exists() != true) doPrepareWebImg()
         else prepareItems()
@@ -289,6 +297,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
     }
 
     private fun setPageNumber(num: Int) {
+        Log.d("MyVM", "setPageNumber($num)")
         if (r2l && !notUseVP) vp.currentItem = realCount - num
         else if (notUseVP) {
             if(isVertical){
@@ -349,13 +358,13 @@ class ViewMangaActivity : TitleActivityTemplate() {
 
     private fun cutBitmap(bitmap: Bitmap, isEnd: Boolean) = Bitmap.createBitmap(bitmap, if(!isEnd) 0 else (bitmap.width/2), 0, bitmap.width/2, bitmap.height)
 
-    private fun loadImg(imgView: ScaleImageView, bitmap: Bitmap, isLast: Int = 0, useCut: Boolean, isLeft: Boolean){
+    private fun loadImg(imgView: ScaleImageView, bitmap: Bitmap, isLast: Int = 0, useCut: Boolean, isLeft: Boolean, isPlaceholder: Boolean = true){
         val bitmap2load = if(useCut) cutBitmap(bitmap, isLeft) else bitmap
         runOnUiThread {
             imgView.setImageBitmap(bitmap2load)
             if(isVertical){
                 imgView.setHeight2FitImgWidth()
-                if (isLast == 1) handler.sendEmptyMessage(8)
+                if (!isPlaceholder && isLast == 1) handler.sendEmptyMessage(8)
             }
         }
     }
@@ -363,7 +372,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
     private fun loadImgUrlInto(imgView: ScaleImageView, url: String, isLast: Int = 0, useCut: Boolean, isLeft: Boolean){
         Log.d("MyVM", "Load from adt: $url")
         AutoDownloadThread(CMApi.proxy?.wrap(url)?:url) {
-            it?.let { loadImg(imgView, BitmapFactory.decodeByteArray(it, 0, it.size), isLast, useCut, isLeft) }
+            it?.let { loadImg(imgView, BitmapFactory.decodeByteArray(it, 0, it.size), isLast, useCut, isLeft, false) }
         }.start()
     }
 
@@ -386,17 +395,17 @@ class ViewMangaActivity : TitleActivityTemplate() {
         val index2load = if(cut) Math.abs(indexMap[position]) -1 else position
         val useCut = cut && isCut[index2load]
         val isLeft = cut && indexMap[position] > 0
-        loadImg(imgView, getLoadingBitmap(position), isLast, useCut, isLeft)
         if (zipFile?.exists() == true) getImgBitmap(index2load)?.let {
-            loadImg(imgView, it, isLast, useCut, isLeft)
+            loadImg(imgView, it, isLast, useCut, isLeft, false)
         }
         else {
+            loadImg(imgView, getLoadingBitmap(position), isLast, useCut, isLeft, true)
             val re = tasks?.get(index2load)
             if (re != null) Thread{
                 val data = re.get()
                 if(data != null && data.isNotEmpty()) {
                     BitmapFactory.decodeByteArray(data, 0, data.size)?.let {
-                        loadImg(imgView, it, isLast, useCut, isLeft)
+                        loadImg(imgView, it, isLast, useCut, isLeft, false)
                         Log.d("MyVM", "Load from task")
                     }?:Log.d("MyVM", "null bitmap")
                 }
@@ -422,7 +431,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
 
     fun prepareLastPage(loadCount: Int, maxCount: Int){
         for (i in loadCount until maxCount) handler.obtainMessage(5, scrollImages[i]).sendToTarget()
-        handler.dl?.hide()
+        // handler.dl?.hide()
     }
 
     private fun getImgBitmap(position: Int): Bitmap? =
@@ -464,14 +473,13 @@ class ViewMangaActivity : TitleActivityTemplate() {
     private fun prepareItems() {
         try {
             prepareVP()
-            //if (!isVertical) restorePN()
             prepareInfoBar()
-            if (notUseVP && !isVertical && !isPnValid) loadOneImg()
             prepareIdBtVH()
-            toolsBox.dp2px(67)?.let { setIdPosition(it) }
+            toolsBox.dp2px(if(fullyHideInfo) 100 else 67)?.let { setIdPosition(it) }
             prepareIdBtCut()
             prepareIdBtVP()
             prepareIdBtLR()
+            if (notUseVP && !isVertical && !isPnValid) loadOneImg()
             /*progressLog?.let {
                 it["chapterId"] = hm.chapterId.toString()
                 it["name"] = inftitle.ttitle.text
@@ -718,6 +726,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
 
     companion object {
         var comicName: String? = null
+        var uuidArray = arrayOf<String>()
         var urlArray = arrayOf<String>()
         var fileArray = arrayOf<File>()
         var position = 0

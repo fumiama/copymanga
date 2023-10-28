@@ -13,6 +13,7 @@ import kotlinx.android.synthetic.main.fragment_download.*
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.template.general.NoBackRefreshFragment
 import top.fumiama.copymanga.tools.api.Navigate
+import top.fumiama.copymanga.tools.file.FileUtils
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment
 import top.fumiama.copymanga.ui.vm.ViewMangaActivity
 import top.fumiama.dmzj.copymanga.R
@@ -68,7 +69,7 @@ class DownloadFragment: NoBackRefreshFragment(R.layout.fragment_download) {
                         AlertDialog.Builder(context)
                             .setIcon(R.drawable.ic_launcher_foreground).setMessage("删除?")
                             .setTitle("提示").setPositiveButton(android.R.string.ok) { _, _ ->
-                                if (chosenFile.exists()) recursiveRemove(chosenFile)
+                                if (chosenFile.exists()) FileUtils.recursiveRemove(chosenFile)
                                 scanFile(cd)
                             }.setNegativeButton(android.R.string.cancel) { _, _ -> }
                             .show()
@@ -77,16 +78,6 @@ class DownloadFragment: NoBackRefreshFragment(R.layout.fragment_download) {
                 }
             }
         }
-    }
-
-
-    private fun recursiveRemove(f: File) {
-        if (f.isDirectory) f.listFiles()?.let {
-            for (i in it)
-                if (i.isDirectory) recursiveRemove(i)
-                else i.delete()
-        }
-        f.delete()
     }
 
     private fun callDownloadFragment(jsonFile: File, isNew: Boolean = false){

@@ -36,7 +36,7 @@ class PagesManager(w: WeakReference<ViewMangaActivity>) {
                 val chapterPosition = position + if(goNext) 1 else -1
                 urlArray.let {
                     if(chapterPosition >= 0 && chapterPosition < it.size) it[chapterPosition].let {
-                        if (if(goNext)isEndR else isEndL) {
+                        if (if(goNext) isEndR else isEndL) {
                             //if(v.zipFirst) intent.putExtra("callFrom", "zipFirst")
                             v.tt.canDo = false
                             //ViewMangaActivity.dlhandler = null

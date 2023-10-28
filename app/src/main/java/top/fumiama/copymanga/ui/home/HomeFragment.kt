@@ -197,9 +197,9 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                         Glide.with(it).load(GlideUrl(CMApi.proxy?.wrap(cover)?:cover, CMApi.myGlideHeaders)).into(holder.itemView.imic)
                     }
                     holder.itemView.lwc.setOnClickListener {
-                            val bundle = Bundle()
-                            bundle.putString("path", path_word)
-                            Navigate.safeNavigateTo(findNavController(), R.id.action_nav_home_to_nav_book, bundle)
+                        val bundle = Bundle()
+                        bundle.putString("path", path_word)
+                        Navigate.safeNavigateTo(findNavController(), R.id.action_nav_home_to_nav_book, bundle)
                     }
                     holder.itemView.lwc.layoutParams.height = fhs.width / 4
                 }

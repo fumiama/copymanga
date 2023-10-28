@@ -8,7 +8,7 @@ import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.ui.vm.ViewMangaActivity
 
 object Reader {
-    fun viewMangaAt(name: String, pos: Int, from_first_page: Boolean = false) {
+    fun viewMangaAt(name: String, pos: Int, fromFirstPage: Boolean = false) {
         Log.d("MyR", "viewMangaAt name $name, pos $pos")
         mainWeakReference?.get()?.apply {
             getPreferences(Context.MODE_PRIVATE)?.edit {
@@ -21,7 +21,7 @@ object Reader {
             ViewMangaActivity.comicName = name
             val zipf = ViewMangaActivity.fileArray[pos]
             val intent = Intent(this, ViewMangaActivity::class.java)
-            if(!from_first_page) {
+            if(!fromFirstPage) {
                 intent.putExtra("function", "log")
                 ViewMangaActivity.pn = -2
             }
