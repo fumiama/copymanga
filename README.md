@@ -38,12 +38,13 @@
 3. 本应用默认使用大陆线路。
 
 ### 功能
-1. 浏览主页、分类、排行、我的下载、浏览历史、标签、作者。
-2. 查看、搜索漫画并直接阅读；**在本地**记录漫画与章节的阅读进度。
+1. 浏览主页、分类、排行、我的下载、我的订阅、浏览历史、标签、作者。
+2. 查看、搜索漫画并直接阅读；**在本地和云端**记录漫画与章节的阅读进度(云端不能精确到页)。
 3. 下载漫画。但是由于不可抗力，下载速度较慢且容易出错，这绝对不是优化的原因，绝对不是。
-4. 阅读下载的漫画。
+4. 阅读、删除下载的漫画，或从我的下载页面直接导航到漫画详情页。
 5. 检查更新。
-6. 登录。
+6. 登录，注销。
+7. 订阅、取消订阅。
 
 ### 未实现功能
 未在上表列出的官方`APP`的其他功能。
@@ -55,28 +56,28 @@
 	<tr>
 		<td align="center"><img src="https://user-images.githubusercontent.com/41315874/196217391-7f617392-4ad4-47cf-b903-fa445db6fcfc.png"></td>
 		<td align="center"><img src="https://user-images.githubusercontent.com/41315874/196217403-0d4822e0-5c8d-4be5-b300-e9cc9a9f09d6.png"></td>
-        <td align="center"><img src="https://user-images.githubusercontent.com/41315874/196217414-198fd7d2-ed80-4c0e-a40c-c83ac9ff091d.png"></td>
-        <td align="center"><img src="https://user-images.githubusercontent.com/41315874/196217423-2d85a8d3-1213-4bd0-84a5-0a70234edc95.png"></td>
+		<td align="center"><img src="https://user-images.githubusercontent.com/41315874/196217414-198fd7d2-ed80-4c0e-a40c-c83ac9ff091d.png"></td>
+		<td align="center"><img src="https://user-images.githubusercontent.com/41315874/196217423-2d85a8d3-1213-4bd0-84a5-0a70234edc95.png"></td>
 	</tr>
     <tr>
 		<td align="center">主页</td>
 		<td align="center">详情</td>
-        <td align="center">阅读</td>
-        <td align="center">标签</td>
+		<td align="center">阅读</td>
+		<td align="center">标签</td>
 	</tr>
 </table>
 <table>
 	<tr>
 		<td align="center"><img src="https://user-images.githubusercontent.com/41315874/196217443-a99a93e6-7d45-4801-9138-c3fc62064f5c.png"></td>
 		<td align="center"><img src="https://user-images.githubusercontent.com/41315874/196217462-3f25eee2-d356-420a-b129-754725201f36.png"></td>
-        <td align="center"><img src="https://user-images.githubusercontent.com/41315874/196217475-3f4b1c5b-d885-4338-9312-26330a1fabd5.png"></td>
-        <td align="center"><img src="https://user-images.githubusercontent.com/41315874/196217483-5fefa526-649b-4f7c-812e-81c4b1592b35.png"></td>
+		<td align="center"><img src="https://user-images.githubusercontent.com/41315874/196217475-3f4b1c5b-d885-4338-9312-26330a1fabd5.png"></td>
+		<td align="center"><img src="https://user-images.githubusercontent.com/41315874/196217483-5fefa526-649b-4f7c-812e-81c4b1592b35.png"></td>
 	</tr>
     <tr>
 		<td align="center">分类</td>
 		<td align="center">下载</td>
-        <td align="center">正在下载</td>
-        <td align="center">抽屉</td>
+		<td align="center">正在下载</td>
+		<td align="center">抽屉</td>
 	</tr>
 </table>
 
@@ -86,27 +87,27 @@
 	<tr>
 		<td align="center"><img src="https://user-images.githubusercontent.com/41315874/196217254-5fc9b56b-2800-4cb8-bbeb-5020e2b0387d.png"></td>
 		<td align="center"><img src="https://user-images.githubusercontent.com/41315874/196217300-3bdb4209-9d2e-41d6-9418-7defda27667a.png"></td>
-        <td align="center"><img src="https://user-images.githubusercontent.com/41315874/196217310-c245eddc-1698-454d-96ad-456b81f469cb.png"></td>
-        <td align="center"><img src="https://user-images.githubusercontent.com/41315874/196217327-7f44cd96-aaee-4e23-b4df-eed4e61b289c.png"></td>
+		<td align="center"><img src="https://user-images.githubusercontent.com/41315874/196217310-c245eddc-1698-454d-96ad-456b81f469cb.png"></td>
+		<td align="center"><img src="https://user-images.githubusercontent.com/41315874/196217327-7f44cd96-aaee-4e23-b4df-eed4e61b289c.png"></td>
 	</tr>
     <tr>
 		<td align="center">主页</td>
 		<td align="center">详情</td>
-        <td align="center">阅读</td>
-        <td align="center">标签</td>
+		<td align="center">阅读</td>
+		<td align="center">标签</td>
 	</tr>
 </table>
 <table>
 	<tr>
 		<td align="center"><img src="https://user-images.githubusercontent.com/41315874/196217344-2e8024f5-cbb1-48a4-8eff-b834fc6c2326.png"></td>
 		<td align="center"><img src="https://user-images.githubusercontent.com/41315874/196217365-be6278f8-684c-44e8-be81-f8a14ced9ac0.png"></td>
-        <td align="center"><img src="https://user-images.githubusercontent.com/41315874/196217372-7ca3a1be-ebd9-4a9c-8371-666f91c415db.png"></td>
-        <td align="center"><img src="https://user-images.githubusercontent.com/41315874/196217382-95695b78-b435-4b89-a0c3-8c9a7a7ed237.png"></td>
+		<td align="center"><img src="https://user-images.githubusercontent.com/41315874/196217372-7ca3a1be-ebd9-4a9c-8371-666f91c415db.png"></td>
+		<td align="center"><img src="https://user-images.githubusercontent.com/41315874/196217382-95695b78-b435-4b89-a0c3-8c9a7a7ed237.png"></td>
 	</tr>
     <tr>
 		<td align="center">分类</td>
 		<td align="center">下载</td>
-        <td align="center">正在下载</td>
-        <td align="center">抽屉</td>
+		<td align="center">正在下载</td>
+		<td align="center">抽屉</td>
 	</tr>
 </table>
