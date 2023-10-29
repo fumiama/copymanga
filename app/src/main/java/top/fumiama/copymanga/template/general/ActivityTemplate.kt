@@ -4,7 +4,7 @@ import android.app.Activity
 import android.os.Bundle
 import android.view.View
 import androidx.core.content.edit
-import top.fumiama.copymanga.tools.api.UITools
+import top.fumiama.copymanga.tools.ui.UITools
 
 open class ActivityTemplate:Activity() {
     lateinit var toolsBox: UITools

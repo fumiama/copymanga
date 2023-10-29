@@ -10,7 +10,7 @@ import android.widget.Toast
 import androidx.core.content.FileProvider
 import androidx.core.content.edit
 import kotlinx.android.synthetic.main.dialog_progress.view.*
-import top.fumiama.copymanga.tools.api.UITools
+import top.fumiama.copymanga.tools.ui.UITools
 import top.fumiama.dmzj.copymanga.BuildConfig
 import top.fumiama.dmzj.copymanga.R
 import java.io.File

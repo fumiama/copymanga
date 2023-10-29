@@ -646,7 +646,7 @@ class ScaleImageView : ImageView {
     private val mGestureDetector =
         GestureDetector(this.context, object : SimpleOnGestureListener() {
             override fun onFling(
-                e1: MotionEvent,
+                e1: MotionEvent?,
                 e2: MotionEvent,
                 velocityX: Float,
                 velocityY: Float
@@ -657,7 +657,7 @@ class ScaleImageView : ImageView {
                     fling(velocityX, velocityY)
                     //parent.requestDisallowInterceptTouchEvent(false) //触摸事件请求取消拦截
                 }
-                return true
+                return super.onFling(e1, e2, velocityX, velocityY)
             }
 
             override fun onLongPress(e: MotionEvent) {

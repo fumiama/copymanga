@@ -15,7 +15,7 @@ import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.json.VolumeStructure
 import top.fumiama.copymanga.manga.Reader
 import top.fumiama.copymanga.template.general.NoBackRefreshFragment
-import top.fumiama.copymanga.tools.api.Navigate
+import top.fumiama.copymanga.tools.ui.Navigate
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment
 import top.fumiama.dmzj.copymanga.R
 import java.io.File

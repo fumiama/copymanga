@@ -17,7 +17,7 @@
             android:layout_width="match_parent"
             android:layout_height="16dp"
             android:background="?attr/colorPrimarySurface"
-            android:visibility="gone"
+            android:visibility="visible"
             app:layout_scrollFlags="scroll|enterAlways" />
 
         <androidx.appcompat.widget.Toolbar

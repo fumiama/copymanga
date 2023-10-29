@@ -41,13 +41,20 @@ class Member(private val pref: SharedPreferences, private val getString: (Int) -
     }
 
     fun refreshAvatar() : LoginInfoStructure {
-        DownloadTools.getHttpContent(getString(R.string.memberInfoApiUrl).format(
-            CMApi.myHostApiUrl))?.decodeToString()?.let {
-            val l = Gson().fromJson(it, LoginInfoStructure::class.java)
-            if(l.code == 200) pref.edit()?.apply {
-                putString("avatar", l.results.avatar)
-                apply()
+        try {
+            DownloadTools.getHttpContent(getString(R.string.memberInfoApiUrl).format(
+                CMApi.myHostApiUrl))?.decodeToString()?.let {
+                val l = Gson().fromJson(it, LoginInfoStructure::class.java)
+                if(l.code == 200) pref.edit()?.apply {
+                    putString("avatar", l.results.avatar)
+                    apply()
+                }
+                return l
             }
+        } catch (e: Exception) {
+            val l = LoginInfoStructure()
+            l.code = 400
+            l.message = "${getString(R.string.login_get_avatar_failed)}: ${e.localizedMessage}"
             return l
         }
         val l = LoginInfoStructure()

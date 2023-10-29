@@ -12,7 +12,6 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.cardview.widget.CardView
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
@@ -22,14 +21,13 @@ import com.to.aboomy.pager2banner.ScaleInTransformer
 import kotlinx.android.synthetic.main.card_book.view.*
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.line_1bookline.view.*
-import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.json.ComicStructure
 import top.fumiama.copymanga.json.IndexStructure
 import top.fumiama.copymanga.template.http.AutoDownloadHandler
 import top.fumiama.copymanga.tools.api.CMApi
-import top.fumiama.copymanga.tools.api.Navigate
-import top.fumiama.copymanga.tools.api.UITools
+import top.fumiama.copymanga.tools.ui.Navigate
+import top.fumiama.copymanga.tools.ui.UITools
 import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 

@@ -33,6 +33,4 @@
     <style name="Widget.MPM.Menu.Dark.CustomBackground">
         <item name="android:colorBackground">?attr/colorSurface</item>
     </style>
-
-    <style name="AlertDialogTheme" parent="Theme.MaterialComponents.Dialog.Alert"/>
 </resources>

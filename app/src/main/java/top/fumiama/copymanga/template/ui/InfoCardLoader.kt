@@ -14,7 +14,7 @@ import top.fumiama.copymanga.json.ShelfStructure
 import top.fumiama.copymanga.json.TypeBookListStructure
 import top.fumiama.copymanga.template.general.MangaPagesFragmentTemplate
 import top.fumiama.copymanga.template.http.AutoDownloadThread
-import top.fumiama.copymanga.tools.api.Navigate
+import top.fumiama.copymanga.tools.ui.Navigate
 import java.lang.ref.WeakReference
 
 @ExperimentalStdlibApi

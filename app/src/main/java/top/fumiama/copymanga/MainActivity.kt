@@ -41,9 +41,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.nav_header_main.*
 import top.fumiama.copymanga.manga.Shelf
-import top.fumiama.copymanga.tools.api.CMApi
-import top.fumiama.dmzj.copymanga.R
-import top.fumiama.copymanga.tools.api.UITools
+import top.fumiama.copymanga.tools.ui.UITools
 import top.fumiama.copymanga.ui.book.BookFragment.Companion.bookHandler
 import top.fumiama.copymanga.ui.cardflow.rank.RankFragment
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment
@@ -52,6 +50,7 @@ import top.fumiama.copymanga.ui.download.NewDownloadFragment
 import top.fumiama.copymanga.update.Update
 import top.fumiama.copymanga.user.Member
 import top.fumiama.dmzj.copymanga.BuildConfig
+import top.fumiama.dmzj.copymanga.R
 import java.io.File
 import java.io.FileInputStream
 import java.lang.Thread.sleep

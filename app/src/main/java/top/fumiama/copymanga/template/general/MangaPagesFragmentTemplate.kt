@@ -5,7 +5,6 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
-import android.util.JsonReader
 import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
@@ -15,7 +14,7 @@ import kotlinx.android.synthetic.main.line_header.view.*
 import kotlinx.android.synthetic.main.line_lazybooklines.*
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.template.ui.CardList
-import top.fumiama.copymanga.tools.api.UITools
+import top.fumiama.copymanga.tools.ui.UITools
 import top.fumiama.dmzj.copymanga.R
 import java.lang.Thread.sleep
 import java.lang.ref.WeakReference

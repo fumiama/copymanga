@@ -26,7 +26,7 @@ import top.fumiama.copymanga.json.ComicStructureOld
 import top.fumiama.copymanga.json.VolumeStructure
 import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.copymanga.manga.MangaDlTools
-import top.fumiama.copymanga.tools.api.UITools
+import top.fumiama.copymanga.tools.ui.UITools
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment.Companion.json
 import top.fumiama.copymanga.ui.vm.ViewMangaActivity
 import top.fumiama.copymanga.views.ChapterToggleButton

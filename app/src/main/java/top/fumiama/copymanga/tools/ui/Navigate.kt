@@ -1,4 +1,4 @@
-package top.fumiama.copymanga.tools.api
+package top.fumiama.copymanga.tools.ui
 
 import android.os.Bundle
 import androidx.navigation.NavController

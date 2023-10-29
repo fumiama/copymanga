@@ -23,7 +23,6 @@ import kotlinx.android.synthetic.main.line_bookinfo.*
 import kotlinx.android.synthetic.main.line_bookinfo_text.*
 import kotlinx.android.synthetic.main.line_caption.view.*
 import kotlinx.android.synthetic.main.line_chapter.view.*
-import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.json.BookInfoStructure
 import top.fumiama.copymanga.json.ChapterStructure
@@ -33,8 +32,8 @@ import top.fumiama.copymanga.manga.Reader
 import top.fumiama.copymanga.template.http.AutoDownloadHandler
 import top.fumiama.copymanga.template.http.AutoDownloadThread
 import top.fumiama.copymanga.tools.api.CMApi
-import top.fumiama.copymanga.tools.api.GlideBlurTransformation
-import top.fumiama.copymanga.tools.api.Navigate
+import top.fumiama.copymanga.tools.ui.GlideBlurTransformation
+import top.fumiama.copymanga.tools.ui.Navigate
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment.Companion.json
 import top.fumiama.copymanga.ui.vm.ViewMangaActivity

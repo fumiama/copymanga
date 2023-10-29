@@ -29,7 +29,7 @@ import top.fumiama.copymanga.json.BookListStructure
 import top.fumiama.copymanga.template.general.NoBackRefreshFragment
 import top.fumiama.copymanga.template.http.AutoDownloadThread
 import top.fumiama.copymanga.tools.api.CMApi
-import top.fumiama.copymanga.tools.api.Navigate
+import top.fumiama.copymanga.tools.ui.Navigate
 import top.fumiama.dmzj.copymanga.R
 import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
@@ -91,7 +91,7 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                     var i = 0
                     override fun onMicClick() {
                         val typeNames = resources.getStringArray(R.array.search_types)
-                        AlertDialog.Builder(ContextThemeWrapper(context, R.style.AlertDialogTheme))
+                        AlertDialog.Builder(context)
                             .setTitle(R.string.set_search_types)
                             .setIcon(R.mipmap.ic_launcher)
                             .setSingleChoiceItems(ArrayAdapter(context, R.layout.line_choice_list, typeNames), i){ d, p ->
@@ -137,7 +137,7 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
         super.onCreate(savedInstanceState)
         val tb = mainWeakReference?.get()?.toolsBox
         val netInfo = tb?.netInfo
-        if(netInfo != null && netInfo != tb.transportStringNull && netInfo != tb.transportStringError)Thread {
+        if(netInfo != null && netInfo != tb.transportStringNull && netInfo != tb.transportStringError) Thread {
             val l = MainActivity.member?.refreshAvatar()
             if (l?.code != 200) {
                 MainActivity.member?.logout()

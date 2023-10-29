@@ -7,8 +7,7 @@ import kotlinx.android.synthetic.main.line_rank.view.*
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.template.ui.InfoCardLoader
 import top.fumiama.copymanga.tools.api.CMApi
-import top.fumiama.copymanga.tools.api.UITools
-import top.fumiama.copymanga.ui.download.NewDownloadFragment
+import top.fumiama.copymanga.tools.ui.UITools
 import top.fumiama.dmzj.copymanga.R
 import java.lang.Thread.sleep
 import java.lang.ref.WeakReference

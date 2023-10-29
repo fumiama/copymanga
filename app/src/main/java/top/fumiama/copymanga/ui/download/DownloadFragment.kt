@@ -12,7 +12,7 @@ import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.fragment_download.*
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.template.general.NoBackRefreshFragment
-import top.fumiama.copymanga.tools.api.Navigate
+import top.fumiama.copymanga.tools.ui.Navigate
 import top.fumiama.copymanga.tools.file.FileUtils
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment
 import top.fumiama.copymanga.ui.vm.ViewMangaActivity
@@ -31,7 +31,7 @@ class DownloadFragment: NoBackRefreshFragment(R.layout.fragment_download) {
         }
     }
 
-    private fun scanFile(cd: File?){
+    private fun scanFile(cd: File?) {
         val isRoot = cd == context?.getExternalFilesDir("")
         val jsonFile = File(cd, "info.bin")
         if(isRoot || !jsonFile.exists()) cd?.list()?.sortedArrayWith { o1, o2 ->

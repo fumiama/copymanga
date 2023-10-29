@@ -23,8 +23,7 @@
         </provider>
         <activity
             android:name="top.fumiama.copymanga.MainActivity"
-            android:label="@string/app_name"
-            android:theme="@style/AppTheme.Default"
+            android:theme="@style/AppTheme.NoActionBar"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

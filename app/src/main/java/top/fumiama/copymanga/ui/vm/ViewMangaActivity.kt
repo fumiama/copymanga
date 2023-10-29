@@ -3,14 +3,11 @@ package top.fumiama.copymanga.ui.vm
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Service
-import android.content.Context
-import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import android.media.AudioManager
 import android.os.Bundle
 import android.os.Handler
@@ -42,7 +39,7 @@ import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.template.general.TitleActivityTemplate
 import top.fumiama.copymanga.template.http.AutoDownloadThread
 import top.fumiama.copymanga.tools.api.CMApi
-import top.fumiama.copymanga.tools.api.Font
+import top.fumiama.copymanga.tools.ui.Font
 import top.fumiama.copymanga.tools.http.DownloadTools
 import top.fumiama.copymanga.tools.thread.TimeThread
 import top.fumiama.copymanga.views.ScaleImageView
@@ -140,7 +137,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         else {
             window.setDecorFitsSystemWindows(false)
             window.insetsController?.hide(WindowInsets.Type.statusBars())
-            //window.insetsController?.hide(WindowInsets.Type.navigationBars())
+            window.insetsController?.hide(WindowInsets.Type.navigationBars())
         }
     }
 

@@ -1,20 +1,18 @@
 package top.fumiama.copymanga.ui.download
 
-import android.app.Activity
 import android.app.AlertDialog
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import com.google.gson.Gson
 import kotlinx.android.synthetic.main.line_lazybooklines.*
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.manga.Reader
 import top.fumiama.copymanga.template.general.MangaPagesFragmentTemplate
 import top.fumiama.copymanga.template.ui.CardList
-import top.fumiama.copymanga.tools.api.Navigate
-import top.fumiama.copymanga.tools.api.UITools
+import top.fumiama.copymanga.tools.ui.Navigate
+import top.fumiama.copymanga.tools.ui.UITools
 import top.fumiama.copymanga.tools.file.FileUtils
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment
 import top.fumiama.dmzj.copymanga.R
@@ -53,6 +51,10 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
 
     override fun addPage() {
         super.addPage()
+        if(isRefresh){
+            page = 0
+            isRefresh = false
+        }
         if(!isEnd) {
             if(sortedBookList == null || isContentChanged) {
                 Log.d("MyNDF", "Sorting books...")
@@ -67,6 +69,7 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
             }
             Log.d("MyNDF", "Start drawing cards")
             cardList?.addCard(oldDlCardName, path = oldDlCardName)
+            var cnt = 1
             sortedBookList?.let {
                 for(i in it.listIterator(page)) {
                     if(cardList?.exitCardList != false) return
@@ -79,8 +82,10 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
                         newJson.exists() -> {
                             if(cardList?.exitCardList != false) return
                             cardList?.addCard(i.name, "\n${bookSize}MB")
+                            cnt++
                         }
                     }
+                    if (cnt >= 21) break
                 }
                 if(page >= it.size) {
                     isEnd = true
