@@ -22,92 +22,103 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
     var offset = 0
     private val subUrl get() = getApiUrl()
     var ad: AutoDownloadThread? = null
-    init {
-        pageHandler = object : PageHandler {
-            override fun addPage(){
-                ad = AutoDownloadThread(subUrl){
-                    if(isRefresh){
-                        page = 0
-                        isRefresh = false
-                    }
-                    if(isTypeBook) {
-                        val bookList = Gson().fromJson(it?.decodeToString(), TypeBookListStructure::class.java)
-                        bookList?.apply {
-                            Log.d("MyICL", "offset:${results.offset}, total:${results.total}")
-                            if(results.offset < results.total) {
-                                if(code == 200) {
-                                    results.list.forEach { book ->
-                                        if(ad?.exit == true) return@AutoDownloadThread
-                                        cardList?.addCard(book.comic.name, null, book.comic.cover, book.comic.path_word, null, null, false)
-                                    }
-                                    offset += results.list.size
-                                }
-                            }
-                            page++
-                        }
-                    } else if(isHistoryBook) {
-                        val bookList = Gson().fromJson(it?.decodeToString(), HistoryBookListStructure::class.java)
-                        bookList?.apply {
-                            Log.d("MyICL", "offset:${results.offset}, total:${results.total}")
-                            if(results.offset < results.total) {
-                                if(code == 200) {
-                                    results.list.forEach{ book ->
-                                        if(ad?.exit == true) return@AutoDownloadThread
-                                        cardList?.addCard(book.comic.name, null, book.comic.cover, book.comic.path_word, null, null, false)
-                                    }
-                                    offset += results.list.size
-                                }
-                            }
-                            page++
-                        }
-                    } else if (isShelfBook) {
-                        val bookList = Gson().fromJson(it?.decodeToString(), ShelfStructure::class.java)
-                        bookList?.apply {
-                            Log.d("MyICL", "offset:${results.offset}, total:${results.total}")
-                            if(results.offset < results.total) {
-                                if(code == 200) {
-                                    results.list.forEach{ book ->
-                                        if(ad?.exit == true) return@AutoDownloadThread
-                                        cardList?.addCard(book.comic.name, null, book.comic.cover, book.comic.path_word, null, null, false)
-                                    }
-                                    offset += results.list.size
-                                }
-                            }
-                            page++
-                        }
-                    } else {
-                        val bookList = Gson().fromJson(it?.decodeToString(), BookListStructure::class.java)
-                        bookList?.apply {
-                            Log.d("MyICL", "offset:${results.offset}, total:${results.total}")
-                            if(results.offset < results.total) {
-                                if(code == 200) {
-                                    results.list.forEach{ book ->
-                                        if(ad?.exit == true) return@AutoDownloadThread
-                                        cardList?.addCard(book.name, null, book.cover, book.path_word, null, null, false)
-                                    }
-                                    offset += results.list.size
-                                }
-                            }
-                            page++
-                        }
-                    }
-                    onLoadFinish()
-                }
-                ad?.start()
+
+    override fun addPage(){
+        super.addPage()
+        ad = AutoDownloadThread(subUrl) {
+            if(isRefresh){
+                page = 0
+                isRefresh = false
             }
-            override fun initCardList(weakReference: WeakReference<Fragment>) {
-                cardList = CardList(weakReference, cardWidth, cardHeight, cardPerRow)
-                cardList?.initClickListeners = object : CardList.InitClickListeners {
-                    override fun prepareListeners(v: View, name: String, path: String?, chapterUUID: String?, pn: Int?) {
-                        v.setOnClickListener {
-                            val bundle = Bundle()
-                            bundle.putString("path", path)
-                            Navigate.safeNavigateTo(findNavController(), navId, bundle)
+            if(isTypeBook) {
+                val bookList = Gson().fromJson(it?.decodeToString(), TypeBookListStructure::class.java)
+                bookList?.apply {
+                    Log.d("MyICL", "offset:${results.offset}, total:${results.total}")
+                    if(results.offset < results.total) {
+                        if(code == 200) {
+                            results.list.forEach { book ->
+                                if(ad?.exit == true) return@AutoDownloadThread
+                                cardList?.addCard(
+                                    book?.comic?.name?:"null", null, book?.comic?.cover,
+                                    book?.comic?.path_word, null, null,
+                                    isFinish = false, isNew = false
+                                )
+                            }
+                            offset += results.list.size
                         }
                     }
+                    page++
+                }
+            } else if(isHistoryBook) {
+                val bookList = Gson().fromJson(it?.decodeToString(), HistoryBookListStructure::class.java)
+                bookList?.apply {
+                    Log.d("MyICL", "offset:${results?.offset}, total:${results?.total}")
+                    if(results.offset < results.total) {
+                        if(code == 200) {
+                            results?.list?.forEach{ book ->
+                                if(ad?.exit == true) return@AutoDownloadThread
+                                cardList?.addCard(
+                                    book?.comic?.name?:"null", "\n最新${book?.last_chapter_name}", book?.comic?.cover,
+                                    book?.comic?.path_word, null, null,
+                                    book?.comic?.status==1
+                                )
+                            }
+                            offset += results.list.size
+                        }
+                    }
+                    page++
+                }
+            } else if (isShelfBook) {
+                val bookList = Gson().fromJson(it?.decodeToString(), ShelfStructure::class.java)
+                bookList?.apply {
+                    Log.d("MyICL", "offset:${results?.offset}, total:${results?.total}")
+                    if(results.offset < results.total) {
+                        if(code == 200) {
+                            results?.list?.forEach{ book ->
+                                if(ad?.exit == true) return@AutoDownloadThread
+                                cardList?.addCard(
+                                    book?.comic?.name?:"null", "\n读到${book?.last_browse?.last_browse_name}", book?.comic?.cover,
+                                    book?.comic?.path_word, null, null,
+                                    book?.comic?.status==1,
+                                    book.comic?.browse?.chapter_uuid != book.comic?.last_chapter_id
+                                )
+                            }
+                            offset += results.list.size
+                        }
+                    }
+                    page++
+                }
+            } else {
+                val bookList = Gson().fromJson(it?.decodeToString(), BookListStructure::class.java)
+                bookList?.apply {
+                    Log.d("MyICL", "offset:${results?.offset}, total:${results?.total}")
+                    if(results.offset < results.total) {
+                        if(code == 200) {
+                            results?.list?.forEach{ book ->
+                                if(ad?.exit == true) return@AutoDownloadThread
+                                cardList?.addCard(book?.name?:"null", null, book?.cover, book?.path_word, null, null, false)
+                            }
+                            offset += results.list.size
+                        }
+                    }
+                    page++
                 }
             }
-            override fun setListeners() { this@InfoCardLoader.setListeners() }
+            onLoadFinish()
+        }
+        ad?.start()
+    }
+    override fun initCardList(weakReference: WeakReference<Fragment>) {
+        super.initCardList(weakReference)
+        cardList = CardList(weakReference, cardWidth, cardHeight, cardPerRow)
+        cardList?.initClickListeners = object : CardList.InitClickListeners {
+            override fun prepareListeners(v: View, name: String, path: String?, chapterUUID: String?, pn: Int?) {
+                v.setOnClickListener {
+                    val bundle = Bundle()
+                    bundle.putString("path", path)
+                    Navigate.safeNavigateTo(findNavController(), navId, bundle)
+                }
+            }
         }
     }
 
@@ -115,12 +126,16 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
         return ""
     }
 
-    open fun setListeners(){}
-
-    open fun onLoadFinish(){
+    override fun onLoadFinish() {
+        super.onLoadFinish()
         MainActivity.mainWeakReference?.get()?.runOnUiThread {
             if(ad?.exit != true) mypl.visibility = View.GONE
         }
+    }
+
+    override fun reset() {
+        super.reset()
+        offset = 0
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -11,4 +11,12 @@ object FileUtils {
         }
         f.delete()
     }
+    fun sizeOf(f: File): Long{
+        var size = 0L
+        if (f.isDirectory) f.listFiles()?.apply {
+            for (i in this)
+                size += if (i.isDirectory) sizeOf(i) else i.length()
+        }
+        return size
+    }
 }

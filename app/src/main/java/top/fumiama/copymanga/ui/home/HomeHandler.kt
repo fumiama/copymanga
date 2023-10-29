@@ -50,15 +50,12 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
             }
             return field
         }
-    var indexLines = arrayOf<View>()
+    private var indexLines = arrayOf<View>()
 
     override fun handleMessage(msg: Message) {
         super.handleMessage(msg)
         when (msg.what) {
-            -1 -> {
-                homeF?.swiperefresh?.isEnabled = msg.obj as Boolean
-                homeF?.swiperefresh?.isRefreshing = msg.obj as Boolean
-            }
+            -1 -> homeF?.swiperefresh?.isRefreshing = msg.obj as Boolean
             //0 -> setLayouts()
             1 -> inflateCardLines()
 

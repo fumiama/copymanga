@@ -10,8 +10,8 @@ import android.widget.Toast
 import androidx.core.content.FileProvider
 import androidx.core.content.edit
 import kotlinx.android.synthetic.main.dialog_progress.view.*
-import top.fumiama.copymanga.tools.file.PropertiesTools
 import top.fumiama.copymanga.tools.api.UITools
+import top.fumiama.dmzj.copymanga.BuildConfig
 import top.fumiama.dmzj.copymanga.R
 import java.io.File
 import java.security.MessageDigest
@@ -27,7 +27,7 @@ object Update {
             }
         }
         val kanban = SimpleKanban(client, "fumiama")
-        val msg = kanban[packageManager.getPackageInfo(packageName, 0).versionCode]
+        val msg = kanban[BuildConfig.VERSION_CODE]
         if(msg != "null") {
             val verNum = msg.substringBefore('\n').toIntOrNull()
             val skipNum = activity.getPreferences(MODE_PRIVATE).getInt("skipVersion", 0)

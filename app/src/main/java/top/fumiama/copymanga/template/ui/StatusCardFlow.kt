@@ -4,7 +4,6 @@ import android.animation.ObjectAnimator
 import android.view.View
 import kotlinx.android.synthetic.main.anchor_popular.view.*
 import kotlinx.android.synthetic.main.line_finish.*
-import kotlinx.android.synthetic.main.line_lazybooklines.*
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.dmzj.copymanga.R
@@ -40,7 +39,10 @@ open class StatusCardFlow(private val api: Int, nav: Int) : InfoCardLoader(R.lay
                 }
                 Thread{
                     Thread.sleep(400)
-                    mh?.sendEmptyMessage(4)
+                    mainWeakReference?.get()?.runOnUiThread {
+                        reset()
+                        addPage()
+                    }
                 }.start()
             }
         }
@@ -59,7 +61,10 @@ open class StatusCardFlow(private val api: Int, nav: Int) : InfoCardLoader(R.lay
                 }
                 Thread {
                     Thread.sleep(400)
-                    mh?.sendEmptyMessage(4)
+                    mainWeakReference?.get()?.runOnUiThread {
+                        reset()
+                        addPage()
+                    }
                 }.start()
             }
         }

@@ -22,6 +22,7 @@ import kotlinx.android.synthetic.main.card_book_plain.view.*
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.line_word.view.*
 import kotlinx.android.synthetic.main.viewpage_horizonal.view.*
+import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.MainActivity.Companion.ime
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.json.BookListStructure
@@ -40,10 +41,11 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
         super.onViewCreated(view, savedInstanceState)
         if(isFirstInflate) {
             val theme = resources.newTheme()
-            swiperefresh.setColorSchemeColors(
+            swiperefresh?.setColorSchemeColors(
                 resources.getColor(R.color.colorAccent, theme),
                 resources.getColor(R.color.colorBlue2, theme),
                 resources.getColor(R.color.colorGreen, theme))
+            swiperefresh?.isEnabled = true
 
             fhs.apply {
                 val recyclerView = findViewById<RecyclerView>(R.id.search_recycler_view)
@@ -133,6 +135,10 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val l = MainActivity.member?.refreshAvatar()
+        if (l?.code != 200) {
+            MainActivity.member?.logout()
+        }
         homeHandler = HomeHandler(WeakReference(this))
     }
 

@@ -4,5 +4,6 @@ public class FilterStructure extends ReturnBase {
     public Results results;
     public static class Results{
         public ThemeStructure[] theme;
+        public ThemeStructure[] top;
     }
 }

@@ -42,11 +42,12 @@
     <string name="mainPageApiUrl">https://%1$s/api/v3/h5/homeIndex?platform=3</string>
     <string name="referUrl">https://%1$s</string>
     <string name="hostUrl">&hosturl;</string>
-    <string name="rankApiUrl">https://%1$s/api/v3/ranks?limit=21&amp;offset=%2$d&amp;date_type=%3$s&amp;platform=3</string>
+    <string name="rankApiUrl">https://%1$s/api/v3/ranks?limit=21&amp;offset=%2$d&amp;date_type=%3$s&amp;audience_type=%4$s&amp;platform=3</string>
     <string name="searchApiUrl">https://%1$s/api/v3/search/comic?limit=21&amp;offset=%2$d&amp;q=%3$s&amp;q_type=%4$s&amp;platform=3</string>
-    <string name="filterApiUrl">https://%1$s/api/v3/h5/filterIndex/comic/tags?platform=3</string>
-    <string name="sortApiUrl">https://%1$s/api/v3/comics?limit=21&amp;offset=%2$d&amp;ordering=%3$s&amp;theme=%4$s&amp;platform=3</string>
+    <string name="filterApiUrl">https://%1$s/api/v3/h5/filter/comic/tags?platform=3</string>
+    <string name="sortApiUrl">https://%1$s/api/v3/comics?limit=21&amp;offset=%2$d&amp;ordering=%3$s&amp;theme=%4$s&amp;top=%5$s&amp;platform=3</string>
     <string name="bookInfoApiUrl">https://%1$s/api/v3/comic2/%2$s?platform=3</string>
+    <string name="bookUserQueryApiUrl">https://%1$s/api/v3/comic2/%2$s/query?platform=3</string>
     <string name="groupInfoApiUrl">https://%1$s/api/v3/comic/%2$s/group/%3$s/chapters?limit=100&amp;offset=%4$d&amp;platform=3</string>
     <string name="chapterInfoApiUrl">https://%1$s/api/v3/comic/%2$s/chapter2/%3$s?platform=3</string>
     <string name="topicApiUrl">https://%1$s/api/v3/topic/%2$s?platform=3</string>
@@ -78,6 +79,7 @@
     <string name="TRANSPORT_ETHERNET">以太网</string>
     <string name="TRANSPORT_LOWPAN">LOWPAN</string>
     <string name="TRANSPORT_NULL">无网络</string>
+    <string name="TRANSPORT_ERROR">网络错误</string>
 
     <string name="pc_ua">COPY/2.0.7</string>
     <string name="app_ver">2.0.7</string>
@@ -89,10 +91,12 @@
     <string name="menu_read_time">阅读时间</string>
 
     <string name="button_sub">加入书架</string>
+    <string name="button_sub_subscribed">已加书架</string>
     <string name="button_start">开始阅读</string>
 
     <string name="text_format_hit">热度 %1$d</string>
     <string name="text_format_stat">状态 %1$s</string>
+    <string name="text_format_cloud_read_to">云端读到 %1$s</string>
 
     <string name="topics_series">专题系列</string>
     <string name="manga_rec">漫画推荐</string>
@@ -135,7 +139,8 @@
 
     <string name="login_null_username">用户名为空</string>
     <string name="login_null_pwd">密码为空</string>
-    <string name="login_get_conn_failed">连接失败</string>
+    <string name="login_get_conn_failed">登录失败</string>
+    <string name="login_get_avatar_failed">刷新头像失败</string>
     <string name="login_restart_to_apply">重启应用以彻底退出登录</string>
 
     <string name="old_download_card_name">前往旧版下载</string>

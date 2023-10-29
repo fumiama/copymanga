@@ -45,9 +45,13 @@ import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.tools.api.UITools
 import top.fumiama.copymanga.ui.book.BookFragment.Companion.bookHandler
+import top.fumiama.copymanga.ui.cardflow.rank.RankFragment
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment
 import top.fumiama.copymanga.ui.download.DownloadFragment
+import top.fumiama.copymanga.ui.download.NewDownloadFragment
 import top.fumiama.copymanga.update.Update
+import top.fumiama.copymanga.user.Member
+import top.fumiama.dmzj.copymanga.BuildConfig
 import java.io.File
 import java.io.FileInputStream
 import java.lang.Thread.sleep
@@ -60,11 +64,16 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var headPic: File
+    private lateinit var toolsBox: UITools
+
+    private var latestDestination = 0
+    private var isMenuWaiting = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         mainWeakReference = WeakReference(this)
+        toolsBox = UITools(this)
 
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
@@ -108,10 +117,19 @@ class MainActivity : AppCompatActivity() {
         ime = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
 
         navController!!.addOnDestinationChangedListener { _, destination, _ ->
+            latestDestination = destination.id
+            Log.d("MyMA", "latestDestination: $latestDestination")
+            if (isMenuWaiting) {
+                return@addOnDestinationChangedListener
+            }
+            isMenuWaiting = true
+            Log.d("MyMA", "start menu waiting")
             Thread {
                 sleep(1000)
+                isMenuWaiting = false
+                Log.d("MyMA", "finish menu waiting")
                 runOnUiThread {
-                    when (destination.id) {
+                    when (latestDestination) {
                         R.id.nav_home -> {
                             Log.d("MyMA", "enter home")
                             menuMain?.findItem(R.id.action_info)?.isVisible = true
@@ -126,6 +144,18 @@ class MainActivity : AppCompatActivity() {
                         }
                         R.id.nav_group -> {
                             Log.d("MyMA", "enter group")
+                            menuMain?.findItem(R.id.action_info)?.isVisible = false
+                            menuMain?.findItem(R.id.action_download)?.isVisible = false
+                            menuMain?.findItem(R.id.action_sort)?.isVisible = true
+                        }
+                        R.id.nav_new_download -> {
+                            Log.d("MyMA", "enter new_download")
+                            menuMain?.findItem(R.id.action_info)?.isVisible = false
+                            menuMain?.findItem(R.id.action_download)?.isVisible = false
+                            menuMain?.findItem(R.id.action_sort)?.isVisible = true
+                        }
+                        R.id.nav_rank -> {
+                            Log.d("MyMA", "enter rank")
                             menuMain?.findItem(R.id.action_info)?.isVisible = false
                             menuMain?.findItem(R.id.action_download)?.isVisible = false
                             menuMain?.findItem(R.id.action_sort)?.isVisible = true
@@ -149,6 +179,7 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_info -> {
@@ -161,6 +192,8 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.action_sort -> {
                 ComicDlFragment.handler?.sendEmptyMessage(13)
+                NewDownloadFragment.wn?.get()?.showReverseInfo(toolsBox)
+                RankFragment.wr?.get()?.showSexInfo(toolsBox)
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -320,14 +353,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun checkUpdate(ignoreSkip: Boolean) {
         Thread{
-            Update.checkUpdate(this, UITools(this), ignoreSkip)
+            Update.checkUpdate(this, toolsBox, ignoreSkip)
         }.start()
     }
 
     private fun showAbout() {
         val dl = android.app.AlertDialog.Builder(this)
         dl.setMessage(R.string.app_description)
-        dl.setTitle(R.string.action_info)
+        dl.setTitle("${getString(R.string.action_info)} ${BuildConfig.VERSION_NAME}")
         dl.setIcon(R.mipmap.ic_launcher)
         dl.setPositiveButton(android.R.string.ok) { _, _ -> }
         dl.setNeutralButton(R.string.check_update) {_, _ ->
@@ -368,9 +401,22 @@ class MainActivity : AppCompatActivity() {
                 if (field != null) return field
                 return mainWeakReference?.get()?.let {
                     field = Shelf(
-                        it.getPreferences(Context.MODE_PRIVATE).getString("token", "")?:return@let null,
-                        it.getString(R.string.shelfOperateApiUrl).format(CMApi.myHostApiUrl), it.getString(R.string.referer), it.getString(R.string.pc_ua)
-                    )
+                        it.getPreferences(Context.MODE_PRIVATE)
+                            .getString("token", "")?:return@let null) { id ->
+                        return@Shelf it.getString(id)
+                    }
+                    field
+                }
+            }
+        var member: Member? = null
+            get() {
+                if (field != null) return field
+                return mainWeakReference?.get()?.let {
+                    it.getPreferences(MODE_PRIVATE)?.let { pref ->
+                        field = Member(pref) { id ->
+                            return@Member it.getString(id)
+                        }
+                    }
                     field
                 }
             }

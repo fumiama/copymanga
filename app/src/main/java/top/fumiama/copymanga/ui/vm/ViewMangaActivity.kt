@@ -439,18 +439,18 @@ class ViewMangaActivity : TitleActivityTemplate() {
         else {
             val zip = ZipFile(zipFile)
             try {
-                if (q == 100) BitmapFactory.decodeStream(zip.getInputStream(zip.getEntry("${position}.jpg")))
+                if (q == 100) BitmapFactory.decodeStream(zip.getInputStream(zip.getEntry("${position}.webp")))
                 else {
                     val out = ByteArrayOutputStream()
-                    BitmapFactory.decodeStream(zip.getInputStream(zip.getEntry("${position}.jpg")))?.compress(Bitmap.CompressFormat.JPEG, q, out)
+                    BitmapFactory.decodeStream(zip.getInputStream(zip.getEntry("${position}.webp")))?.compress(Bitmap.CompressFormat.JPEG, q, out)
                     BitmapFactory.decodeStream(ByteArrayInputStream(out.toByteArray()))
                 }
             } catch (e: Exception) {
                 try {
-                    if (q == 100) BitmapFactory.decodeStream(zip.getInputStream(zip.getEntry("${position}.webp")))
+                    if (q == 100) BitmapFactory.decodeStream(zip.getInputStream(zip.getEntry("${position}.jpg")))
                     else {
                         val out = ByteArrayOutputStream()
-                        BitmapFactory.decodeStream(zip.getInputStream(zip.getEntry("${position}.webp")))?.compress(Bitmap.CompressFormat.JPEG, q, out)
+                        BitmapFactory.decodeStream(zip.getInputStream(zip.getEntry("${position}.jpg")))?.compress(Bitmap.CompressFormat.JPEG, q, out)
                         BitmapFactory.decodeStream(ByteArrayInputStream(out.toByteArray()))
                     }
                 } catch (e: Exception) {

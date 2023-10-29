@@ -70,7 +70,7 @@ class CardList(
     }
 
     @ExperimentalStdlibApi
-    fun addCard(name: String, append: String? = null, head: String? = null, path: String? = null, chapterUUID: String? = null, pn: Int? = null, isFinish: Boolean = false){
+    fun addCard(name: String, append: String? = null, head: String? = null, path: String? = null, chapterUUID: String? = null, pn: Int? = null, isFinish: Boolean = false, isNew: Boolean = false){
         if(exitCardList) return
         manageRow()
         that?.layoutInflater?.inflate(R.layout.card_book, that.mydll.ltbtn, false)?.let {
@@ -83,6 +83,7 @@ class CardList(
             card.chapterUUID = chapterUUID
             card.pageNumber = pn
             card.isFinish = isFinish
+            card.isNew = isNew
             mainWeakReference?.get()?.runOnUiThread{
                 if(exitCardList) return@runOnUiThread
                 addCard(it)
@@ -115,6 +116,7 @@ class CardList(
                 if(img.exists()) it.imic.setImageURI(Uri.fromFile(img))
             }
             if(card.isFinish) it.sgnic.visibility = View.VISIBLE
+            if(card.isNew) it.sgnnew.visibility = View.VISIBLE
             initClickListeners?.prepareListeners(card, card.name, card.path, card.chapterUUID, card.pageNumber)
             rows[card.index % 20]?.ltbtn?.addView(it)
             it.layoutParams?.height = cardHeight

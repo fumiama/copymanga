@@ -43,7 +43,7 @@ import java.io.File
 import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 
-class BookHandler(private val th: WeakReference<BookFragment>, private val path: String)
+class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
     : AutoDownloadHandler(th.get()?.getString(R.string.bookInfoApiUrl)?.format(CMApi.myHostApiUrl, path)?: "",
     BookInfoStructure::class.java,
     Looper.myLooper()!!){
@@ -62,6 +62,7 @@ class BookHandler(private val th: WeakReference<BookFragment>, private val path:
     var cnts = intArrayOf()
     var vols: Array<VolumeStructure>? = null
     var chapterNames = arrayOf<String>()
+    var collect: Int = -1
     private val divider get() = that?.layoutInflater?.inflate(R.layout.div_h, that?.fbl, false)
 
     override fun handleMessage(msg: Message) {
@@ -133,8 +134,8 @@ class BookHandler(private val th: WeakReference<BookFragment>, private val path:
                 fbl.addView(fbibinfo)
             } catch (e: Exception) {
                 e.printStackTrace()
-                (fbibinfo!!.parent as LinearLayout).removeAllViews()
-                fbl.addView(fbibinfo)
+                (fbibinfo?.parent as LinearLayout?)?.removeAllViews()
+                fbl?.addView(fbibinfo)
             }
             book?.results?.comic?.cover?.let { cover ->
                 val load = Glide.with(this).load(
@@ -145,8 +146,8 @@ class BookHandler(private val th: WeakReference<BookFragment>, private val path:
                     ?.let { it2 -> RequestOptions.bitmapTransform(it2) }
                     ?.let { it3 -> load.apply(it3).into(lbibg) }
             }
-            imf.visibility = View.GONE
-            fbl.addView(divider)
+            imf?.visibility = View.GONE
+            fbl?.addView(divider)
         }
     }
 

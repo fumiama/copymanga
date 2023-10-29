@@ -4,8 +4,11 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.core.content.edit
+import com.google.gson.Gson
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
+import top.fumiama.copymanga.json.VolumeStructure
 import top.fumiama.copymanga.ui.vm.ViewMangaActivity
+import java.io.File
 
 object Reader {
     fun viewMangaAt(name: String, pos: Int, fromFirstPage: Boolean = false) {
@@ -34,5 +37,24 @@ object Reader {
                 startActivity(intent)
             }
         }
+    }
+    fun getComicPathWordInFile(file: File): String {
+        if(!file.exists()) {
+            return "N/A:!file.exists()"
+        }
+        val jsonFile = File(file, "info.json")
+        if(!jsonFile.exists()) {
+            return  "N/A:!jsonFile.exists()"
+        }
+        Gson().fromJson(jsonFile.readText(), Array<VolumeStructure>::class.java)?.let { volumes ->
+            if(volumes.isEmpty()) {
+                return "N/A:volumes.isEmpty()"
+            }
+            if(volumes[0].results.list.isEmpty()) {
+                return "N/A:volumes[0].results.list.isEmpty()"
+            }
+            return volumes[0].results.list[0].comic_path_word
+        }
+        return "N/A:null_gson"
     }
 }

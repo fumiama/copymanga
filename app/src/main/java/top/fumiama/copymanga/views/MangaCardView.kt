@@ -16,6 +16,7 @@ class MangaCardView:CardView {
     //var uuid: String? = null
     var path: String? = null
     var isFinish = false
+    var isNew = false
     var index = 0
     var chapterUUID: String? = null
     var pageNumber: Int? = null

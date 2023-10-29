@@ -19,8 +19,18 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/line_sort_time"
+        app:layout_constraintEnd_toStartOf="@+id/line_sort_region"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <include
+        android:id="@+id/line_sort_region"
+        layout="@layout/anchor_popular"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/line_sort_time"
+        app:layout_constraintStart_toEndOf="@+id/line_sort_class"
         app:layout_constraintTop_toTopOf="parent" />
 
     <include
@@ -30,7 +40,7 @@
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/line_sort_hot"
-        app:layout_constraintStart_toEndOf="@+id/line_sort_class"
+        app:layout_constraintStart_toEndOf="@+id/line_sort_region"
         app:layout_constraintTop_toTopOf="parent" />
 
     <include

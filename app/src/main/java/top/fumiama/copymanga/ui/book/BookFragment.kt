@@ -1,5 +1,6 @@
 package top.fumiama.copymanga.ui.book
 
+import android.annotation.SuppressLint
 import android.content.Context.MODE_PRIVATE
 import android.os.Bundle
 import android.util.Log
@@ -7,6 +8,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.navigation.fragment.findNavController
 import com.google.gson.Gson
+import kotlinx.android.synthetic.main.line_bookinfo_text.*
 import kotlinx.android.synthetic.main.line_booktandb.*
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
@@ -100,18 +102,49 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     fun setAddToShelf() {
-        if(bookHandler?.chapterNames?.isNotEmpty() == true)
+        if(bookHandler?.chapterNames?.isNotEmpty() == true) {
+            val b = MainActivity.shelf?.query(bookHandler?.path!!)
+            bookHandler?.collect = b?.results?.collect?:-2
+            Log.d("MyBF", "get collect of ${bookHandler?.path} = ${bookHandler?.collect}")
+            b?.results?.browse?.chapter_name?.let { name ->
+                btsub.text = "${btsub.text} ${getString(R.string.text_format_cloud_read_to).format(name)}"
+            }
+            bookHandler?.collect?.let { collect ->
+                if (collect > 0) {
+                    this@BookFragment.lbbsub.setText(R.string.button_sub_subscribed)
+                }
+            }
             bookHandler?.book?.results?.comic?.let { comic ->
                 this@BookFragment.lbbsub.setOnClickListener {
+                    if (this@BookFragment.lbbsub.text != getString(R.string.button_sub)) {
+                        bookHandler?.collect?.let { collect ->
+                            if (collect < 0) return@setOnClickListener
+                            Thread{
+                                val re = MainActivity.shelf?.del(collect)
+                                mainWeakReference?.get()?.runOnUiThread {
+                                    Toast.makeText(context, re, Toast.LENGTH_SHORT).show()
+                                    if (re == "请求成功") {
+                                        this@BookFragment.lbbsub.setText(R.string.button_sub)
+                                    }
+                                }
+                            }.start()
+                        }
+                        return@setOnClickListener
+                    }
                     Thread{
                         val re = MainActivity.shelf?.add(comic.uuid)
                         mainWeakReference?.get()?.runOnUiThread {
                             Toast.makeText(context, re, Toast.LENGTH_SHORT).show()
+                            if (re == "修改成功") {
+                                this@BookFragment.lbbsub.setText(R.string.button_sub_subscribed)
+                            }
                         }
                     }.start()
                 }
             }
+        }
     }
 
     fun navigate2dl(){

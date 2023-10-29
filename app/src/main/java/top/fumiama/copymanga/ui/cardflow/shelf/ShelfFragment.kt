@@ -3,6 +3,7 @@ package top.fumiama.copymanga.ui.cardflow.shelf
 import android.animation.ObjectAnimator
 import kotlinx.android.synthetic.main.anchor_popular.view.*
 import kotlinx.android.synthetic.main.line_shelf.*
+import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.template.ui.InfoCardLoader
 import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.dmzj.copymanga.R
@@ -47,7 +48,10 @@ class ShelfFragment : InfoCardLoader(R.layout.fragment_shelf, R.id.action_nav_su
             }
             Thread {
                 sleep(400)
-                mh?.sendEmptyMessage(4)
+                MainActivity.mainWeakReference?.get()?.runOnUiThread {
+                    reset()
+                    addPage()
+                }
             }.start()
         }
     }
@@ -65,7 +69,10 @@ class ShelfFragment : InfoCardLoader(R.layout.fragment_shelf, R.id.action_nav_su
             }
             Thread {
                 sleep(400)
-                mh?.sendEmptyMessage(4)
+                MainActivity.mainWeakReference?.get()?.runOnUiThread {
+                    reset()
+                    addPage()
+                }
             }.start()
         }
     }
@@ -83,7 +90,10 @@ class ShelfFragment : InfoCardLoader(R.layout.fragment_shelf, R.id.action_nav_su
             }
             Thread {
                 sleep(400)
-                mh?.sendEmptyMessage(4)
+                MainActivity.mainWeakReference?.get()?.runOnUiThread {
+                    reset()
+                    addPage()
+                }
             }.start()
         }
     }

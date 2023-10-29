@@ -210,14 +210,12 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
                 if (downloading || checkedChapter == 0) {
                    mangaDlTools.wait = !mangaDlTools.wait!!
                 } else {
-                    if(!downloading) {
-                        downloading = true
-                        Thread {
-                            sendEmptyMessage(9)
-                            finishMap = arrayOfNulls(tbtnlist.size)
-                            downloadChapterPages()
-                        }.start()
-                    } else mangaDlTools.wait = false
+                    downloading = true
+                    Thread {
+                        sendEmptyMessage(9)
+                        finishMap = arrayOfNulls(tbtnlist.size)
+                        downloadChapterPages()
+                    }.start()
                 }
             }
         }
@@ -252,6 +250,11 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
     }
 
     private fun showMultiSelectInfo() {
+        if(multiSelect) {
+            toolsBox.buildInfo("退出多选模式？", "退出后只能对单个漫画进行长按删除",
+                "确定", null, "取消", { multiSelect = false })
+            return
+        }
         toolsBox.buildInfo("进入多选模式？", "之后可以对已下载漫画进行批量删除/重新下载",
             "确定", null, "取消", { multiSelect = true })
     }

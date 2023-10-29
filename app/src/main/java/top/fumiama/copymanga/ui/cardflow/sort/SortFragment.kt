@@ -15,8 +15,9 @@ import java.lang.Thread.sleep
 
 @ExperimentalStdlibApi
 class SortFragment : InfoCardLoader(R.layout.fragment_sort, R.id.action_nav_sort_to_nav_book) {
-    private val sortWay = listOf("-datetime_updated", "datetime_updated", "-popular", "popular")
+    private val sortWay = listOf("datetime_updated", "-datetime_updated", "-popular", "popular")
     private var theme = -1
+    private var region = -1
     private var sortValue = 0
     private var filter: FilterStructure? = null
 
@@ -25,7 +26,8 @@ class SortFragment : InfoCardLoader(R.layout.fragment_sort, R.id.action_nav_sort
                 CMApi.myHostApiUrl,
                 page * 21,
                 sortWay[sortValue],
-                if(theme >= 0) (filter?.results?.theme?.get(theme)?.path_word ?: "") else ""
+                if(theme >= 0) (filter?.results?.theme?.get(theme)?.path_word ?: "") else "",
+                if(region >= 0) (filter?.results?.top?.get(region)?.path_word ?: "") else "",
             )
 
     override fun setListeners() {
@@ -57,12 +59,57 @@ class SortFragment : InfoCardLoader(R.layout.fragment_sort, R.id.action_nav_sort
             }
             Thread{
                 sleep(400)
-                mh?.sendEmptyMessage(4)
+                mainWeakReference?.get()?.runOnUiThread {
+                    reset()
+                    addPage()
+                }
             }.start()
         }
     }
 
     private fun setClasses(){
+        filter?.results?.top?.let { items ->
+            if(ad?.exit == true) return@let
+            line_sort_region.apt.text = "全部"
+            line_sort_region.setOnClickListener {
+                val popupMenu = popupMenu {
+                    style = R.style.Widget_MPM_Menu_Dark_CustomBackground
+                    section {
+                        item {
+                            label = "全部"
+                            labelColor = it.apt.currentTextColor
+                            callback = {
+                                region = -1
+                                it.apt.text = "全部"
+                                Thread{
+                                    sleep(400)
+                                    mainWeakReference?.get()?.runOnUiThread {
+                                        reset()
+                                        addPage()
+                                    }
+                                }.start()
+                            }
+                        }
+                        for(i in items.indices) item {
+                            label = items[i].name
+                            labelColor = it.apt.currentTextColor
+                            callback = { //optional
+                                it.apt.text = label
+                                region = i
+                                Thread{
+                                    sleep(400)
+                                    mainWeakReference?.get()?.runOnUiThread {
+                                        reset()
+                                        addPage()
+                                    }
+                                }.start()
+                            }
+                        }
+                    }
+                }
+                this.context?.let { it1 -> popupMenu.show(it1, it) }
+            }
+        }
         filter?.results?.theme?.let { items ->
             if(ad?.exit == true) return@let
             line_sort_class.apt.text = "全部"
@@ -78,7 +125,10 @@ class SortFragment : InfoCardLoader(R.layout.fragment_sort, R.id.action_nav_sort
                                 it.apt.text = "全部"
                                 Thread{
                                     sleep(400)
-                                    mh?.sendEmptyMessage(4)
+                                    mainWeakReference?.get()?.runOnUiThread {
+                                        reset()
+                                        addPage()
+                                    }
                                 }.start()
                             }
                         }
@@ -90,7 +140,10 @@ class SortFragment : InfoCardLoader(R.layout.fragment_sort, R.id.action_nav_sort
                                 theme = i
                                 Thread{
                                     sleep(400)
-                                    mh?.sendEmptyMessage(4)
+                                    mainWeakReference?.get()?.runOnUiThread {
+                                        reset()
+                                        addPage()
+                                    }
                                 }.start()
                             }
                         }
@@ -114,7 +167,10 @@ class SortFragment : InfoCardLoader(R.layout.fragment_sort, R.id.action_nav_sort
             }
             Thread {
                 sleep(400)
-                mh?.sendEmptyMessage(4)
+                mainWeakReference?.get()?.runOnUiThread {
+                    reset()
+                    addPage()
+                }
             }.start()
         }
     }
