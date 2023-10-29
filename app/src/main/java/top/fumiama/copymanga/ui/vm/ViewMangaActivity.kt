@@ -258,7 +258,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
     }
 
     private fun prepareImgFromWeb() {
-        if(!noCellarAlert && toolsBox.netinfo == "移动数据") alertCellar()
+        if(!noCellarAlert && toolsBox.netInfo == getString(R.string.TRANSPORT_CELLULAR)) alertCellar()
         else handler.startLoad()
     }
 

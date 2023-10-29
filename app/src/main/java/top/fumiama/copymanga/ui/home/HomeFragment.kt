@@ -135,10 +135,14 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val l = MainActivity.member?.refreshAvatar()
-        if (l?.code != 200) {
-            MainActivity.member?.logout()
-        }
+        val tb = mainWeakReference?.get()?.toolsBox
+        val netInfo = tb?.netInfo
+        if(netInfo != null && netInfo != tb.transportStringNull && netInfo != tb.transportStringError)Thread {
+            val l = MainActivity.member?.refreshAvatar()
+            if (l?.code != 200) {
+                MainActivity.member?.logout()
+            }
+        }.start()
         homeHandler = HomeHandler(WeakReference(this))
     }
 

@@ -15,21 +15,28 @@ class UITools(that: Context?, w: WeakReference<Activity>? = null) {
     private val zis = that
     private val weak = w
     constructor(w: WeakReference<Activity>): this(w.get()?.applicationContext, w)
-    val netinfo: String
+    val transportStringNull = zis?.getString(R.string.TRANSPORT_NULL) ?: "TRANSPORT_NULL"
+    val transportStringError = zis?.getString(R.string.TRANSPORT_ERROR) ?: "TRANSPORT_ERROR"
+    val netInfo: String
         get() {
             val cm: ConnectivityManager =
                 zis?.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             return cm.getNetworkCapabilities(cm.activeNetwork)?.let {
                 when {
-                    it.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> return@let "WIFI"
-                    it.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> return@let "移动数据"
-                    it.hasTransport(NetworkCapabilities.TRANSPORT_WIFI_AWARE) -> return@let "WIFI_AWARE"
-                    it.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> return@let "蓝牙"
-                    it.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> return@let "以太网"
-                    it.hasTransport(NetworkCapabilities.TRANSPORT_LOWPAN) -> return@let "LOWPAN"
-                    else -> return@let "无网络"
+                    it.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> return@let zis.getString(
+                        R.string.TRANSPORT_WIFI)
+                    it.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> return@let zis.getString(
+                        R.string.TRANSPORT_CELLULAR)
+                    it.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> return@let zis.getString(
+                        R.string.TRANSPORT_BLUETOOTH)
+                    it.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> return@let zis.getString(
+                        R.string.TRANSPORT_ETHERNET)
+                    it.hasTransport(NetworkCapabilities.TRANSPORT_LOWPAN) -> return@let zis.getString(
+                        R.string.TRANSPORT_LOWPAN)
+                    it.hasTransport(NetworkCapabilities.TRANSPORT_VPN) -> return@let "VPN"
+                    else -> return@let transportStringNull
                 }
-            } ?: "错误"
+            } ?: transportStringError
         }
     fun toastError(s: String, willFinish: Boolean = true) {
         Toast.makeText(zis, s, Toast.LENGTH_SHORT).show()

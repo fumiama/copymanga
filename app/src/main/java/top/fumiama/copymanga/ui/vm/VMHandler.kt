@@ -113,7 +113,7 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
             } else {
                 showInfCardFull(); true
             }
-            22 -> wv.get()?.idtime?.text = SimpleDateFormat("HH:mm").format(Date()) + week + wv.get()?.toolsBox?.netinfo
+            22 -> wv.get()?.idtime?.text = SimpleDateFormat("HH:mm").format(Date()) + week + wv.get()?.toolsBox?.netInfo
         }
     }
     override fun getGsonItem() = manga

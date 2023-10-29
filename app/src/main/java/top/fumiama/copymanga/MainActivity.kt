@@ -64,7 +64,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var headPic: File
-    private lateinit var toolsBox: UITools
+    lateinit var toolsBox: UITools
 
     private var latestDestination = 0
     private var isMenuWaiting = false
