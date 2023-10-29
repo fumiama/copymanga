@@ -100,6 +100,9 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
         if(keys.isEmpty()) book?.results?.groups?.values?.forEach{
             keys += it.name
             gpws += it.path_word
+            if (it.count == 0) {
+                it.count = 1
+            }
             cnts += it.count
             Log.d("MyBFH", "Add caption: ${it.name} @ ${it.path_word} of ${it.count}")
         }
@@ -315,6 +318,10 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
             val times = counts[i] / 100
             val remain = counts[i] % 100
             val re = arrayOfNulls<VolumeStructure>(if(remain != 0) (times+1) else (times))
+            if (re.isEmpty()) {
+                Toast.makeText(that?.context, "获取${gpw}失败", Toast.LENGTH_SHORT).show()
+                return@forEachIndexed
+            }
             Log.d("MyBFH", "${i}卷共${if(times == 0) 1 else times}次加载")
             do {
                 counts[i] = counts[i] - 100
