@@ -37,7 +37,7 @@
     <string name="text_null">N/A</string>
     <string name="null_book">获取图书信息失败</string>
     <string name="web_error">网络错误</string>
-    <string name="download_cover_error">保存封面出错</string>
+    <string name="download_cover_timeout">保存封面超时</string>
 
     <string name="mainPageApiUrl">https://%1$s/api/v3/h5/homeIndex?platform=3</string>
     <string name="referUrl">https://%1$s</string>

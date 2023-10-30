@@ -80,7 +80,7 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
     override fun onError() {
         super.onError()
         if(exit) return
-        if(!hasToastedError) {
+        if(!hasToastedError) that?.activity?.runOnUiThread {
             Toast.makeText(that?.context, R.string.null_book, Toast.LENGTH_SHORT).show()
             that?.apply { findNavController().popBackStack() }
         }
@@ -318,9 +318,9 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
             val times = counts[i] / 100
             val remain = counts[i] % 100
             val re = arrayOfNulls<VolumeStructure>(if(remain != 0) (times+1) else (times))
-            if (re.isEmpty()) {
+            if (re.isEmpty()) that?.activity?.runOnUiThread {
                 Toast.makeText(that?.context, "获取${gpw}失败", Toast.LENGTH_SHORT).show()
-                return@forEachIndexed
+                return@runOnUiThread
             }
             Log.d("MyBFH", "${i}卷共${if(times == 0) 1 else times}次加载")
             do {
@@ -393,8 +393,8 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
                                 imic.drawable.toBitmap().compress(Bitmap.CompressFormat.JPEG, 90, fo)
                             } catch (e: Exception) {
                                 e.printStackTrace()
-                                mainWeakReference?.get()?.apply {
-                                    Toast.makeText(this, R.string.download_cover_error, Toast.LENGTH_SHORT).show()
+                                that?.activity?.runOnUiThread {
+                                    Toast.makeText(that?.context, R.string.download_cover_timeout, Toast.LENGTH_SHORT).show()
                                 }
                             }
                             fo.close()
