@@ -45,6 +45,13 @@
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_out_left_exit"
             app:popExitAnim="@anim/slide_in_right_exit"/>
+        <action
+            android:id="@+id/action_nav_home_to_nav_search"
+            app:destination="@id/nav_search"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_out_left_exit"
+            app:popExitAnim="@anim/slide_in_right_exit"/>
     </fragment>
 
     <fragment
@@ -217,7 +224,7 @@
 
     <fragment
         android:id="@+id/nav_newest"
-        android:name="top.fumiama.copymanga.ui.cardflow.newest.NewestFragment"
+        android:name="top.fumiama.copymanga.ui.cardflow.search.SearchFragment"
         android:label="@string/new_list"
         tools:layout="@layout/fragment_newest" >
         <action
@@ -278,6 +285,20 @@
         tools:layout="@layout/fragment_dlcomic" >
         <action
             android:id="@+id/action_nav_group_to_nav_book"
+            app:destination="@id/nav_book"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_out_left_exit"
+            app:popExitAnim="@anim/slide_in_right_exit"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_search"
+        android:name="top.fumiama.copymanga.ui.cardflow.search.SearchFragment"
+        android:label="@string/page_search"
+        tools:layout="@layout/fragment_search" >
+        <action
+            android:id="@+id/action_nav_search_to_nav_book"
             app:destination="@id/nav_book"
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"

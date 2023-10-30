@@ -3,5 +3,4 @@
     android:id="@+id/mylv"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:nestedScrollingEnabled="true"
-    android:paddingBottom="@dimen/global_content_padding_bottom"/>
+    android:nestedScrollingEnabled="true"/>

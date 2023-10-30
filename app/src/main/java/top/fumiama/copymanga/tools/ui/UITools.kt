@@ -113,14 +113,25 @@ class UITools(that: Context?, w: WeakReference<Activity>? = null) {
         val totalWidth = ((zis?.resources?.displayMetrics?.widthPixels?:1080)-marginPx)/numPerRow
         return listOf(numPerRow, w, totalWidth)
     }
-    fun toHexStr(byteArray: ByteArray) =
-        with(StringBuilder()) {
-            byteArray.forEach {
-                val hex = it.toInt() and (0xFF)
-                val hexStr = Integer.toHexString(hex)
-                if (hexStr.length == 1) append("0").append(hexStr)
-                else append(hexStr)
+    companion object {
+        fun toHexStr(byteArray: ByteArray) =
+            with(StringBuilder()) {
+                byteArray.forEach {
+                    val hex = it.toInt() and (0xFF)
+                    val hexStr = Integer.toHexString(hex)
+                    if (hexStr.length == 1) append("0").append(hexStr)
+                    else append(hexStr)
+                }
+                toString()
             }
-            toString()
+        fun getNavigationBarHeight(context: Context): Int {
+            val resources = context.resources
+            val resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android")
+            return if (resourceId > 0) {
+                resources.getDimensionPixelSize(resourceId)
+            } else {
+                0
+            }
         }
+    }
 }

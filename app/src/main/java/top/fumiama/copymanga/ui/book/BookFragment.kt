@@ -8,6 +8,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.navigation.fragment.findNavController
 import com.google.gson.Gson
+import kotlinx.android.synthetic.main.fragment_book.*
 import kotlinx.android.synthetic.main.line_bookinfo_text.*
 import kotlinx.android.synthetic.main.line_booktandb.*
 import top.fumiama.copymanga.MainActivity
@@ -30,6 +31,7 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
         super.onViewCreated(view, savedInstanceState)
 
         ComicDlFragment.exit = false
+        fbl?.setPadding(0, 0, 0, navBarHeight)
 
         if(isFirstInflate) {
             var path = ""

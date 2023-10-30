@@ -38,7 +38,8 @@ class DownloadFragment: NoBackRefreshFragment(R.layout.fragment_download) {
             if(o1.endsWith(".zip") && o2.endsWith(".zip")) (10000*getFloat(o1) - 10000*getFloat(o2) + 0.5).toInt()
             else o1[0] - o2[0]
         }?.let {
-            mylv.apply {
+            mylv?.apply {
+                setPadding(0, 0, 0, navBarHeight)
                 context.let { c ->
                     adapter = ArrayAdapter(c, android.R.layout.simple_list_item_1, it)
                     setOnItemClickListener { _, _, position, _ ->

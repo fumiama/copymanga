@@ -28,8 +28,7 @@
                 android:id="@+id/fhl"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:paddingBottom="@dimen/global_content_padding_bottom">
+                android:orientation="vertical">
 
             </LinearLayout>
         </top.fumiama.copymanga.views.ScrollRefreshView>

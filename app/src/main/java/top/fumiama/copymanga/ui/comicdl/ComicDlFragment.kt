@@ -5,6 +5,7 @@ import android.os.Looper
 import android.util.Log
 import android.view.View
 import com.google.gson.Gson
+import kotlinx.android.synthetic.main.fragment_dlcomic.*
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.json.ChapterStructure
 import top.fumiama.copymanga.json.VolumeStructure
@@ -22,6 +23,7 @@ class ComicDlFragment: NoBackRefreshFragment(R.layout.fragment_dlcomic) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         exit = false
+        ldwn?.setPadding(0, 0, 0, navBarHeight)
         if(isFirstInflate){
             when {
                 arguments?.getBoolean("callFromOldDL", false) == true -> initOldComicData()

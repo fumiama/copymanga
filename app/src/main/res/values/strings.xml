@@ -21,6 +21,7 @@
     <string name="page_chapter">章节内容</string>
     <string name="page_group">漫画下载</string>
     <string name="page_topic">专题系列</string>
+    <string name="page_search">漫画搜索</string>
     <string name="check_update">检查更新</string>
     <string name="set_search_types">设置搜索类别</string>
 
@@ -37,6 +38,7 @@
     <string name="text_null">N/A</string>
     <string name="null_book">获取图书信息失败</string>
     <string name="web_error">网络错误</string>
+    <string name="download_cover_failed">保存封面失败</string>
     <string name="download_cover_timeout">保存封面超时</string>
 
     <string name="mainPageApiUrl">https://%1$s/api/v3/h5/homeIndex?platform=3</string>
@@ -93,6 +95,7 @@
     <string name="button_sub">加入书架</string>
     <string name="button_sub_subscribed">已加书架</string>
     <string name="button_start">开始阅读</string>
+    <string name="button_more">更多</string>
 
     <string name="text_format_hit">热度 %1$d</string>
     <string name="text_format_stat">状态 %1$s</string>

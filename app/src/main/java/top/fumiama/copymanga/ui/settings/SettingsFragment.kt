@@ -4,18 +4,27 @@ import android.animation.ObjectAnimator
 import android.graphics.Rect
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.view.Window
 import androidx.annotation.Keep
 import androidx.preference.EditTextPreference
 import androidx.preference.EditTextPreferenceDialogFragmentCompat
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import top.fumiama.copymanga.tools.ui.UITools
 import top.fumiama.dmzj.copymanga.R
 import java.lang.Thread.sleep
 
 class SettingsFragment: PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.pref_setting, rootKey)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        context?.let { c ->
+            view.setPadding(0, 0, 0, UITools.getNavigationBarHeight(c))
+        }
     }
 
     override fun onDisplayPreferenceDialog(preference: Preference) {
@@ -41,7 +50,7 @@ class SettingsFragment: PreferenceFragmentCompat() {
                     Log.d("MySF", "diff: $diff")
                 }
                 Log.d("MySF", "diff out while: $diff")
-                if (diff == 0) return@Thread
+                if (diff <= 0) return@Thread
                 Log.d("MySF", "f.dialog is ${f.dialog}")
                 f.activity?.runOnUiThread {
                     f.dialog?.window?.apply {

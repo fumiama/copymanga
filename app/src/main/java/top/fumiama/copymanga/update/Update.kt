@@ -47,7 +47,7 @@ object Update {
                                     }
                                 }) {
                                     val md5 = msg.substringAfterLast("md5:")
-                                    if (md5 == toolsBox.toHexStr(
+                                    if (md5 == UITools.toHexStr(
                                             MessageDigest.getInstance("MD5").digest(it)
                                         )
                                     ) {

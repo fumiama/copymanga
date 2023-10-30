@@ -30,6 +30,7 @@ import top.fumiama.copymanga.template.general.NoBackRefreshFragment
 import top.fumiama.copymanga.template.http.AutoDownloadThread
 import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.copymanga.tools.ui.Navigate
+import top.fumiama.copymanga.tools.ui.UITools
 import top.fumiama.dmzj.copymanga.R
 import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
@@ -37,6 +38,7 @@ import java.lang.ref.WeakReference
 class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
     lateinit var homeHandler: HomeHandler
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         if(isFirstInflate) {
@@ -47,8 +49,13 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                 resources.getColor(R.color.colorGreen, theme))
             swiperefresh?.isEnabled = true
 
-            fhs.apply {
+            fhl?.setPadding(0, 0, 0, navBarHeight)
+
+            fhs?.apply {
+                isNestedScrollingEnabled = true
                 val recyclerView = findViewById<RecyclerView>(R.id.search_recycler_view)
+                recyclerView.isNestedScrollingEnabled = true
+                recyclerView.setPadding(0, 0, 0, navBarHeight)
                 setAdapterLayoutManager(LinearLayoutManager(context))
                 val adapter = ListViewHolder(recyclerView).RecyclerViewAdapter()
                 setAdapter(adapter)
@@ -182,7 +189,9 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
         inner class RecyclerViewAdapter :
             RecyclerView.Adapter<ListViewHolder>() {
             private var results: BookListStructure? = null
-            var type =  ""
+            var type = ""
+            private var query: CharSequence? = null
+            private var count = 0
             override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ListViewHolder {
                 return ListViewHolder(
                     LayoutInflater.from(parent.context)
@@ -193,7 +202,21 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
             @SuppressLint("ClickableViewAccessibility", "SetTextI18n")
             override fun onBindViewHolder(holder: ListViewHolder, position: Int) {
                 Log.d("MyMain", "Bind open at $position")
+                if (position == itemCount-1) {
+                    holder.itemView.tn.setText(R.string.button_more)
+                    holder.itemView.ta.text = "搜索 \"$query\""
+                    holder.itemView.tb.text = "共 $count 条结果"
+                    holder.itemView.lwi.visibility = View.INVISIBLE
+                    if (query?.isNotEmpty() == true) holder.itemView.lwc.setOnClickListener {
+                        val bundle = Bundle()
+                        bundle.putCharSequence("query", query)
+                        bundle.putString("type", type)
+                        Navigate.safeNavigateTo(findNavController(), R.id.action_nav_home_to_nav_search, bundle)
+                    }
+                    return
+                }
                 results?.results?.list?.get(position)?.apply {
+                    holder.itemView.lwi.visibility = View.VISIBLE
                     holder.itemView.tn.text = name
                     holder.itemView.ta.text = author.let {
                         var t = ""
@@ -215,12 +238,14 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                 }
             }
 
-            override fun getItemCount() = results?.results?.list?.size?:0
+            override fun getItemCount() = (results?.results?.list?.size?:0)+1
 
-            fun refresh(query: CharSequence) {
+            fun refresh(q: CharSequence) {
+                query = q
                 mainWeakReference?.get()?.apply {
                     AutoDownloadThread(getString(R.string.searchApiUrl).format(CMApi.myHostApiUrl, 0, query, type)) {
                         results = Gson().fromJson(it?.decodeToString(), BookListStructure::class.java)
+                        count = results?.results?.total?:0
                         runOnUiThread { notifyDataSetChanged() }
                     }.start()
                 }

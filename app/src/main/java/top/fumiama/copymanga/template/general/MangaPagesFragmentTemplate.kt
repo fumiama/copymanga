@@ -91,6 +91,8 @@ open class MangaPagesFragmentTemplate(inflateRes:Int, val isLazy: Boolean = true
         Log.d("MyMPAT", "Card per row: $cardPerRow")
         Log.d("MyMPAT", "Card width: $cardWidth")
 
+        mydll?.setPadding(0, 0, 0, navBarHeight)
+
         initCardList(WeakReference(this))
         managePage()
         setListeners()

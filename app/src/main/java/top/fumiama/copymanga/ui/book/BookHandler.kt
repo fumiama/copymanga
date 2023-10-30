@@ -385,19 +385,24 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
                 File(mangaFolder, "grps.json").writeText(Gson().toJson(keys))
                 that?.apply {
                     Thread {
-                        sleep(1000)
-                        if (exit) return@Thread
-                        File(mangaFolder, "head.jpg").let { head ->
-                            val fo = head.outputStream()
-                            try {
-                                imic.drawable.toBitmap().compress(Bitmap.CompressFormat.JPEG, 90, fo)
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                                that?.activity?.runOnUiThread {
-                                    Toast.makeText(that?.context, R.string.download_cover_timeout, Toast.LENGTH_SHORT).show()
+                        var cnt = 0
+                        var success = false
+                        while (cnt++ < 10 && !success) {
+                            sleep(1000)
+                            if (exit) return@Thread
+                            File(mangaFolder, "head.jpg").let { head ->
+                                val fo = head.outputStream()
+                                try {
+                                    imic.drawable.toBitmap().compress(Bitmap.CompressFormat.JPEG, 90, fo)
+                                    success = true
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
                                 }
+                                fo.close()
                             }
-                            fo.close()
+                        }
+                        if (!success) that?.activity?.runOnUiThread {
+                            Toast.makeText(that?.context, R.string.download_cover_timeout, Toast.LENGTH_SHORT).show()
                         }
                     }.start()
                 }

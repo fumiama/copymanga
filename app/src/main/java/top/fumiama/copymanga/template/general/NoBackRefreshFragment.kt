@@ -6,11 +6,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import top.fumiama.copymanga.tools.ui.UITools
 
 open class NoBackRefreshFragment(private val layoutToLoad: Int): Fragment() {
     private var _rootView: View? = null
     val rootView: View get() = _rootView!!
     var isFirstInflate = true
+    var navBarHeight = 0
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -24,6 +26,7 @@ open class NoBackRefreshFragment(private val layoutToLoad: Int): Fragment() {
             isFirstInflate = false
             Log.d("MyNBRF", "not first inflate")
         }
+        navBarHeight = context?.let { UITools.getNavigationBarHeight(it) } ?: 0
         return rootView
     }
     override fun onDestroy() {
