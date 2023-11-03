@@ -25,9 +25,10 @@ class TopicFragment : InfoCardLoader(R.layout.fragment_topic, R.id.action_nav_to
                 val r = inputStream().reader()
                 val topic = Gson().fromJson(r, TopicStructure::class.java)
                 topic?.apply {
-                    if(ad?.exit == true) return@AutoDownloadThread
-                    mainWeakReference?.get()?.let {
-                        if(ad?.exit != true) it.runOnUiThread {
+                    if(ad?.exit != false) return@AutoDownloadThread
+                    activity?.let {
+                        it.runOnUiThread {
+                            if(ad?.exit != false) return@runOnUiThread
                             it.toolbar.title = results.title
                             ftttime.text = results.datetime_created
                             fttintro.text = results.intro

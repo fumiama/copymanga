@@ -66,7 +66,7 @@ open class MangaPagesFragmentTemplate(inflateRes:Int, val isLazy: Boolean = true
             }
             Thread {
                 sleep(600)
-                MainActivity.mainWeakReference?.get()?.runOnUiThread { 
+                activity?.runOnUiThread {
                     setLayouts()
                 }
             }.start()
@@ -109,7 +109,7 @@ open class MangaPagesFragmentTemplate(inflateRes:Int, val isLazy: Boolean = true
                 reset()
                 Thread {
                     sleep(600)
-                    MainActivity.mainWeakReference?.get()?.runOnUiThread {
+                    activity?.runOnUiThread {
                         addPage()
                     }
                 }.start()

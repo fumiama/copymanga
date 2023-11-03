@@ -242,7 +242,7 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
 
             fun refresh(q: CharSequence) {
                 query = q
-                mainWeakReference?.get()?.apply {
+                activity?.apply {
                     AutoDownloadThread(getString(R.string.searchApiUrl).format(CMApi.myHostApiUrl, 0, query, type)) {
                         results = Gson().fromJson(it?.decodeToString(), BookListStructure::class.java)
                         count = results?.results?.total?:0

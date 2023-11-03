@@ -64,6 +64,8 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
     var collect: Int = -1
     private val divider get() = that?.layoutInflater?.inflate(R.layout.div_h, that?.fbl, false)
 
+    var urlArray = arrayOf<String>()
+
     override fun handleMessage(msg: Message) {
         super.handleMessage(msg)
         when(msg.what){
@@ -242,10 +244,10 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
             if(exit) return@Thread
             that?.apply {
                 book?.results?.apply {
-                    mainWeakReference?.get()?.runOnUiThread{
+                    that?.activity?.runOnUiThread{
                         if(exit) return@runOnUiThread
                         ViewMangaActivity.fileArray = arrayOf()
-                        ViewMangaActivity.urlArray = arrayOf()
+                        urlArray = arrayOf()
                         ViewMangaActivity.uuidArray = arrayOf()
                         var i = 0
                         vols?.forEachIndexed { iv, v ->
@@ -258,7 +260,7 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
                             var line: View? = null
                             val last = v.results.list.size - 1
                             v.results.list.forEach {
-                                ViewMangaActivity.urlArray += CMApi.getChapterInfoApiUrl(
+                                urlArray += CMApi.getChapterInfoApiUrl(
                                     comic.path_word,
                                     it.uuid
                                 )?:""
@@ -271,7 +273,7 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
                                         line?.lcc?.apply {
                                             lct.text = it.name
                                             val index = i
-                                            setOnClickListener { Reader.viewMangaAt(comic.name, index) }
+                                            setOnClickListener { Reader.viewMangaAt(comic.name, index, urlArray) }
                                         }
                                         fbl?.addView(line)
                                     } else {
@@ -279,13 +281,13 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
                                         line?.l2cl?.apply {
                                             lct.text = it.name
                                             val index = i
-                                            setOnClickListener { Reader.viewMangaAt(comic.name, index) }
+                                            setOnClickListener { Reader.viewMangaAt(comic.name, index, urlArray) }
                                         }
                                     }
                                 } else line?.l2cr?.apply {
                                     lct.text = it.name
                                     val index = i
-                                    setOnClickListener { Reader.viewMangaAt(comic.name, index) }
+                                    setOnClickListener { Reader.viewMangaAt(comic.name, index, urlArray) }
                                     fbl?.addView(line)
                                     line = null
                                 }
@@ -368,7 +370,7 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
                 c++
             }
             if (volumes.size == gpws.size) {
-                mainWeakReference?.get()?.runOnUiThread {
+                that?.activity?.runOnUiThread {
                     saveVolumes(volumes)
                 }
             }

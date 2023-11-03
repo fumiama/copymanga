@@ -11,7 +11,7 @@ import top.fumiama.copymanga.ui.vm.ViewMangaActivity
 import java.io.File
 
 object Reader {
-    fun viewMangaAt(name: String, pos: Int, fromFirstPage: Boolean = false) {
+    fun viewMangaAt(name: String, pos: Int, urlArray: Array<String>, fromFirstPage: Boolean = false) {
         Log.d("MyR", "viewMangaAt name $name, pos $pos")
         mainWeakReference?.get()?.apply {
             getPreferences(Context.MODE_PRIVATE)?.edit {
@@ -19,11 +19,12 @@ object Reader {
                 apply()
                 Log.d("MyR", "记录 $name 阅读到第 ${pos+1} 话")
             }?: Log.d("MyR", "无法获得 main pref")
-            ViewMangaActivity.dlhandler = null
+            // ViewMangaActivity.dlhandler = null
             ViewMangaActivity.position = pos
             ViewMangaActivity.comicName = name
             val zipf = ViewMangaActivity.fileArray[pos]
             val intent = Intent(this, ViewMangaActivity::class.java)
+            intent.putExtra("urlArray", urlArray)
             if(!fromFirstPage) {
                 intent.putExtra("function", "log")
                 ViewMangaActivity.pn = -2

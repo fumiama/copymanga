@@ -17,12 +17,12 @@ import java.io.File
 import java.lang.ref.WeakReference
 
 class CardList(
-    fragment: WeakReference<Fragment>,
+    private val fragment: WeakReference<Fragment>,
     private val cardWidth: Int,
     private val cardHeight: Int,
     private val cardPerRow: Int
 ) {
-    private val that = fragment.get()
+    private val that get() = fragment.get()
     private var rows:Array<View?> = arrayOfNulls(20)
     private var index = 0
     private var count = 0
@@ -42,15 +42,17 @@ class CardList(
     }
 
     private fun inflateRow(){
-        that?.layoutInflater?.inflate(R.layout.line_horizonal_empty, that.mydll, false)?.let {
-            if(exitCardList) return
-            it.layoutParams.height = cardHeight + 16
-            mainWeakReference?.get()?.runOnUiThread {
-                if(exitCardList) return@runOnUiThread
-                that.mydll.addView(it)
+        that?.apply {
+            layoutInflater.inflate(R.layout.line_horizonal_empty, mydll, false)?.let {
+                if(exitCardList) return
+                it.layoutParams.height = cardHeight + 16
+                activity?.runOnUiThread {
+                    if(exitCardList) return@runOnUiThread
+                    mydll?.addView(it)
+                }
+                recycleOneRow(it)
+                index++
             }
-            recycleOneRow(it)
-            index++
         }
     }
     private fun recycleOneRow(v:View?){
@@ -58,11 +60,11 @@ class CardList(
         if(rows[relativeIndex] == null) rows[relativeIndex] = v
         else {
             val victim = rows[relativeIndex]
-            mainWeakReference?.get()?.runOnUiThread {
-                if(exitCardList) return@runOnUiThread
-                that?.apply {
+            that?.apply {
+                activity?.runOnUiThread {
+                    if(exitCardList) return@runOnUiThread
                     mydll?.removeView(victim)
-                    mys?.scrollY = that.mys?.scrollY?.minus(cardHeight + 16)?:0
+                    mys?.scrollY = mys?.scrollY?.minus(cardHeight + 16)?:0
                 }
             }
             rows[relativeIndex] = v
@@ -70,26 +72,29 @@ class CardList(
     }
 
     @ExperimentalStdlibApi
-    fun addCard(name: String, append: String? = null, head: String? = null, path: String? = null, chapterUUID: String? = null, pn: Int? = null, isFinish: Boolean = false, isNew: Boolean = false){
-        if(exitCardList) return
+    fun addCard(name: String, append: String? = null, head: String? = null, path: String? = null, chapterUUID: String? = null, pn: Int? = null, isFinish: Boolean = false, isNew: Boolean = false) {
+        if (exitCardList) return
         manageRow()
-        that?.layoutInflater?.inflate(R.layout.card_book, that.mydll.ltbtn, false)?.let {
-            val card = it.cic
-            card.name = name
-            card.append = append
-            card.headImageUrl = head
-            card.path = path
-            card.index = index - 1
-            card.chapterUUID = chapterUUID
-            card.pageNumber = pn
-            card.isFinish = isFinish
-            card.isNew = isNew
-            mainWeakReference?.get()?.runOnUiThread{
-                if(exitCardList) return@runOnUiThread
-                addCard(it)
+        that?.apply {
+            layoutInflater.inflate(R.layout.card_book, mydll.ltbtn, false)?.let {
+                val card = it.cic
+                card.name = name
+                card.append = append
+                card.headImageUrl = head
+                card.path = path
+                card.index = index - 1
+                card.chapterUUID = chapterUUID
+                card.pageNumber = pn
+                card.isFinish = isFinish
+                card.isNew = isNew
+                activity?.runOnUiThread {
+                    if (exitCardList) return@runOnUiThread
+                    addCard(it)
+                }
             }
         }
     }
+
     @SuppressLint("SetTextI18n")
     @ExperimentalStdlibApi
     fun addCard(cardFrame: View) {

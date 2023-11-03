@@ -12,8 +12,8 @@ import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.fragment_download.*
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.template.general.NoBackRefreshFragment
-import top.fumiama.copymanga.tools.ui.Navigate
 import top.fumiama.copymanga.tools.file.FileUtils
+import top.fumiama.copymanga.tools.ui.Navigate
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment
 import top.fumiama.copymanga.ui.vm.ViewMangaActivity
 import top.fumiama.dmzj.copymanga.R
@@ -60,7 +60,7 @@ class DownloadFragment: NoBackRefreshFragment(R.layout.fragment_download) {
                                 ViewMangaActivity.comicName = it[position]
                                 ViewMangaActivity.position = position
                                 ViewMangaActivity.fileArray = it.map { File(cd, it) }.toTypedArray()
-                                ViewMangaActivity.urlArray = Array(it.size) {return@Array ""}
+                                // ViewMangaActivity.urlArray = Array(it.size) {return@Array ""}
                                 startActivity(Intent(context, ViewMangaActivity::class.java))
                             }
                         }

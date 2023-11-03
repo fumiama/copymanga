@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import androidx.preference.PreferenceManager
 import kotlinx.android.synthetic.main.line_lazybooklines.*
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.manga.Reader
@@ -28,9 +29,12 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
     private var isReverse = false
     private var isContentChanged = false
     private var exit = false
+    private var showAll = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         wn = WeakReference(this)
+        val settingsPref = MainActivity.mainWeakReference?.get()?.let { PreferenceManager.getDefaultSharedPreferences(it) }
+        showAll = settingsPref?.getBoolean("settings_cat_md_sw_show_0m_manga", false)?:false
     }
 
     override fun onPause() {
@@ -64,6 +68,11 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
                 if (isReverse) {
                     Log.d("MyNDF", "reversed...")
                     sortedBookList = sortedBookList?.asReversed()
+                }
+                if (!showAll) {
+                    sortedBookList = sortedBookList?.filter {
+                        return@filter FileUtils.sizeOf(it) / 1048576 > 0
+                    }
                 }
                 isContentChanged = false
             }
@@ -124,7 +133,7 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
                                         .setTitle("提示").setPositiveButton(android.R.string.ok) { _, _ ->
                                             if (chosenFile.exists()) Thread {
                                                 FileUtils.recursiveRemove(chosenFile)
-                                                MainActivity.mainWeakReference?.get()?.runOnUiThread {
+                                                activity?.runOnUiThread {
                                                     it.visibility = View.INVISIBLE
                                                 }
                                             }.start()
@@ -175,7 +184,7 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
 
     override fun onLoadFinish() {
         super.onLoadFinish()
-        MainActivity.mainWeakReference?.get()?.runOnUiThread {
+        activity?.runOnUiThread {
             mypl.visibility = View.GONE
         }
     }

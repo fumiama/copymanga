@@ -39,13 +39,13 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
         isOld = true
     }
     private var isOld = false
-    var complete = false
+    private var complete = false
     private val that get() = th.get()
     private val toolsBox = UITools(th.get()?.context)
     private var btnNumPerRow = 4
     private var btnw = 0
     private var cdwnWidth = 0
-    private var dl: Dialog? = null
+    var dl: Dialog? = null
     private var haveSElectAll = false
     private var checkedChapter = 0
     private val dldChapter: Int get() = finishMap.count { p -> return@count p == true }
@@ -56,6 +56,7 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
     private var multiSelect = false
     private var finishMap = arrayOf<Boolean?>()
     var downloading = false
+    private var urlArray = arrayOf<String>()
 
     @SuppressLint("SetTextI18n")
     override fun handleMessage(msg: Message) {
@@ -104,7 +105,7 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
         setComponents()
         if(isOld) analyzeOldStructure()
         else Thread{
-            ViewMangaActivity.urlArray = arrayOf()
+            urlArray = arrayOf()
             ViewMangaActivity.fileArray = arrayOf()
             ViewMangaActivity.uuidArray = arrayOf()
             vols.forEachIndexed { i, vol ->
@@ -225,7 +226,7 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
         }
         mangaDlTools.onDownloadedListener = object :MangaDlTools.OnDownloadedListener{
             override fun handleMessage(index: Int, isSuccess: Boolean) {
-                mainWeakReference?.get()?.runOnUiThread {
+                that?.activity?.runOnUiThread {
                     if(isSuccess) onZipDownloadFinish(index)
                     else onZipDownloadFailure(index)
                 }
@@ -237,7 +238,7 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
                 total: Int,
                 isSuccess: Boolean
             ) {
-                mainWeakReference?.get()?.runOnUiThread {
+                that?.activity?.runOnUiThread {
                     if(isSuccess) {
                         tbtnlist[index].text = if(downloaded == 0 && total == 0) tbtnlist[index].chapterName else "$downloaded/$total"
                     } else {
@@ -312,7 +313,7 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
     }
     private fun addTbtn(data: Array<String>){
         addTbtn(data[0], data[1], data[2], data[3])
-        ViewMangaActivity.urlArray += data[3]
+        urlArray += data[3]
     }
     @SuppressLint("SetTextI18n")
     private fun addTbtn(title: String, uuid: String, caption: String, url: String) {
@@ -381,7 +382,9 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
                             ViewMangaActivity.position = it.tbtn.index
                             dl?.show()
 
-                            that?.startActivity(Intent(that?.context, ViewMangaActivity::class.java))
+                            val intent = Intent(that?.context, ViewMangaActivity::class.java)
+                            intent.putExtra("urlArray", urlArray)
+                            that?.startActivity(intent)
                         }, null, null
                     )
                 }

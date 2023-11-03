@@ -139,6 +139,11 @@
     <string name="settings_cat_vm_sb_quality">图片质量</string>
     <string name="settings_cat_vm_sm_quality">默认为100</string>
 
+    <string name="settings_cat_md">漫画下载</string>
+    <string name="settings_cat_md_sw_show_0m_manga">显示未下载漫画</string>
+    <string name="settings_cat_md_sm_show_0m_manga">打开后将在我的下载显示所有浏览过详情页的漫画，旧版下载永远全部显示</string>
+
+
 
     <string name="login_null_username">用户名为空</string>
     <string name="login_null_pwd">密码为空</string>

@@ -17,7 +17,12 @@ import java.lang.Thread.sleep
 
 class SettingsFragment: PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        setPreferencesFromResource(R.xml.pref_setting, rootKey)
+        Thread {
+            sleep(300)
+            activity?.runOnUiThread {
+                setPreferencesFromResource(R.xml.pref_setting, rootKey)
+            }
+        }.start()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

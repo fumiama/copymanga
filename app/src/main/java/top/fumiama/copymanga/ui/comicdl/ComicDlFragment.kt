@@ -6,7 +6,6 @@ import android.util.Log
 import android.view.View
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.fragment_dlcomic.*
-import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.json.ChapterStructure
 import top.fumiama.copymanga.json.VolumeStructure
 import top.fumiama.copymanga.template.http.AutoDownloadThread
@@ -31,7 +30,7 @@ class ComicDlFragment: NoBackRefreshFragment(R.layout.fragment_dlcomic) {
                     arguments?.getString("name")?.let {
                         Thread{
                             sleep(600)
-                            mainWeakReference?.get()?.runOnUiThread {
+                            activity?.runOnUiThread {
                                 start2load(loadFromJson(), true, loadGroupsFromFile(File(home, "$it/grps.json")))
                             }
                         }.start()
@@ -51,6 +50,7 @@ class ComicDlFragment: NoBackRefreshFragment(R.layout.fragment_dlcomic) {
         //mainWeakReference?.get()?.menuMain?.let { setMenuInvisible(it) }
         handler?.downloading = false
         handler?.mangaDlTools?.exit = true
+        handler?.dl?.dismiss()
         ads.forEach {
             it.exit = true
         }
@@ -139,7 +139,7 @@ class ComicDlFragment: NoBackRefreshFragment(R.layout.fragment_dlcomic) {
                     c++
                 }
                 if (volumes.size == gpws.size) {
-                    mainWeakReference?.get()?.runOnUiThread {
+                    activity?.runOnUiThread {
                         start2load(volumes)
                     }
                 }

@@ -10,6 +10,7 @@ import top.fumiama.copymanga.tools.http.DownloadTools
 import top.fumiama.dmzj.copymanga.R
 
 class Member(private val pref: SharedPreferences, private val getString: (Int) -> String) {
+    val hasLogin: Boolean get() = pref.getString("token", "")?.isNotEmpty()?:false
     fun login(username: String, pwd: String, salt: Int): LoginInfoStructure {
         try {
             CMApi.getLoginConnection(username, pwd, salt)?.apply {

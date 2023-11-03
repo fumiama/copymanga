@@ -26,6 +26,12 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
     override fun addPage(){
         super.addPage()
         ad = AutoDownloadThread(subUrl) {
+            if (it == null) {
+                activity?.runOnUiThread {
+                    findNavController().popBackStack()
+                }
+                return@AutoDownloadThread
+            }
             if(isRefresh){
                 page = 0
                 isRefresh = false
@@ -128,7 +134,7 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
 
     override fun onLoadFinish() {
         super.onLoadFinish()
-        MainActivity.mainWeakReference?.get()?.runOnUiThread {
+        activity?.runOnUiThread {
             if(ad?.exit != true) mypl.visibility = View.GONE
         }
     }

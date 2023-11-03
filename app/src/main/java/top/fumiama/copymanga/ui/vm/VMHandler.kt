@@ -35,7 +35,7 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
     private val wv = WeakReference(activity)
     private val infcard = wv.get()?.infcard
     private var infcShowed = false
-    private val dl = wv.get()?.let {
+    val dl = activity.let {
         val re = Dialog(it)
         re.setContentView(R.layout.dialog_unzipping)
         re
@@ -64,56 +64,56 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
     override fun handleMessage(msg: Message) {
         super.handleMessage(msg)
         when (msg.what) {
-            1 -> if (infcShowed) {
+            HIDE_INFO_CARD -> if (infcShowed) {
                 hideInfCard(); infcShowed = false
             }
-            2 -> if (!infcShowed) {
+            SHOW_INFO_CARD -> if (!infcShowed) {
                 showInfCard(); infcShowed = true
             }
-            3 -> infcShowed = if (infcShowed) {
+            TRIGGER_INFO_CARD -> infcShowed = if (infcShowed) {
                 hideInfCard(); false
             } else {
                 showInfCard(); true
             }
-            4 -> {
+            LOAD_IMG_ON -> {
                 val simg = msg.obj as ScaleImageView
                 wv.get()?.loadImgOn(simg, msg.arg1, msg.arg2)
                 //simg.setHeight2FitImgWidth()
-                //if(msg.arg2 == 1) sendEmptyMessage(8)
+                //if(msg.arg2 == 1) sendEmptyMessage(DELAYED_RESTORE_PAGE_NUMBER)
             }
-            5 -> wv.get()?.clearImgOn(msg.obj as ScaleImageView)
-            6 -> wv.get()?.prepareLastPage(msg.arg1, msg.arg2)
-            7 -> dl?.show()
-            8 -> Thread{
+            CLEAR_IMG_ON -> wv.get()?.clearImgOn(msg.obj as ScaleImageView)
+            PREPARE_LAST_PAGE -> wv.get()?.prepareLastPage(msg.arg1, msg.arg2)
+            DIALOG_SHOW -> dl.show()
+            DELAYED_RESTORE_PAGE_NUMBER -> Thread{
                 sleep(233)
-                sendEmptyMessage(13)
+                sendEmptyMessage(RESTORE_PAGE_NUMBER)
             }.start()
-            9 -> loadScrollMode(msg.arg1)
-            10 -> loadScrollMode()
-            11 -> loadImagesIntoLine(msg.arg1)
-            12 -> loadImagesIntoLine()
-            13 -> {
-                dl?.hide()
+            LOAD_ITEM_SCROLL_MODE -> loadScrollMode(msg.arg1)
+            LOAD_SCROLL_MODE -> loadScrollMode()
+            LOAD_ITEM_IMAGES_INTO_LINE -> loadImagesIntoLine(msg.arg1)
+            LOAD_IMAGES_INTO_LINE -> loadImagesIntoLine()
+            RESTORE_PAGE_NUMBER -> {
+                sendEmptyMessage(DIALOG_HIDE)
                 wv.get()?.restorePN()
             }
-            14 -> {
+            LOAD_PAGE_FROM_ITEM -> {
                 val item = (pn - 1) / (wv.get()?.verticalLoadMaxCount?:20) * (wv.get()?.verticalLoadMaxCount?:20)
                 loadScrollMode(item)
                 Log.d("MyVMH", "Load page from $item")
             }
-            15 -> dl?.hide()
-            16 -> if (infcShowed) {
+            DIALOG_HIDE -> dl.hide()
+            HIDE_INFO_CARD_FULL -> if (infcShowed) {
                 hideInfCardFull(); infcShowed = false
             }
-            17 -> if (!infcShowed) {
+            SHOW_INFO_CARD_FULL -> if (!infcShowed) {
                 showInfCardFull(); infcShowed = true
             }
-            18 -> infcShowed = if (infcShowed) {
+            TRIGGER_INFO_CARD_FULL -> infcShowed = if (infcShowed) {
                 hideInfCardFull(); false
             } else {
                 showInfCardFull(); true
             }
-            22 -> wv.get()?.idtime?.text = SimpleDateFormat("HH:mm").format(Date()) + week + wv.get()?.toolsBox?.netInfo
+            SET_NET_INFO -> wv.get()?.idtime?.text = SimpleDateFormat("HH:mm").format(Date()) + week + wv.get()?.toolsBox?.netInfo
         }
     }
     override fun getGsonItem() = manga
@@ -161,7 +161,7 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
                 }
             }
             true
-        }catch (e: Exception){
+        } catch (e: Exception){
             e.printStackTrace()
             //wv.get()?.toolsBox?.toastError("读取本地章节信息失败")
             false
@@ -183,25 +183,25 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
                 val notFull = item + maxCount > count
                 val loadCount = (if(notFull) count - item else maxCount) - 1
                 Log.d("MyVMH", "count: $count, loadCount: $loadCount, notFull: $notFull")
-                if(loadCount >= 0) for(i in 0..loadCount) obtainMessage(4,item + i, if(i == loadCount - 1) 1 else 0, wv.get()?.scrollImages?.get(i)).sendToTarget()
-                else sendEmptyMessage(8)
-                if(notFull) obtainMessage(6, loadCount + 1, maxCount).sendToTarget()
+                if(loadCount >= 0) for(i in 0..loadCount) obtainMessage(LOAD_IMG_ON,item + i, if(i == loadCount - 1) 1 else 0, wv.get()?.scrollImages?.get(i)).sendToTarget()
+                else sendEmptyMessage(DELAYED_RESTORE_PAGE_NUMBER)
+                if(notFull) obtainMessage(PREPARE_LAST_PAGE, loadCount + 1, maxCount).sendToTarget()
                 wv.get()?.updateSeekBar()
             }
         }
     }//.start()
 
     private fun loadScrollMode() {
-        sendEmptyMessage(7)
+        sendEmptyMessage(DIALOG_SHOW)
         //sleep(233)
-        sendEmptyMessage(12)
+        sendEmptyMessage(LOAD_IMAGES_INTO_LINE)
     }
 
     private fun loadScrollMode(item: Int) {
-        sendEmptyMessage(7)
+        sendEmptyMessage(DIALOG_SHOW)
         //sleep(233)
         Log.d("MyVMH", "loadImgsIntoLine($item)")
-        obtainMessage(11, item, 0).sendToTarget()
+        obtainMessage(LOAD_ITEM_IMAGES_INTO_LINE, item, 0).sendToTarget()
     }
 
     private fun showInfCard() {
@@ -223,5 +223,28 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
     private fun hideInfCardFull() {
         ObjectAnimator.ofFloat(infcard?.idc, "alpha", 0.8F, 0.0F).setDuration(233).start()
         ObjectAnimator.ofFloat(infcard, "translationY", 0F, delta).setDuration(233).start()
+    }
+
+    companion object {
+        const val HIDE_INFO_CARD = 1
+        const val SHOW_INFO_CARD = 2
+        const val TRIGGER_INFO_CARD = 3
+        const val LOAD_IMG_ON = 4
+        const val CLEAR_IMG_ON = 5
+        const val PREPARE_LAST_PAGE = 6
+        const val DIALOG_SHOW = 7
+        const val DELAYED_RESTORE_PAGE_NUMBER = 8
+        const val LOAD_ITEM_SCROLL_MODE = 9
+        const val LOAD_SCROLL_MODE = 10
+        const val LOAD_ITEM_IMAGES_INTO_LINE = 11
+        const val LOAD_IMAGES_INTO_LINE = 12
+        const val RESTORE_PAGE_NUMBER = 13
+        const val LOAD_PAGE_FROM_ITEM = 14
+        const val DIALOG_HIDE = 15
+        const val HIDE_INFO_CARD_FULL = 16
+        const val SHOW_INFO_CARD_FULL = 17
+        const val TRIGGER_INFO_CARD_FULL = 18
+
+        const val SET_NET_INFO = 22
     }
 }

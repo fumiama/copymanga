@@ -82,4 +82,15 @@
             app:summary="@string/settings_cat_vm_sm_quality"
             app:title="@string/settings_cat_vm_sb_quality" />
     </PreferenceCategory>
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:title="@string/settings_cat_md">
+        <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
+            app:key="settings_cat_md_sw_show_0m_manga"
+            app:selectable="true"
+            app:summary="@string/settings_cat_md_sm_show_0m_manga"
+            app:title="@string/settings_cat_md_sw_show_0m_manga" />
+    </PreferenceCategory>
 </PreferenceScreen>

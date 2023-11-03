@@ -39,7 +39,7 @@ class SortFragment : InfoCardLoader(R.layout.fragment_sort, R.id.action_nav_sort
             it?.let {
                 filter = Gson().fromJson(it.inputStream().reader(), FilterStructure::class.java)
                 if(ad?.exit == true) return@AutoDownloadThread
-                mainWeakReference?.get()?.runOnUiThread{
+                activity?.runOnUiThread{
                     if(ad?.exit != true) setClasses()
                 }
             }
@@ -59,7 +59,7 @@ class SortFragment : InfoCardLoader(R.layout.fragment_sort, R.id.action_nav_sort
             }
             Thread{
                 sleep(400)
-                mainWeakReference?.get()?.runOnUiThread {
+                activity?.runOnUiThread {
                     reset()
                     addPage()
                 }
@@ -83,7 +83,7 @@ class SortFragment : InfoCardLoader(R.layout.fragment_sort, R.id.action_nav_sort
                                 it.apt.text = "全部"
                                 Thread{
                                     sleep(400)
-                                    mainWeakReference?.get()?.runOnUiThread {
+                                    activity?.runOnUiThread {
                                         reset()
                                         addPage()
                                     }
@@ -98,7 +98,7 @@ class SortFragment : InfoCardLoader(R.layout.fragment_sort, R.id.action_nav_sort
                                 region = i
                                 Thread{
                                     sleep(400)
-                                    mainWeakReference?.get()?.runOnUiThread {
+                                    activity?.runOnUiThread {
                                         reset()
                                         addPage()
                                     }
@@ -125,7 +125,7 @@ class SortFragment : InfoCardLoader(R.layout.fragment_sort, R.id.action_nav_sort
                                 it.apt.text = "全部"
                                 Thread{
                                     sleep(400)
-                                    mainWeakReference?.get()?.runOnUiThread {
+                                    activity?.runOnUiThread {
                                         reset()
                                         addPage()
                                     }
@@ -140,7 +140,7 @@ class SortFragment : InfoCardLoader(R.layout.fragment_sort, R.id.action_nav_sort
                                 theme = i
                                 Thread{
                                     sleep(400)
-                                    mainWeakReference?.get()?.runOnUiThread {
+                                    activity?.runOnUiThread {
                                         reset()
                                         addPage()
                                     }
@@ -167,7 +167,7 @@ class SortFragment : InfoCardLoader(R.layout.fragment_sort, R.id.action_nav_sort
             }
             Thread {
                 sleep(400)
-                mainWeakReference?.get()?.runOnUiThread {
+                activity?.runOnUiThread {
                     reset()
                     addPage()
                 }

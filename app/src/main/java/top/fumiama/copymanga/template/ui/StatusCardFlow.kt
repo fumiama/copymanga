@@ -39,7 +39,7 @@ open class StatusCardFlow(private val api: Int, nav: Int) : InfoCardLoader(R.lay
                 }
                 Thread{
                     Thread.sleep(400)
-                    mainWeakReference?.get()?.runOnUiThread {
+                    activity?.runOnUiThread {
                         reset()
                         addPage()
                     }
@@ -54,14 +54,14 @@ open class StatusCardFlow(private val api: Int, nav: Int) : InfoCardLoader(R.lay
             setOnClickListener {
                 sortValue = if (apim.rotation == 0f) {
                     ObjectAnimator.ofFloat(apim, "rotation", 0f, 180f).setDuration(233).start()
-                    1
+                    3
                 } else {
                     ObjectAnimator.ofFloat(apim, "rotation", 180f, 0f).setDuration(233).start()
-                    0
+                    2
                 }
                 Thread {
                     Thread.sleep(400)
-                    mainWeakReference?.get()?.runOnUiThread {
+                    activity?.runOnUiThread {
                         reset()
                         addPage()
                     }

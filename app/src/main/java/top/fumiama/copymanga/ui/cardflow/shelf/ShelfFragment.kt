@@ -1,6 +1,8 @@
 package top.fumiama.copymanga.ui.cardflow.shelf
 
 import android.animation.ObjectAnimator
+import android.os.Bundle
+import androidx.navigation.fragment.findNavController
 import kotlinx.android.synthetic.main.anchor_popular.view.*
 import kotlinx.android.synthetic.main.line_shelf.*
 import top.fumiama.copymanga.MainActivity
@@ -28,6 +30,11 @@ class ShelfFragment : InfoCardLoader(R.layout.fragment_shelf, R.id.action_nav_su
             sortWay[sortValue]
         )
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        if (MainActivity.member?.hasLogin != true) findNavController().popBackStack()
+        super.onCreate(savedInstanceState)
+    }
+
     override fun setListeners() {
         super.setListeners()
         setUpdate()
@@ -48,7 +55,7 @@ class ShelfFragment : InfoCardLoader(R.layout.fragment_shelf, R.id.action_nav_su
             }
             Thread {
                 sleep(400)
-                MainActivity.mainWeakReference?.get()?.runOnUiThread {
+                activity?.runOnUiThread {
                     reset()
                     addPage()
                 }
@@ -69,7 +76,7 @@ class ShelfFragment : InfoCardLoader(R.layout.fragment_shelf, R.id.action_nav_su
             }
             Thread {
                 sleep(400)
-                MainActivity.mainWeakReference?.get()?.runOnUiThread {
+                activity?.runOnUiThread {
                     reset()
                     addPage()
                 }
@@ -90,7 +97,7 @@ class ShelfFragment : InfoCardLoader(R.layout.fragment_shelf, R.id.action_nav_su
             }
             Thread {
                 sleep(400)
-                MainActivity.mainWeakReference?.get()?.runOnUiThread {
+                activity?.runOnUiThread {
                     reset()
                     addPage()
                 }

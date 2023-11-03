@@ -20,6 +20,7 @@ import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
+import com.afollestad.materialdialogs.utils.MDUtil.getStringArray
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.request.target.SimpleTarget
@@ -95,6 +96,8 @@ class ViewMangaActivity : TitleActivityTemplate() {
     private var fullyHideInfo = false
     val realCount get() = if(cut) indexMap.size else count
 
+    var urlArray = arrayOf<String>()
+
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         setContentView(R.layout.activity_viewmanga)
@@ -103,6 +106,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         va = WeakReference(this)
         //dlZip2View = intent.getStringExtra("callFrom") == "Dl" || p["dlZip2View"] == "true"
         //zipFirst = intent.getStringExtra("callFrom") == "zipFirst"
+        intent.getStringArrayExtra("urlArray")?.let { urlArray = it }
         cut = pb["useCut"]
         r2l = pb["r2l"]
         verticalLoadMaxCount = settingsPref?.getInt("settings_cat_vm_sb_vertical_max", 20)?.let { if(it > 0) it else 20 }?:20
@@ -111,7 +115,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         //url = intent.getStringExtra("url")
         handler = VMHandler(this, if(urlArray.isNotEmpty()) urlArray[position] else "")
         settingsPref?.getInt("settings_cat_vm_sb_quality", 100)?.let { q = if (it > 0) it else 100 }
-        tt = TimeThread(handler, 22)
+        tt = TimeThread(handler, VMHandler.SET_NET_INFO)
         tt.canDo = true
         tt.start()
         volTurnPage = settingsPref?.getBoolean("settings_cat_vm_sw_vol_turn", false)?:false
@@ -213,7 +217,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         getImgUrlArray()?.apply {
             if(cut) {
                 Log.d("MyVM", "is cut, load all pages...")
-                handler.sendEmptyMessage(7)     //showDl
+                handler.sendEmptyMessage(VMHandler.DIALOG_SHOW)     //showDl
                 isCut = BooleanArray(size)
                 val analyzedCnt = BooleanArray(size)
                 forEachIndexed{ i, it ->
@@ -364,7 +368,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
             imgView.setImageBitmap(bitmap2load)
             if(isVertical){
                 imgView.setHeight2FitImgWidth()
-                if (!isPlaceholder && isLast == 1) handler.sendEmptyMessage(8)
+                if (!isPlaceholder && isLast == 1) handler.sendEmptyMessage(VMHandler.DELAYED_RESTORE_PAGE_NUMBER)
             }
         }
     }
@@ -430,7 +434,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
     }
 
     fun prepareLastPage(loadCount: Int, maxCount: Int){
-        for (i in loadCount until maxCount) handler.obtainMessage(5, scrollImages[i]).sendToTarget()
+        for (i in loadCount until maxCount) handler.obtainMessage(VMHandler.CLEAR_IMG_ON, scrollImages[i]).sendToTarget()
         // handler.dl?.hide()
     }
 
@@ -465,7 +469,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         infoDrawerDelta = position.toFloat()
         infcard.translationY = infoDrawerDelta
         Log.d("MyVM", "Set info drawer delta to $infoDrawerDelta")
-        handler.sendEmptyMessage(if (fullyHideInfo) 16 else 1)
+        handler.sendEmptyMessage(if (fullyHideInfo) 16 else VMHandler.HIDE_INFO_CARD)
     }
 
     @ExperimentalStdlibApi
@@ -575,7 +579,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         })
         isearch.setImageResource(R.drawable.ic_author)
         isearch.setOnClickListener {
-            handler.sendEmptyMessage(if (fullyHideInfo) 18 else 3) // trigger info card
+            handler.sendEmptyMessage(if (fullyHideInfo) VMHandler.TRIGGER_INFO_CARD_FULL else VMHandler.TRIGGER_INFO_CARD) // trigger info card
         }
     }
 
@@ -602,7 +606,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
             vp.visibility = View.GONE
             vsp.visibility = View.VISIBLE
             initImgList()
-            handler.sendEmptyMessage(if(isPnValid)14 else 10)
+            handler.sendEmptyMessage(if(isPnValid) VMHandler.LOAD_PAGE_FROM_ITEM else VMHandler.LOAD_SCROLL_MODE)
             psivs.setOnScrollChangeListener { _, _, scrollY, _, _ ->
                 isInScroll = true
                 if(!isInSeek){
@@ -624,7 +628,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         isInScroll = false
         if(isVertical && (pageNum-1) % verticalLoadMaxCount == 0){
             Log.d("MyVM", "Do scroll back, isVertical: $isVertical, pageNum: $pageNum")
-            handler.obtainMessage(9, currentItem - verticalLoadMaxCount, 0).sendToTarget()    //loadImgsIntoLine(currentItem - verticalLoadMaxCount)
+            handler.obtainMessage(VMHandler.LOAD_ITEM_SCROLL_MODE, currentItem - verticalLoadMaxCount, 0).sendToTarget()    //loadImgsIntoLine(currentItem - verticalLoadMaxCount)
             psivl.postDelayed({ pageNum-- }, 233)
         }else pageNum--
     }
@@ -632,7 +636,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
     fun scrollForward() {
         isInScroll = false
         pageNum++
-        if(isVertical && (pageNum-1) % verticalLoadMaxCount == 0) handler.sendEmptyMessage(10)
+        if(isVertical && (pageNum-1) % verticalLoadMaxCount == 0) handler.sendEmptyMessage(VMHandler.LOAD_SCROLL_MODE)
     }
 
     @SuppressLint("SetTextI18n")
@@ -649,6 +653,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         tt.canDo = false
         destroy = true
         dlhandler = null
+        handler.dl.dismiss()
         handler.destroy()
         super.onDestroy()
     }
@@ -721,13 +726,12 @@ class ViewMangaActivity : TitleActivityTemplate() {
             infseek.visibility = View.GONE
             isearch.visibility = View.GONE
         }, 300)
-        handler.sendEmptyMessage(if (fullyHideInfo) 16 else 1)
+        handler.sendEmptyMessage(if (fullyHideInfo) VMHandler.HIDE_INFO_CARD_FULL else VMHandler.HIDE_INFO_CARD)
     }
 
     companion object {
         var comicName: String? = null
         var uuidArray = arrayOf<String>()
-        var urlArray = arrayOf<String>()
         var fileArray = arrayOf<File>()
         var position = 0
         var zipFile: File? = null

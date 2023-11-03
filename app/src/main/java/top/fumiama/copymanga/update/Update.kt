@@ -30,7 +30,7 @@ object Update {
         val msg = kanban[BuildConfig.VERSION_CODE]
         if(msg != "null") {
             val verNum = msg.substringBefore('\n').toIntOrNull()
-            val skipNum = activity.getPreferences(MODE_PRIVATE).getInt("skipVersion", 0)
+            val skipNum = getPreferences(MODE_PRIVATE).getInt("skipVersion", 0)
 
             Log.d("MyUP", "Ver:$verNum, skip: $skipNum")
             if(verNum != null) {
@@ -57,7 +57,7 @@ object Update {
                                         }
                                         val f = File(externalCacheDir, "new.apk")
                                         f.writeBytes(it)
-                                        install(f, activity)
+                                        install(f, this)
                                     } else runOnUiThread {
                                         Toast.makeText(this, "文件损坏", Toast.LENGTH_SHORT).show()
                                         info.dismiss()
@@ -66,7 +66,7 @@ object Update {
                                 }
                             }.start()
                         }, {
-                            activity.getPreferences(MODE_PRIVATE).edit {
+                            getPreferences(MODE_PRIVATE).edit {
                                 putInt("skipVersion", verNum)
                                 apply()
                             }

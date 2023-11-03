@@ -65,7 +65,7 @@ class RankFragment : InfoCardLoader(R.layout.fragment_rank, R.id.action_nav_rank
         sortValue = value
         Thread{
             sleep(400)
-            if(ad?.exit != true) MainActivity.mainWeakReference?.get()?.runOnUiThread {
+            if(ad?.exit != true) activity?.runOnUiThread {
                 reset()
                 addPage()
             }

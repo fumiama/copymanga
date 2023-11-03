@@ -96,7 +96,7 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
                             i = p
                         }
                         setOnClickListener {
-                            Reader.viewMangaAt(comic.name, i)
+                            Reader.viewMangaAt(comic.name, i, bookHandler!!.urlArray)
                         }
                     }
                 }
@@ -125,7 +125,7 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
                             if (collect < 0) return@setOnClickListener
                             Thread{
                                 val re = MainActivity.shelf?.del(collect)
-                                mainWeakReference?.get()?.runOnUiThread {
+                                activity?.runOnUiThread {
                                     Toast.makeText(context, re, Toast.LENGTH_SHORT).show()
                                     if (re == "请求成功") {
                                         this@BookFragment.lbbsub.setText(R.string.button_sub)
@@ -137,7 +137,7 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
                     }
                     Thread{
                         val re = MainActivity.shelf?.add(comic.uuid)
-                        mainWeakReference?.get()?.runOnUiThread {
+                        activity?.runOnUiThread {
                             Toast.makeText(context, re, Toast.LENGTH_SHORT).show()
                             if (re == "修改成功") {
                                 this@BookFragment.lbbsub.setText(R.string.button_sub_subscribed)
