@@ -3,6 +3,9 @@ package top.fumiama.copymanga.user
 import android.content.SharedPreferences
 import android.widget.Toast
 import com.google.gson.Gson
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.json.LoginInfoStructure
 import top.fumiama.copymanga.tools.api.CMApi
@@ -11,7 +14,7 @@ import top.fumiama.dmzj.copymanga.R
 
 class Member(private val pref: SharedPreferences, private val getString: (Int) -> String) {
     val hasLogin: Boolean get() = pref.getString("token", "")?.isNotEmpty()?:false
-    fun login(username: String, pwd: String, salt: Int): LoginInfoStructure {
+    suspend fun login(username: String, pwd: String, salt: Int): LoginInfoStructure  = withContext(Dispatchers.IO) {
         try {
             CMApi.getLoginConnection(username, pwd, salt)?.apply {
                 Gson().fromJson(inputStream.reader(), LoginInfoStructure::class.java)?.let { data ->
@@ -23,23 +26,25 @@ class Member(private val pref: SharedPreferences, private val getString: (Int) -
                             putString("username", data.results?.username)
                             putString("nickname", data.results?.nickname)
                             apply()
-                            return refreshAvatar()
+                            return@withContext refreshAvatar()
                         }
                     }
-                    return data
+                    return@withContext data
                 }
             }
             val l = LoginInfoStructure()
             l.code = 400
             l.message =  getString(R.string.login_get_conn_failed)
-            return l
+            return@withContext l
         } catch (e: Exception) {
             val l = LoginInfoStructure()
             l.code = 400
             l.message = e.localizedMessage
-            return l
+            return@withContext l
         }
     }
+
+
 
     fun refreshAvatar() : LoginInfoStructure {
         try {

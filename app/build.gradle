@@ -74,4 +74,5 @@ dependencies {
     implementation 'com.liaoinstan.springview:library:1.7.0'
     implementation 'com.github.zawadz88.materialpopupmenu:material-popup-menu:4.0.1'
     implementation 'com.lapism:search:2.4.1@aar'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.1'
 }
