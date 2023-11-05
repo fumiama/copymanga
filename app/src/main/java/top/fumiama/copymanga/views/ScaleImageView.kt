@@ -679,7 +679,7 @@ class ScaleImageView : ImageView {
             override fun onSingleTapConfirmed(event: MotionEvent): Boolean {
                 if(v == null) {
                     v = ViewMangaActivity.va
-                    v?.let { pm = PagesManager(it) }
+                    v?.get()?.let { pm = it.pm }
                 }
                 //触发点击
                 if (mOnClickListener != null) {
@@ -1632,6 +1632,6 @@ class ScaleImageView : ImageView {
          */
         const val PINCH_MODE_SCALE = 2
 
-        var pm:PagesManager? = null
+        var pm: PagesManager? = null
     }
 }

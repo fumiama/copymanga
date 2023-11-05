@@ -10,7 +10,6 @@ import com.bumptech.glide.load.model.GlideUrl
 import kotlinx.android.synthetic.main.card_book.view.*
 import kotlinx.android.synthetic.main.line_horizonal_empty.view.*
 import kotlinx.android.synthetic.main.line_lazybooklines.*
-import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.dmzj.copymanga.R
 import java.io.File
@@ -76,7 +75,7 @@ class CardList(
         if (exitCardList) return
         manageRow()
         that?.apply {
-            layoutInflater.inflate(R.layout.card_book, mydll.ltbtn, false)?.let {
+            layoutInflater.inflate(R.layout.card_book, mydll?.ltbtn, false)?.let {
                 val card = it.cic
                 card.name = name
                 card.append = append

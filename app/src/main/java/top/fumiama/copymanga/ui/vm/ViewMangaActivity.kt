@@ -92,7 +92,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
     private var indexMap = intArrayOf()
     private var volTurnPage = false
     private var am: AudioManager? = null
-    private var pm: PagesManager? = null
+    var pm: PagesManager? = null
     private var fullyHideInfo = false
     val realCount get() = if(cut) indexMap.size else count
 
@@ -171,10 +171,11 @@ class ViewMangaActivity : TitleActivityTemplate() {
         )
     }
 
-    fun restorePN(){
+    fun restorePN() {
         if (isPnValid) {
             isInScroll = false
             pageNum = pn
+            Log.d("MyVM", "restore pageNum to $pn")
             pn = -1
         }
         setProgress()
@@ -342,9 +343,10 @@ class ViewMangaActivity : TitleActivityTemplate() {
         }
     }
 
-    fun clearImgOn(imgView: ScaleImageView){
+    /*fun clearImgOn(imgView: ScaleImageView){
         imgView.visibility = View.GONE
-    }
+        handler.sendEmptyMessage(VMHandler.DECREASE_IMAGE_COUNT_AND_RESTORE_PAGE_NUMBER_AT_ZERO)
+    }*/
 
     //private fun getTempFile(position: Int) = File(cacheDir, "$position")
 
@@ -362,13 +364,14 @@ class ViewMangaActivity : TitleActivityTemplate() {
 
     private fun cutBitmap(bitmap: Bitmap, isEnd: Boolean) = Bitmap.createBitmap(bitmap, if(!isEnd) 0 else (bitmap.width/2), 0, bitmap.width/2, bitmap.height)
 
-    private fun loadImg(imgView: ScaleImageView, bitmap: Bitmap, isLast: Int = 0, useCut: Boolean, isLeft: Boolean, isPlaceholder: Boolean = true){
-        val bitmap2load = if(useCut) cutBitmap(bitmap, isLeft) else bitmap
+    private fun loadImg(imgView: ScaleImageView, bitmap: Bitmap, isLast: Int = 0, useCut: Boolean, isLeft: Boolean, isPlaceholder: Boolean = true) {
+        val bitmap2load = if(!isPlaceholder && useCut) cutBitmap(bitmap, isLeft) else bitmap
         runOnUiThread {
             imgView.setImageBitmap(bitmap2load)
-            if(isVertical){
+            if(!isPlaceholder && isVertical) {
                 imgView.setHeight2FitImgWidth()
-                if (!isPlaceholder && isLast == 1) handler.sendEmptyMessage(VMHandler.DELAYED_RESTORE_PAGE_NUMBER)
+                handler.sendEmptyMessage(VMHandler.DECREASE_IMAGE_COUNT_AND_RESTORE_PAGE_NUMBER_AT_ZERO)
+                //if (!isPlaceholder && isLast == 1) handler.sendEmptyMessageDelayed(VMHandler.RESTORE_PAGE_NUMBER, 233)
             }
         }
     }
@@ -410,8 +413,8 @@ class ViewMangaActivity : TitleActivityTemplate() {
                 if(data != null && data.isNotEmpty()) {
                     BitmapFactory.decodeByteArray(data, 0, data.size)?.let {
                         loadImg(imgView, it, isLast, useCut, isLeft, false)
-                        Log.d("MyVM", "Load from task")
-                    }?:Log.d("MyVM", "null bitmap")
+                        Log.d("MyVM", "Load position $position from task")
+                    }?:Log.d("MyVM", "null bitmap at $position")
                 }
                 else getImgUrl(index2load)?.let { loadImgUrlInto(imgView, it, isLast, useCut, isLeft) }
             }.start()
@@ -586,11 +589,11 @@ class ViewMangaActivity : TitleActivityTemplate() {
     @ExperimentalStdlibApi
     private fun prepareIdBtVH() {
         idtbvh.isChecked = isVertical
+        pm = PagesManager(WeakReference(this))
         if (isVertical) {
             val vsps = vsp as SpringView
             vsps.footerView.lht.text = "更多"
             vsps.headerView.lht.text = "更多"
-            pm = PagesManager(WeakReference(this))
             vsps.setListener(object :SpringView.OnFreshListener{
                 override fun onLoadmore() {
                     //scrollForward()

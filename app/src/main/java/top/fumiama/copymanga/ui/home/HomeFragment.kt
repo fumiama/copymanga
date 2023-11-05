@@ -207,7 +207,8 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                     holder.itemView.ta.text = "搜索 \"$query\""
                     holder.itemView.tb.text = "共 $count 条结果"
                     holder.itemView.lwi.visibility = View.INVISIBLE
-                    if (query?.isNotEmpty() == true) holder.itemView.lwc.setOnClickListener {
+                    holder.itemView.lwc.setOnClickListener {
+                        if (query?.isNotEmpty() != true) return@setOnClickListener
                         val bundle = Bundle()
                         bundle.putCharSequence("query", query)
                         bundle.putString("type", type)

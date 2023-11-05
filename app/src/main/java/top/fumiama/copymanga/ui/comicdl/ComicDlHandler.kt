@@ -352,10 +352,9 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
                     ViewMangaActivity.dlhandler = this
                     ViewMangaActivity.position = it.tbtn.index
                     dl?.show()
-
-                    that?.startActivity(Intent(that!!.context, ViewMangaActivity::class.java)
-                        .putExtra("callFrom", "zipFirst")
-                    )
+                    val intent = Intent(that?.context, ViewMangaActivity::class.java)
+                    intent.putExtra("urlArray", urlArray).putExtra("callFrom", "zipFirst")
+                    that?.startActivity(intent)
                 } else {
                     it.tbtn.setBackgroundResource(R.drawable.toggle_button)
                     if (it.tbtn.isChecked) that?.tdwn?.text = "$dldChapter/${++checkedChapter}"

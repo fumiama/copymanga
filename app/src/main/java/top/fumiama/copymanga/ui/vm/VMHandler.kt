@@ -27,6 +27,7 @@ import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
 
 class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
     url, Chapter2Return::class.java, Looper.myLooper()!!
@@ -59,6 +60,7 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
                 else -> ""
             }
         }
+    private var remainingImageCount = 0
 
     @SuppressLint("SimpleDateFormat", "SetTextI18n")
     override fun handleMessage(msg: Message) {
@@ -81,13 +83,14 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
                 //simg.setHeight2FitImgWidth()
                 //if(msg.arg2 == 1) sendEmptyMessage(DELAYED_RESTORE_PAGE_NUMBER)
             }
-            CLEAR_IMG_ON -> wv.get()?.clearImgOn(msg.obj as ScaleImageView)
+            CLEAR_IMG_ON -> {
+                val img = msg.obj as ScaleImageView
+                img.visibility = View.GONE
+                //sendEmptyMessage(DECREASE_IMAGE_COUNT_AND_RESTORE_PAGE_NUMBER_AT_ZERO)
+            }
             PREPARE_LAST_PAGE -> wv.get()?.prepareLastPage(msg.arg1, msg.arg2)
             DIALOG_SHOW -> dl.show()
-            DELAYED_RESTORE_PAGE_NUMBER -> Thread{
-                sleep(233)
-                sendEmptyMessage(RESTORE_PAGE_NUMBER)
-            }.start()
+
             LOAD_ITEM_SCROLL_MODE -> loadScrollMode(msg.arg1)
             LOAD_SCROLL_MODE -> loadScrollMode()
             LOAD_ITEM_IMAGES_INTO_LINE -> loadImagesIntoLine(msg.arg1)
@@ -97,7 +100,8 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
                 wv.get()?.restorePN()
             }
             LOAD_PAGE_FROM_ITEM -> {
-                val item = (pn - 1) / (wv.get()?.verticalLoadMaxCount?:20) * (wv.get()?.verticalLoadMaxCount?:20)
+                val verticalMaxCount = wv.get()?.verticalLoadMaxCount?:20
+                val item = (pn - 1) / verticalMaxCount * verticalMaxCount
                 loadScrollMode(item)
                 Log.d("MyVMH", "Load page from $item")
             }
@@ -112,6 +116,17 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
                 hideInfCardFull(); false
             } else {
                 showInfCardFull(); true
+            }
+            INIT_IMAGE_COUNT -> {
+                remainingImageCount = msg.arg1
+                Log.d("MyVMH", "init remainingImageCount = $remainingImageCount")
+            }
+            DECREASE_IMAGE_COUNT_AND_RESTORE_PAGE_NUMBER_AT_ZERO -> {
+                if (--remainingImageCount == 0) {
+                    Log.d("MyVMH", "last load page, restore pn...")
+                    sendEmptyMessageDelayed(RESTORE_PAGE_NUMBER, 233)
+                }
+                Log.d("MyVMH", "remainingImageCount = $remainingImageCount")
             }
             SET_NET_INFO -> wv.get()?.idtime?.text = SimpleDateFormat("HH:mm").format(Date()) + week + wv.get()?.toolsBox?.netInfo
         }
@@ -176,20 +191,21 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
         wv.get()?.initManga()
         wv.get()?.vprog?.visibility = View.GONE
     }
-    private fun loadImagesIntoLine(item: Int = (wv.get()?.currentItem?:0), maxCount: Int = (wv.get()?.verticalLoadMaxCount?:20)) /*= Thread*/{
+    private fun loadImagesIntoLine(item: Int = (wv.get()?.currentItem?:0), maxCount: Int = (wv.get()?.verticalLoadMaxCount?:20)) = Thread{
         Log.d("MyVMH", "Fun: loadImagesIntoLine($item, $maxCount)")
         wv.get()?.realCount?.let { count ->
             if(count > 0){
                 val notFull = item + maxCount > count
                 val loadCount = (if(notFull) count - item else maxCount) - 1
+                obtainMessage(INIT_IMAGE_COUNT, loadCount+1, 0).sendToTarget()
                 Log.d("MyVMH", "count: $count, loadCount: $loadCount, notFull: $notFull")
                 if(loadCount >= 0) for(i in 0..loadCount) obtainMessage(LOAD_IMG_ON,item + i, if(i == loadCount - 1) 1 else 0, wv.get()?.scrollImages?.get(i)).sendToTarget()
-                else sendEmptyMessage(DELAYED_RESTORE_PAGE_NUMBER)
+                //else sendEmptyMessageDelayed(RESTORE_PAGE_NUMBER, 233)
                 if(notFull) obtainMessage(PREPARE_LAST_PAGE, loadCount + 1, maxCount).sendToTarget()
-                wv.get()?.updateSeekBar()
+                wv.get()?.let { it.runOnUiThread { it.updateSeekBar() } }
             }
         }
-    }//.start()
+    }.start()
 
     private fun loadScrollMode() {
         sendEmptyMessage(DIALOG_SHOW)
@@ -233,7 +249,7 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
         const val CLEAR_IMG_ON = 5
         const val PREPARE_LAST_PAGE = 6
         const val DIALOG_SHOW = 7
-        const val DELAYED_RESTORE_PAGE_NUMBER = 8
+        //const val DELAYED_RESTORE_PAGE_NUMBER = 8
         const val LOAD_ITEM_SCROLL_MODE = 9
         const val LOAD_SCROLL_MODE = 10
         const val LOAD_ITEM_IMAGES_INTO_LINE = 11
@@ -244,6 +260,8 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
         const val HIDE_INFO_CARD_FULL = 16
         const val SHOW_INFO_CARD_FULL = 17
         const val TRIGGER_INFO_CARD_FULL = 18
+        const val INIT_IMAGE_COUNT = 19
+        const val DECREASE_IMAGE_COUNT_AND_RESTORE_PAGE_NUMBER_AT_ZERO = 20
 
         const val SET_NET_INFO = 22
     }

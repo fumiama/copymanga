@@ -73,9 +73,12 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
             1 -> setCover()
             2 -> setTexts()
             3 -> that?.fbibinfo?.let { setInfoHeight(it) }
-            4 -> setThemes()
+            4 -> setAuthorsAndTags()
             5 -> setOverScale()
             6 -> if(complete) that?.navigate2dl()
+            7 -> setVolumes()
+            8 -> that?.apply { fbl?.addView(msg.obj as View) }
+            9 -> endSetLayouts()
         }
     }
 
@@ -108,14 +111,14 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
             cnts += it.count
             Log.d("MyBFH", "Add caption: ${it.name} @ ${it.path_word} of ${it.count}")
         }
+        for (i in 1..5) {
+            sendEmptyMessageDelayed(i, (100*i).toLong())
+        }
         if(vols?.isEmpty() != false) initComicData()
-        Thread{ for (i in 1..5) {
-            sleep(512)
-            sendEmptyMessage(i)
-        } }.start()
     }
 
-    private fun endSetLayouts(){
+    private fun endSetLayouts() {
+        if (exit) return
         that?.fbloading?.visibility = View.GONE
         complete = true
         that?.setStartRead()
@@ -230,76 +233,92 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
         }
     }
 
-    private fun setThemes(){
-        if (exit) return
+    private fun setAuthorsAndTags() {
         that?.apply {
             book?.results?.comic?.apply {
-                author?.let { setTheme(getString(R.string.author), it, R.id.action_nav_book_to_nav_author) }
+                author?.let {
+                    setTheme(
+                        getString(R.string.author),
+                        it,
+                        R.id.action_nav_book_to_nav_author
+                    )
+                }
                 fbl.addView(layoutInflater.inflate(R.layout.div_h, fbl, false))
-                theme?.let { setTheme(getString(R.string.caption), it, R.id.action_nav_book_to_nav_caption) }
+                theme?.let {
+                    setTheme(
+                        getString(R.string.caption),
+                        it,
+                        R.id.action_nav_book_to_nav_caption
+                    )
+                }
             }
         }
-        Thread{
-            while (vols == null && !exit) sleep(1000)
-            if(exit) return@Thread
-            that?.apply {
-                book?.results?.apply {
-                    that?.activity?.runOnUiThread{
-                        if(exit) return@runOnUiThread
-                        ViewMangaActivity.fileArray = arrayOf()
-                        urlArray = arrayOf()
-                        ViewMangaActivity.uuidArray = arrayOf()
-                        var i = 0
-                        vols?.forEachIndexed { iv, v ->
-                            if(exit) return@runOnUiThread
-                            fbl.addView(layoutInflater.inflate(R.layout.div_h, fbl, false))
-                            val t = layoutInflater.inflate(R.layout.line_caption, fbl, false)
-                            t.tcptn.text = keys[iv]
-                            fbl.addView(t)
-                            fbl.addView(layoutInflater.inflate(R.layout.div_h, fbl, false))
-                            var line: View? = null
-                            val last = v.results.list.size - 1
-                            v.results.list.forEach {
-                                urlArray += CMApi.getChapterInfoApiUrl(
-                                    comic.path_word,
-                                    it.uuid
-                                )?:""
-                                ViewMangaActivity.fileArray += CMApi.getZipFile(context?.getExternalFilesDir(""), comic.name, keys[iv], it.name)
-                                chapterNames += it.name
-                                ViewMangaActivity.uuidArray += it.uuid
-                                if(line == null) {
-                                    if(i == last) {
-                                        line = layoutInflater.inflate(R.layout.line_chapter, that!!.fbl, false)
-                                        line?.lcc?.apply {
-                                            lct.text = it.name
-                                            val index = i
-                                            setOnClickListener { Reader.viewMangaAt(comic.name, index, urlArray) }
-                                        }
-                                        fbl?.addView(line)
-                                    } else {
-                                        line = layoutInflater.inflate(R.layout.line_2chapters, that!!.fbl, false)
-                                        line?.l2cl?.apply {
-                                            lct.text = it.name
-                                            val index = i
-                                            setOnClickListener { Reader.viewMangaAt(comic.name, index, urlArray) }
-                                        }
-                                    }
-                                } else line?.l2cr?.apply {
+    }
+
+    private fun addVolumesView(v: View) {
+        obtainMessage(8, v).sendToTarget()
+    }
+
+    private fun setVolumes() = Thread {
+        if (exit) return@Thread
+        that?.apply {
+            book?.results?.apply {
+                ViewMangaActivity.fileArray = arrayOf()
+                urlArray = arrayOf()
+                ViewMangaActivity.uuidArray = arrayOf()
+                var i = 0
+                var last = -1
+                vols?.forEachIndexed { groupIndex, v ->
+                    if(exit) return@Thread
+                    addVolumesView(layoutInflater.inflate(R.layout.div_h, fbl, false))
+                    val t = layoutInflater.inflate(R.layout.line_caption, fbl, false)
+                    t.tcptn.text = keys[groupIndex]
+                    addVolumesView(t)
+                    addVolumesView(layoutInflater.inflate(R.layout.div_h, fbl, false))
+                    var line: View? = null
+                    last += v.results.list.size
+                    v.results.list.forEach {
+                        urlArray += CMApi.getChapterInfoApiUrl(
+                            comic.path_word,
+                            it.uuid
+                        )?:""
+                        ViewMangaActivity.fileArray += CMApi.getZipFile(context?.getExternalFilesDir(""), comic.name, keys[groupIndex], it.name)
+                        chapterNames += it.name
+                        ViewMangaActivity.uuidArray += it.uuid
+                        Log.d("MyBH", "i = $i, last=$last, add chapter ${it.name}, line is null: ${line == null}")
+                        if(line == null) {
+                            if(i == last) {
+                                line = layoutInflater.inflate(R.layout.line_chapter, that!!.fbl, false)
+                                line?.lcc?.apply {
+                                    lct.text = it.name
+                                    Log.d("MyBH", "add last single chapter ${it.name}")
+                                    val index = i
+                                    setOnClickListener { Reader.viewMangaAt(comic.name, index, urlArray) }
+                                }
+                                line?.let { l -> addVolumesView(l) }
+
+                            } else {
+                                line = layoutInflater.inflate(R.layout.line_2chapters, that!!.fbl, false)
+                                line?.l2cl?.apply {
                                     lct.text = it.name
                                     val index = i
                                     setOnClickListener { Reader.viewMangaAt(comic.name, index, urlArray) }
-                                    fbl?.addView(line)
-                                    line = null
                                 }
-                                i++
                             }
+                        } else line?.l2cr?.apply {
+                            lct.text = it.name
+                            val index = i
+                            setOnClickListener { Reader.viewMangaAt(comic.name, index, urlArray) }
+                            line?.let { l -> addVolumesView(l) }
+                            line = null
                         }
-                        endSetLayouts()
+                        i++
                     }
                 }
+                sendEmptyMessage(9) // end set layout
             }
-        }.start()
-    }
+        }
+    }.start()
 
     private fun loadVolume(name: String, path: String, nav: Int){
         if(complete) {
@@ -311,7 +330,7 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
         }
     }
 
-    private fun initComicData() {
+    private fun initComicData() = Thread {
         var volumes = emptyArray<VolumeStructure>()
         val counts = cnts.clone()
         gpws.forEachIndexed { i, gpw ->
@@ -329,11 +348,11 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
                 counts[i] = counts[i] - 100
                 CMApi.getGroupInfoApiUrl(path, gpw, offset)?.let {
                     Log.d("MyBFH", "get api: $it")
-                    if(ComicDlFragment.exit) return
+                    if(ComicDlFragment.exit) return@Thread
                     val ad = AutoDownloadThread(it) { result ->
-                        Log.d("MyBFH", "第${i}卷返回")
                         val r = Gson().fromJson(result?.decodeToString(), VolumeStructure::class.java)
                         re[r.results.offset / 100] = r
+                        Log.d("MyBFH", "第${i}卷返回, 大小: ${r.results.list.size}")
                     }
                     ads += ad
                     ad.start()
@@ -341,7 +360,6 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
                     sleep(1000)
                 }
             } while (counts[i] > 0)
-            Thread {
                 var c = 0
                 while (c++ < 80) {
                     sleep(1000)
@@ -359,23 +377,21 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
                     r?.results?.list = s
                     r?.apply { volumes += this }
                 } else re[0]?.apply { volumes += this }
-            }.start()
         }
-        Thread {
-            var c = 0
-            while (c < 80 && volumes.size != gpws.size) {
-                sleep(1000)
-                if(ComicDlFragment.exit) return@Thread
-                Log.d("MyBFH", "已有：${volumes.size} 共：${gpws.size}")
-                c++
+        var c = 0
+        while (c < 80 && volumes.size != gpws.size) {
+            sleep(1000)
+            if(ComicDlFragment.exit) return@Thread
+            Log.d("MyBFH", "已有：${volumes.size} 共：${gpws.size}")
+            c++
+        }
+        if (volumes.size == gpws.size) {
+            that?.activity?.runOnUiThread {
+                saveVolumes(volumes)
+                sendEmptyMessage(7)
             }
-            if (volumes.size == gpws.size) {
-                that?.activity?.runOnUiThread {
-                    saveVolumes(volumes)
-                }
-            }
-        }.start()
-    }
+        }
+    }.start()
 
     private fun saveVolumes(volumes: Array<VolumeStructure>) {
         that?.context?.getExternalFilesDir("")?.let { home ->

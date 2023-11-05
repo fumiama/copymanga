@@ -86,7 +86,7 @@ class ComicDlFragment: NoBackRefreshFragment(R.layout.fragment_dlcomic) {
         menu.findItem(R.id.action_download)?.isVisible = false
     }*/
 
-    private fun initComicData(pw: String?, gpws: Array<String>?, counts: IntArray?) {
+    private fun initComicData(pw: String?, gpws: Array<String>?, counts: IntArray?) = Thread {
         var volumes = emptyArray<VolumeStructure>()
         if (gpws != null) {
             gpws.forEachIndexed { i, gpw ->
@@ -99,7 +99,7 @@ class ComicDlFragment: NoBackRefreshFragment(R.layout.fragment_dlcomic) {
                 do {
                     counts?.set(i, counts[i] - 100)
                     CMApi.getGroupInfoApiUrl(pw, gpw, offset)?.let {
-                        if(exit) return
+                        if(exit) return@Thread
                         val ad = AutoDownloadThread(it) { result ->
                             Log.d("MyCDF", "第${i}卷返回")
                             val r = Gson().fromJson(result?.decodeToString(), VolumeStructure::class.java)
@@ -110,42 +110,38 @@ class ComicDlFragment: NoBackRefreshFragment(R.layout.fragment_dlcomic) {
                         offset += 100
                     }
                 } while ((counts?.get(i) ?: 0) > 0)
-                Thread {
-                    var c = 0
-                    while (c++ < 80) {
-                        sleep(1000)
-                        if(exit) return@Thread
-                        if(re.all { it != null }) break
-                    }
-                    if(re.size > 1) {
-                        val r = re[0]
-                        var s = emptyArray<ChapterStructure>()
-                        re.forEach {
-                            it?.results?.list?.forEach {
-                                s += it
-                            }
-                        }
-                        r?.results?.list = s
-                        r?.apply { volumes += this }
-                    } else re[0]?.apply { volumes += this }
-                }.start()
-            }
-            Thread {
                 var c = 0
-                while (c < 80 && volumes.size != gpws.size) {
+                while (c++ < 80) {
                     sleep(1000)
                     if(exit) return@Thread
-                    Log.d("MyCDF", "已有：${volumes.size} 共：${gpws.size}")
-                    c++
+                    if(re.all { it != null }) break
                 }
-                if (volumes.size == gpws.size) {
-                    activity?.runOnUiThread {
-                        start2load(volumes)
+                if(re.size > 1) {
+                    val r = re[0]
+                    var s = emptyArray<ChapterStructure>()
+                    re.forEach {
+                        it?.results?.list?.forEach {
+                            s += it
+                        }
                     }
+                    r?.results?.list = s
+                    r?.apply { volumes += this }
+                } else re[0]?.apply { volumes += this }
+            }
+            var c = 0
+            while (c < 80 && volumes.size != gpws.size) {
+                sleep(1000)
+                if(exit) return@Thread
+                Log.d("MyCDF", "已有：${volumes.size} 共：${gpws.size}")
+                c++
+            }
+            if (volumes.size == gpws.size) {
+                activity?.runOnUiThread {
+                    start2load(volumes)
                 }
-            }.start()
+            }
         }
-    }
+    }.start()
 
     private fun initOldComicData() {
         handler = ComicDlHandler(Looper.myLooper()!!,

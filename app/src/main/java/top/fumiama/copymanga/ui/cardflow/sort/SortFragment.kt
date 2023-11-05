@@ -15,7 +15,7 @@ import java.lang.Thread.sleep
 
 @ExperimentalStdlibApi
 class SortFragment : InfoCardLoader(R.layout.fragment_sort, R.id.action_nav_sort_to_nav_book) {
-    private val sortWay = listOf("datetime_updated", "-datetime_updated", "-popular", "popular")
+    private val sortWay = listOf("-datetime_updated", "datetime_updated", "-popular", "popular")
     private var theme = -1
     private var region = -1
     private var sortValue = 0

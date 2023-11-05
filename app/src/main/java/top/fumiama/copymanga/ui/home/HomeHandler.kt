@@ -212,7 +212,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
         }
     }
 
-    private fun inflateCardLines() {
+    private fun inflateCardLines() = Thread{
         if (indexLines.isNotEmpty()) indexLines = arrayOf()
         inflateRec()
         inflateTopics()
@@ -220,14 +220,12 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
         inflateNew()
         inflateFinish()
         inflateRank()
-        Thread{
-            for(i in indexLines.indices) {
-                obtainMessage(8, i, 0).sendToTarget()
-                sleep(512)
-            }
-            obtainMessage(-1, false).sendToTarget()                 //closeLoad
-        }.start()
-    }
+        for(i in indexLines.indices) {
+            obtainMessage(8, i, 0).sendToTarget()
+            sleep(512)
+        }
+        obtainMessage(-1, false).sendToTarget()                 //closeLoad
+    }.start()
 
     private fun setBanner(v: Banner): Banner {
         v.viewTreeObserver.addOnGlobalLayoutListener(object :
@@ -311,7 +309,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
     private fun setCards(cv: CardView, pw: String, name: String, img: String, isFinal: Boolean, isTopic: Boolean) {
         cv.tic.text = name
         homeF?.let {
-            if(img.startsWith("http")) {
+            if(img.startsWith("http")) it.activity?.runOnUiThread {
                 Glide.with(it).load(GlideUrl(CMApi.proxy?.wrap(img)?:img, CMApi.myGlideHeaders)).timeout(20000).into(cv.imic)
             }
         }
