@@ -76,8 +76,7 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
-        //translucentStatusBar()
-        //coordiv.layoutParams.height = getStatusBarHeight()
+        coordiv.layoutParams.height = UITools.getStatusBarHeight(this)
 
         navController = findNavController(R.id.nav_host_fragment)
         appBarConfiguration = AppBarConfiguration(
@@ -322,33 +321,6 @@ class MainActivity : AppCompatActivity() {
             .withOptions(op)
             .start(this)
     }
-
-    /*private fun translucentStatusBar() {
-        //添加Flag把状态栏设为可绘制模式
-        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-        //如果为全透明模式，取消设置Window半透明的Flag
-        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-        //设置状态栏为透明
-        window.statusBarColor = Color.TRANSPARENT
-        //设置window的状态栏不可见
-        window.decorView.systemUiVisibility =
-            View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-        //view不根据系统窗口来调整自己的布局
-        val mContentView: ViewGroup = window.findViewById(Window.ID_ANDROID_CONTENT) as ViewGroup
-        val mChildView: View = mContentView.getChildAt(0)
-        ViewCompat.requestApplyInsets(mChildView)
-
-        coordiv.layoutParams.height = getStatusBarHeight()
-    }*/
-
-    /*private fun getStatusBarHeight() =
-        resources.getDimensionPixelOffset(
-            resources.getIdentifier(
-                "status_bar_height",
-                "dimen",
-                "android"
-            )
-        )*/
 
     private fun checkUpdate(ignoreSkip: Boolean) {
         Thread{

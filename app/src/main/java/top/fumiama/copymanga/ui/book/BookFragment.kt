@@ -96,7 +96,9 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
                             i = p
                         }
                         setOnClickListener {
-                            Reader.viewMangaAt(comic.name, i, bookHandler!!.urlArray)
+                            bookHandler?.urlArray?.let {
+                                Reader.viewMangaAt(comic.name, i, it)
+                            }
                         }
                     }
                 }

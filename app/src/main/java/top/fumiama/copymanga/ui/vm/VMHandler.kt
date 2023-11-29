@@ -135,8 +135,11 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
     override fun setGsonItem(gsonObj: Any): Boolean {
         super.setGsonItem(gsonObj)
         val m = gsonObj as Chapter2Return
-        if(m.results.chapter.words.size != m.results.chapter.size) {
+        if(m.results.chapter.words.size != m.results.chapter.contents.size) {
             return false
+        }
+        if(m.results.chapter.words.size != m.results.chapter.size) {
+            m.results.chapter.size = m.results.chapter.words.size // 有时 size 不对
         }
         manga = m
         return true

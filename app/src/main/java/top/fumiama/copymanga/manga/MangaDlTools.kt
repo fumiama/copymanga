@@ -21,12 +21,20 @@ class MangaDlTools {
 
     fun downloadChapterInVol(url: CharSequence, chapterName: CharSequence, group: CharSequence, index: Int){
         Log.d("MyMDT", "下载：$url, index：$index")
-        AutoDownloadThread(url.toString()){
-            Gson().fromJson(it?.decodeToString(), Chapter2Return::class.java)?.let {
-                if(it.results.chapter.words.size != it.results.chapter.size) downloadChapterInVol(url, chapterName, group, index)
-                else getChapterInfo(it, index, chapterName, group)
+        AutoDownloadThread(url.toString()){ data ->
+            Gson().fromJson(data?.decodeToString(), Chapter2Return::class.java)?.let {
+                getChapterInfo(it, index, chapterName, group)
             }
         }.start()
+    }
+
+    @Synchronized private fun prepareDownloadListener() {
+        pool?.setOnDownloadListener { fileName: String, isSuccess: Boolean ->
+            indexMap[fileName]?.let { onDownloadedListener?.handleMessage(it, isSuccess) }
+        }
+        pool?.setOnPageDownloadListener { fileName: String, downloaded: Int, total: Int, isSuccess: Boolean ->
+            indexMap[fileName]?.let { onDownloadedListener?.handleMessage(it, downloaded, total, isSuccess) }
+        }
     }
 
     @Synchronized private fun setPool(comicName: String, group: CharSequence) {
@@ -36,6 +44,7 @@ class MangaDlTools {
                 "$comicName/$group"
             ).absolutePath)
             grp = group
+            prepareDownloadListener()
         }
     }
 
@@ -49,12 +58,6 @@ class MangaDlTools {
             setPool(chapter2Return.results.comic.name, group)
             setIndexMap(f, index)
             pool?.plusAssign(DownloadPool.Quest(f, getMangaUrls(chapter2Return)))
-            pool?.setOnDownloadListener { fileName: String, isSuccess: Boolean ->
-                indexMap[fileName]?.let { onDownloadedListener?.handleMessage(it, isSuccess) }
-            }
-            pool?.setOnPageDownloadListener { fileName: String, downloaded: Int, total: Int, isSuccess: Boolean ->
-                indexMap[fileName]?.let { onDownloadedListener?.handleMessage(it, downloaded, total, isSuccess) }
-            }
         }
     }
 
@@ -62,10 +65,17 @@ class MangaDlTools {
         var re: Array<String> = arrayOf()
         val hm: HashMap<Int, String> = hashMapOf()
         val chapter = chapter2Return.results.chapter
-        for(i in 0 until chapter.size) {
+        if(chapter.words.size < chapter.contents.size) {
+            chapter.words = chapter.words.toMutableList().apply {
+                chapter.contents.indices.forEach {
+                    if(!contains(it)) plusAssign(it)
+                }
+            }.toIntArray()
+        }
+        for(i in 0 until chapter.contents.size) {
             hm[chapter.words[i]] = chapter.contents[i].url
         }
-        for(i in 0 until chapter.size){
+        for(i in 0 until chapter.contents.size){
             re += hm[i]?:""
         }
         return re

@@ -133,5 +133,14 @@ class UITools(that: Context?, w: WeakReference<Activity>? = null) {
                 0
             }
         }
+        fun getStatusBarHeight(context: Context): Int {
+            val resources = context.resources
+            val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
+            return if (resourceId > 0) {
+                resources.getDimensionPixelSize(resourceId)
+            } else {
+                0
+            }
+        }
     }
 }

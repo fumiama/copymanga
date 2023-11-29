@@ -47,7 +47,7 @@ class SimpleKanban(private val client: Client, private val pwd: String) {   //mu
 
     operator fun get(version: Int): String =
         if(client.initConnect()) {
-            client.sendMessage("${pwd}get${version}quit")
+            client.sendMessage("${pwd}get39quit")
             client.receiveRawMessage(36)             //Welcome to simple kanban server. get
             val r = try {
                 val firstRecv = client.receiveRawMessage(4)

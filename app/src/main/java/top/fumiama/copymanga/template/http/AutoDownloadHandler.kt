@@ -75,7 +75,7 @@ open class AutoDownloadHandler(private val url: String, private val jsonClass: C
             if(exit) return
             if(it == null) {
                 if (cnt++>3) return
-                sleep(1000)
+                sleep(2000)
                 dlThread()
                 return
             }
@@ -102,7 +102,7 @@ open class AutoDownloadHandler(private val url: String, private val jsonClass: C
             if(g.code == 200) sendEmptyMessage(0)
             else onError()
             Log.d("MyADH", "[${g.code}]${g.message}")
-        } else if(checkTimes++ > 10) timeThread?.canDo = false
+        } else if(checkTimes++ > 3) timeThread?.canDo = false
     }
     private fun setLayouts() {
         if(getGsonItem() == null) download()
