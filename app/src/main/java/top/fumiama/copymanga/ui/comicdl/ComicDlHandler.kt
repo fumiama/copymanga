@@ -225,25 +225,27 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
             return@setOnLongClickListener true
         }
         mangaDlTools.onDownloadedListener = object :MangaDlTools.OnDownloadedListener{
-            override fun handleMessage(index: Int, isSuccess: Boolean) {
+            override fun handleMessage(index: Int, isSuccess: Boolean, message: String) {
                 that?.activity?.runOnUiThread {
                     if(isSuccess) onZipDownloadFinish(index)
-                    else onZipDownloadFailure(index)
+                    else onZipDownloadFailure(index, message)
                 }
             }
 
+            @SuppressLint("SetTextI18n")
             override fun handleMessage(
                 index: Int,
                 downloaded: Int,
                 total: Int,
-                isSuccess: Boolean
+                isSuccess: Boolean,
+                message: String
             ) {
                 that?.activity?.runOnUiThread {
                     if(isSuccess) {
                         tbtnlist[index].text = if(downloaded == 0 && total == 0) tbtnlist[index].chapterName else "$downloaded/$total"
                     } else {
                         tbtnlist[index].text = "$downloaded/$total"
-                        Toast.makeText(that?.context, "下载${tbtnlist[index].chapterName}的第${downloaded}页失败", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(that?.context, "下载${tbtnlist[index].chapterName}的第${downloaded}页失败: $message", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -283,6 +285,7 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
             updateProgressBar()
             that?.apply {
                 cdwn.postDelayed({
+                    if (mangaDlTools?.exit != false) return@postDelayed
                     if (dldChapter == checkedChapter) {
                         checkedChapter = 0
                         setProgress2(0, 233)
@@ -296,9 +299,9 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
         }
     }
 
-    private fun onZipDownloadFailure(index: Int) {
+    private fun onZipDownloadFailure(index: Int, message: String) {
         tbtnlist[index].setBackgroundResource(R.drawable.rndbg_error)
-        Toast.makeText(that?.context, "下载${tbtnlist[index].chapterName}失败", Toast.LENGTH_SHORT).show()
+        Toast.makeText(that?.context, "下载${tbtnlist[index].chapterName}失败: $message", Toast.LENGTH_SHORT).show()
         updateProgressBar()
     }
     

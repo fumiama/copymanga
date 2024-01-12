@@ -33,6 +33,7 @@ import top.fumiama.copymanga.template.http.AutoDownloadHandler
 import top.fumiama.copymanga.template.http.AutoDownloadThread
 import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.copymanga.tools.ui.GlideBlurTransformation
+import top.fumiama.copymanga.tools.ui.GlideHideLottieViewListener
 import top.fumiama.copymanga.tools.ui.Navigate
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment.Companion.json
@@ -147,7 +148,7 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
             book?.results?.comic?.cover?.let { cover ->
                 val load = Glide.with(this).load(
                     GlideUrl(CMApi.proxy?.wrap(cover)?:cover, CMApi.myGlideHeaders)
-                ).timeout(10000)
+                ).timeout(10000).addListener(GlideHideLottieViewListener(WeakReference(laic)))
                 load.into(imic)
                 context?.let { it1 -> GlideBlurTransformation(it1) }
                     ?.let { it2 -> RequestOptions.bitmapTransform(it2) }
@@ -286,6 +287,10 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
                         chapterNames += it.name
                         ViewMangaActivity.uuidArray += it.uuid
                         Log.d("MyBH", "i = $i, last=$last, add chapter ${it.name}, line is null: ${line == null}")
+                        that?.isOnPause?.let { isOnPause ->
+                            while (isOnPause && !exit) sleep(1000)
+                            if (exit) return@Thread
+                        }?:return@Thread
                         if(line == null) {
                             if(i == last) {
                                 line = layoutInflater.inflate(R.layout.line_chapter, that!!.fbl, false)

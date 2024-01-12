@@ -10,7 +10,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.ImageButton
-import androidx.appcompat.view.ContextThemeWrapper
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -29,8 +28,8 @@ import top.fumiama.copymanga.json.BookListStructure
 import top.fumiama.copymanga.template.general.NoBackRefreshFragment
 import top.fumiama.copymanga.template.http.AutoDownloadThread
 import top.fumiama.copymanga.tools.api.CMApi
+import top.fumiama.copymanga.tools.ui.GlideHideLottieViewListener
 import top.fumiama.copymanga.tools.ui.Navigate
-import top.fumiama.copymanga.tools.ui.UITools
 import top.fumiama.dmzj.copymanga.R
 import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
@@ -72,13 +71,20 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                     }
                 })
                 setTextHint(android.R.string.search_go)
+
                 setOnQueryTextListener(object : SearchLayout.OnQueryTextListener {
                     var lastChangeTime = 0L
+                    var lastSearch: String = ""
                     override fun onQueryTextChange(newText: CharSequence): Boolean {
+                        if (newText.contentEquals("__notice_focus_change__") || newText.contentEquals(lastSearch)) return true
                         postDelayed({
                             val diff = System.currentTimeMillis() - lastChangeTime
                             if(diff > 500) {
-                                if (newText.isNotEmpty()) adapter.refresh(newText)
+                                if (newText.isNotEmpty()) {
+                                    Log.d("MyHF", "new text: $newText")
+                                    lastSearch = newText.toString()
+                                    adapter.refresh(newText)
+                                }
                             }
                         }, 1024)
                         lastChangeTime = System.currentTimeMillis()
@@ -90,6 +96,8 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                             val key = query.toString()
                             Toast.makeText(context, key, Toast.LENGTH_SHORT).show()
                         }*/
+                        Log.d("MyHF", "recover text: $lastSearch")
+                        setTextQuery(lastSearch, false)
                         return true
                     }
                 })
@@ -112,9 +120,12 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                 setOnFocusChangeListener(object : SearchLayout.OnFocusChangeListener {
                     override fun onFocusChange(hasFocus: Boolean) {
                         Log.d("MyHF", "fhs onFocusChange: $hasFocus")
-                        navigationIconSupport = if (hasFocus) SearchLayout.NavigationIconSupport.ARROW
+                        navigationIconSupport = if (hasFocus) {
+                            setTextQuery("__notice_focus_change__", true)
+                            SearchLayout.NavigationIconSupport.ARROW
+                        }
                         else {
-                            micView.postDelayed({ micView.visibility = View.VISIBLE }, 233)
+                            micView.postDelayed({ micView?.visibility = View.VISIBLE }, 233)
                             SearchLayout.NavigationIconSupport.SEARCH
                         }
                     }
@@ -171,7 +182,7 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                     //Log.d("MyHomeFVP", "Load img: $it")
                     Glide.with(this@HomeFragment).load(
                         GlideUrl(CMApi.proxy?.wrap(it)?:it, CMApi.myGlideHeaders)
-                    ).timeout(10000).into(holder.itemView.vpi)
+                    ).addListener(GlideHideLottieViewListener(WeakReference(holder.itemView.lai))).timeout(10000).into(holder.itemView.vpi)
                 }
                 holder.itemView.vpt.text = thisBanner?.brief
                 holder.itemView.vpc.setOnClickListener {
@@ -190,7 +201,7 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
             RecyclerView.Adapter<ListViewHolder>() {
             private var results: BookListStructure? = null
             var type = ""
-            private var query: CharSequence? = null
+            private var query: String? = null
             private var count = 0
             override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ListViewHolder {
                 return ListViewHolder(
@@ -228,7 +239,10 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                     }
                     holder.itemView.tb.text = popular.toString()
                     context?.let {
-                        Glide.with(it).load(GlideUrl(CMApi.proxy?.wrap(cover)?:cover, CMApi.myGlideHeaders)).into(holder.itemView.imic)
+                        Glide.with(it)
+                            .load(GlideUrl(CMApi.proxy?.wrap(cover)?:cover, CMApi.myGlideHeaders))
+                            .addListener(GlideHideLottieViewListener(WeakReference(holder.itemView.laic)))
+                            .into(holder.itemView.imic)
                     }
                     holder.itemView.lwc.setOnClickListener {
                         val bundle = Bundle()
@@ -239,10 +253,10 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                 }
             }
 
-            override fun getItemCount() = (results?.results?.list?.size?:0)+1
+            override fun getItemCount() = (results?.results?.list?.size?:0) + if (query?.isNotEmpty() == true) 1 else 0
 
             fun refresh(q: CharSequence) {
-                query = q
+                query = q.toString()
                 activity?.apply {
                     AutoDownloadThread(getString(R.string.searchApiUrl).format(CMApi.myHostApiUrl, 0, query, type)) {
                         results = Gson().fromJson(it?.decodeToString(), BookListStructure::class.java)

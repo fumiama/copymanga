@@ -21,13 +21,14 @@ import com.to.aboomy.pager2banner.ScaleInTransformer
 import kotlinx.android.synthetic.main.card_book.view.*
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.line_1bookline.view.*
-import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.json.ComicStructure
 import top.fumiama.copymanga.json.IndexStructure
 import top.fumiama.copymanga.template.http.AutoDownloadHandler
 import top.fumiama.copymanga.tools.api.CMApi
+import top.fumiama.copymanga.tools.ui.GlideHideLottieViewListener
 import top.fumiama.copymanga.tools.ui.Navigate
 import top.fumiama.copymanga.tools.ui.UITools
+import top.fumiama.dmzj.copymanga.R
 import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 
@@ -310,7 +311,9 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
         cv.tic.text = name
         homeF?.let {
             if(img.startsWith("http")) it.activity?.runOnUiThread {
-                Glide.with(it).load(GlideUrl(CMApi.proxy?.wrap(img)?:img, CMApi.myGlideHeaders)).timeout(20000).into(cv.imic)
+                Glide.with(it).load(GlideUrl(CMApi.proxy?.wrap(img)?:img, CMApi.myGlideHeaders))
+                    .addListener(GlideHideLottieViewListener(WeakReference(cv.laic)))
+                    .timeout(20000).into(cv.imic)
             }
         }
         if (isFinal) cv.sgnic.visibility = View.VISIBLE

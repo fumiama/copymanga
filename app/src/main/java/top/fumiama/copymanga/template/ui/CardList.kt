@@ -1,16 +1,23 @@
 package top.fumiama.copymanga.template.ui
 
 import android.annotation.SuppressLint
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.model.GlideUrl
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
+import kotlinx.android.synthetic.main.card_book.*
 import kotlinx.android.synthetic.main.card_book.view.*
 import kotlinx.android.synthetic.main.line_horizonal_empty.view.*
 import kotlinx.android.synthetic.main.line_lazybooklines.*
 import top.fumiama.copymanga.tools.api.CMApi
+import top.fumiama.copymanga.tools.ui.GlideHideLottieViewListener
 import top.fumiama.dmzj.copymanga.R
 import java.io.File
 import java.lang.ref.WeakReference
@@ -110,14 +117,22 @@ class CardList(
                     that?.context?.let { context ->
                         Glide.with(context).load(
                             GlideUrl(CMApi.proxy?.wrap(head)?:head, CMApi.myGlideHeaders)
-                        ).into(it.imic)
+                        ).addListener(GlideHideLottieViewListener(WeakReference(it.laic))).into(it.imic)
                     }
                 } else {
+                    it.laic.pauseAnimation()
+                    it.laic.visibility = View.GONE
                     it.imic.setImageResource(R.drawable.img_defmask)
                 }
             } else {
                 val img = File(file, "head.jpg")
-                if(img.exists()) it.imic.setImageURI(Uri.fromFile(img))
+                it.laic.pauseAnimation()
+                it.laic.visibility = View.GONE
+                if(img.exists()) {
+                    it.imic.setImageURI(Uri.fromFile(img))
+                } else {
+                    it.imic.setImageResource(R.drawable.img_defmask)
+                }
             }
             if(card.isFinish) it.sgnic.visibility = View.VISIBLE
             if(card.isNew) it.sgnnew.visibility = View.VISIBLE

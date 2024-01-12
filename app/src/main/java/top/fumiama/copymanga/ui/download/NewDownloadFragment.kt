@@ -1,9 +1,14 @@
 package top.fumiama.copymanga.ui.download
 
 import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
+import android.provider.DocumentsContract
 import android.util.Log
 import android.view.View
+import android.widget.Toast
+import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
@@ -124,12 +129,12 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
                     AlertDialog.Builder(context)
                         .setIcon(R.drawable.ic_launcher_foreground)
                         .setTitle(R.string.new_download_card_option_hint)
-                        .setItems(arrayOf("删除", "前往")) { d, p ->
+                        .setItems(arrayOf("删除数据", "前往详情")) { d, p ->
                             d.cancel()
                             when (p) {
                                 0 -> {
                                     AlertDialog.Builder(context)
-                                        .setIcon(R.drawable.ic_launcher_foreground).setMessage("删除下载的此漫画吗?")
+                                        .setIcon(R.drawable.ic_launcher_foreground).setMessage("删除下载的漫画${name}吗?")
                                         .setTitle("提示").setPositiveButton(android.R.string.ok) { _, _ ->
                                             if (chosenFile.exists()) Thread {
                                                 FileUtils.recursiveRemove(chosenFile)

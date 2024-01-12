@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.media.AudioManager
 import android.os.Bundle
 import android.os.Handler
@@ -20,10 +21,9 @@ import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
-import com.afollestad.materialdialogs.utils.MDUtil.getStringArray
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
-import com.bumptech.glide.request.target.SimpleTarget
+import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.liaoinstan.springview.widget.SpringView
 import kotlinx.android.synthetic.main.activity_viewmanga.*
@@ -36,14 +36,14 @@ import kotlinx.android.synthetic.main.widget_titlebar.*
 import kotlinx.android.synthetic.main.widget_titlebar.view.*
 import kotlinx.android.synthetic.main.widget_viewmangainfo.*
 import top.fumiama.copymanga.MainActivity
-import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.template.general.TitleActivityTemplate
 import top.fumiama.copymanga.template.http.AutoDownloadThread
 import top.fumiama.copymanga.tools.api.CMApi
-import top.fumiama.copymanga.tools.ui.Font
 import top.fumiama.copymanga.tools.http.DownloadTools
 import top.fumiama.copymanga.tools.thread.TimeThread
+import top.fumiama.copymanga.tools.ui.Font
 import top.fumiama.copymanga.views.ScaleImageView
+import top.fumiama.dmzj.copymanga.R
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -51,6 +51,7 @@ import java.io.InputStream
 import java.lang.ref.WeakReference
 import java.util.concurrent.FutureTask
 import java.util.zip.ZipFile
+import kotlin.math.abs
 
 class ViewMangaActivity : TitleActivityTemplate() {
     var count = 0
@@ -69,6 +70,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
     private var notUseVP = true
     private var isVertical = false
     private var q = 100
+    private var tryWebpFirst = true
     private val size get() = if(realCount / verticalLoadMaxCount > currentItem / verticalLoadMaxCount) verticalLoadMaxCount else realCount % verticalLoadMaxCount
     var infoDrawerDelta = 0f
     var pageNum: Int
@@ -130,10 +132,11 @@ class ViewMangaActivity : TitleActivityTemplate() {
             } else prepareImgFromWeb()
         } catch (e: Exception) {
             e.printStackTrace()
-            toolsBox.toastError("加载漫画错误")
+            toolsBox.toastError(R.string.load_manga_error)
         }
     }
 
+    @Suppress("DEPRECATION")
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.R)
@@ -144,7 +147,6 @@ class ViewMangaActivity : TitleActivityTemplate() {
                 hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
                 systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             }
-
         }
     }
 
@@ -183,7 +185,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
 
     private fun preDownloadChapterPages() {
         getImgUrlArray()?.let {
-            val mid = (if(pn in 1 until realCount) (if(cut) Math.abs(indexMap[pn]) else pn) else if(pn == -2 || pn >= realCount) it.size else 1) - 1
+            val mid = (if(pn in 1 until realCount) (if(cut) abs(indexMap[pn]) else pn) else if(pn == -2 || pn >= realCount) it.size else 1) - 1
             val left = if(isVertical && mid > verticalLoadMaxCount) (mid / verticalLoadMaxCount) * verticalLoadMaxCount else (mid-1)
             val right = if(isVertical) (mid / verticalLoadMaxCount + 1) * verticalLoadMaxCount else mid
             tasks = arrayOfNulls(it.size)
@@ -277,7 +279,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
 
     fun countZipEntries(doWhenFinish : (count: Int) -> Unit) = Thread{
         if (zipFile != null) try {
-            Log.d("Myvm", "zip: $zipFile")
+            Log.d("MyVM", "zip: $zipFile")
             val zip = ZipFile(zipFile)
             count = zip.size()
             if(cut) zip.entries().toList().sortedBy{it.name.substringBefore('.').toInt()}.forEachIndexed { i, it ->
@@ -285,13 +287,13 @@ class ViewMangaActivity : TitleActivityTemplate() {
                 isCut += useCut
                 indexMap += i + 1
                 if (useCut) indexMap += -(i + 1)
-                Log.d("Myvm", "[$i] 分析: ${it.name}, cut: $useCut")
+                Log.d("MyVM", "[$i] 分析: ${it.name}, cut: $useCut")
             }
         } catch (e: Exception) {
-            runOnUiThread { toolsBox.toastError("统计zip图片数错误!") }
+            runOnUiThread { toolsBox.toastError(R.string.count_zip_entries_error) }
         }
         runOnUiThread {
-            Log.d("Myvm", "开始加载控件")
+            Log.d("MyVM", "开始加载控件")
             doWhenFinish(count)
         }
     }.start()
@@ -318,7 +320,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
                     loadOneImg()
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    toolsBox.toastError("页数${currentItem}不合法")
+                    toolsBox.toastError(getString(R.string.load_page_number_error).format(currentItem))
                 }
             }
         } else {
@@ -364,22 +366,21 @@ class ViewMangaActivity : TitleActivityTemplate() {
 
     private fun cutBitmap(bitmap: Bitmap, isEnd: Boolean) = Bitmap.createBitmap(bitmap, if(!isEnd) 0 else (bitmap.width/2), 0, bitmap.width/2, bitmap.height)
 
-    private fun loadImg(imgView: ScaleImageView, bitmap: Bitmap, isLast: Int = 0, useCut: Boolean, isLeft: Boolean, isPlaceholder: Boolean = true) {
+    private fun loadImg(imgView: ScaleImageView, bitmap: Bitmap, useCut: Boolean, isLeft: Boolean, isPlaceholder: Boolean = true) {
         val bitmap2load = if(!isPlaceholder && useCut) cutBitmap(bitmap, isLeft) else bitmap
         runOnUiThread {
             imgView.setImageBitmap(bitmap2load)
             if(!isPlaceholder && isVertical) {
                 imgView.setHeight2FitImgWidth()
                 handler.sendEmptyMessage(VMHandler.DECREASE_IMAGE_COUNT_AND_RESTORE_PAGE_NUMBER_AT_ZERO)
-                //if (!isPlaceholder && isLast == 1) handler.sendEmptyMessageDelayed(VMHandler.RESTORE_PAGE_NUMBER, 233)
             }
         }
     }
 
-    private fun loadImgUrlInto(imgView: ScaleImageView, url: String, isLast: Int = 0, useCut: Boolean, isLeft: Boolean){
+    private fun loadImgUrlInto(imgView: ScaleImageView, url: String, useCut: Boolean, isLeft: Boolean){
         Log.d("MyVM", "Load from adt: $url")
-        AutoDownloadThread(CMApi.proxy?.wrap(url)?:url) {
-            it?.let { loadImg(imgView, BitmapFactory.decodeByteArray(it, 0, it.size), isLast, useCut, isLeft, false) }
+        AutoDownloadThread(CMApi.proxy?.wrap(url)?:url, 1000) {
+            it?.let { loadImg(imgView, BitmapFactory.decodeByteArray(it, 0, it.size), useCut, isLeft, false) }
         }.start()
     }
 
@@ -397,28 +398,28 @@ class ViewMangaActivity : TitleActivityTemplate() {
         return loading
     }
 
-    fun loadImgOn(imgView: ScaleImageView, position: Int, isLast: Int = 0){
+    fun loadImgOn(imgView: ScaleImageView, position: Int){
         Log.d("MyVM", "Load img: $position")
-        val index2load = if(cut) Math.abs(indexMap[position]) -1 else position
+        val index2load = if(cut) abs(indexMap[position]) -1 else position
         val useCut = cut && isCut[index2load]
         val isLeft = cut && indexMap[position] > 0
         if (zipFile?.exists() == true) getImgBitmap(index2load)?.let {
-            loadImg(imgView, it, isLast, useCut, isLeft, false)
+            loadImg(imgView, it, useCut, isLeft, false)
         }
         else {
-            loadImg(imgView, getLoadingBitmap(position), isLast, useCut, isLeft, true)
+            loadImg(imgView, getLoadingBitmap(position), useCut, isLeft, true)
             val re = tasks?.get(index2load)
             if (re != null) Thread{
                 val data = re.get()
                 if(data != null && data.isNotEmpty()) {
                     BitmapFactory.decodeByteArray(data, 0, data.size)?.let {
-                        loadImg(imgView, it, isLast, useCut, isLeft, false)
+                        loadImg(imgView, it, useCut, isLeft, false)
                         Log.d("MyVM", "Load position $position from task")
                     }?:Log.d("MyVM", "null bitmap at $position")
                 }
-                else getImgUrl(index2load)?.let { loadImgUrlInto(imgView, it, isLast, useCut, isLeft) }
+                else getImgUrl(index2load)?.let { loadImgUrlInto(imgView, it, useCut, isLeft) }
             }.start()
-            else getImgUrl(index2load)?.let { loadImgUrlInto(imgView, it, isLast, useCut, isLeft) }
+            else getImgUrl(index2load)?.let { loadImgUrlInto(imgView, it, useCut, isLeft) }
         }
         imgView.visibility = View.VISIBLE
     }
@@ -445,27 +446,29 @@ class ViewMangaActivity : TitleActivityTemplate() {
         if (position >= count || position < 0) null
         else {
             val zip = ZipFile(zipFile)
-            try {
-                if (q == 100) BitmapFactory.decodeStream(zip.getInputStream(zip.getEntry("${position}.webp")))
-                else {
-                    val out = ByteArrayOutputStream()
-                    BitmapFactory.decodeStream(zip.getInputStream(zip.getEntry("${position}.webp")))?.compress(Bitmap.CompressFormat.JPEG, q, out)
-                    BitmapFactory.decodeStream(ByteArrayInputStream(out.toByteArray()))
-                }
-            } catch (e: Exception) {
-                try {
-                    if (q == 100) BitmapFactory.decodeStream(zip.getInputStream(zip.getEntry("${position}.jpg")))
+            var bitmap: Bitmap? = null
+            for (i in 0..1) {
+                val ext = if((i == 0 && tryWebpFirst) || (i == 1 && !tryWebpFirst)) "webp" else "jpg"
+                bitmap = try {
+                    if (q == 100) BitmapFactory.decodeStream(zip.getInputStream(zip.getEntry("${position}.$ext")))
                     else {
                         val out = ByteArrayOutputStream()
-                        BitmapFactory.decodeStream(zip.getInputStream(zip.getEntry("${position}.jpg")))?.compress(Bitmap.CompressFormat.JPEG, q, out)
+                        BitmapFactory.decodeStream(zip.getInputStream(zip.getEntry("${position}.$ext")))?.compress(Bitmap.CompressFormat.JPEG, q, out)
                         BitmapFactory.decodeStream(ByteArrayInputStream(out.toByteArray()))
                     }
                 } catch (e: Exception) {
-                    e.printStackTrace()
-                    Toast.makeText(this, "加载zip的第${position}项错误", Toast.LENGTH_SHORT).show()
+                    if (i == 1) {
+                        e.printStackTrace()
+                        Toast.makeText(this, "加载zip的第${position}项错误", Toast.LENGTH_SHORT).show()
+                    }
                     null
                 }
+                if (bitmap != null) {
+                    tryWebpFirst = ext == "webp"
+                    break
+                }
             }
+            bitmap
         }
 
     private fun setIdPosition(position: Int) {
@@ -491,9 +494,10 @@ class ViewMangaActivity : TitleActivityTemplate() {
                 it["chapterId"] = hm.chapterId.toString()
                 it["name"] = inftitle.ttitle.text
             }*/
-        }catch (e: Exception) {
+        } catch (e: Exception) {
             e.printStackTrace()
-            toolsBox.toastError("准备控件错误")
+            toolsBox.toastError(R.string.load_chapter_error)
+            finish()
         }
     }
 
@@ -512,7 +516,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         idtbcut.isChecked = cut
         idtbcut.setOnClickListener {
             pb["useCut"] = idtbcut.isChecked
-            Toast.makeText(this, "下次浏览生效", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, R.string.take_effect_on_reload, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -520,7 +524,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         idtblr.isChecked = r2l
         idtblr.setOnClickListener {
             pb["r2l"] = idtblr.isChecked
-            Toast.makeText(this, "下次浏览生效", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, R.string.take_effect_on_reload, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -528,7 +532,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         idtbvp.isChecked = notUseVP
         idtbvp.setOnClickListener {
             pb["noVP"] = idtbvp.isChecked
-            Toast.makeText(this, "下次浏览生效", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, R.string.take_effect_on_reload, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -551,7 +555,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
     }
 
     fun updateSeekBar() {
-        if (!isInSeek) hideObjs()
+        if (!isInSeek) hideDrawer()
         updateSeekText()
         updateSeekProgress()
         setProgress()
@@ -591,21 +595,22 @@ class ViewMangaActivity : TitleActivityTemplate() {
         idtbvh.isChecked = isVertical
         pm = PagesManager(WeakReference(this))
         if (isVertical) {
-            val vsps = vsp as SpringView
-            vsps.footerView.lht.text = "更多"
-            vsps.headerView.lht.text = "更多"
-            vsps.setListener(object :SpringView.OnFreshListener{
-                override fun onLoadmore() {
-                    //scrollForward()
-                    pm?.toPage(true)
-                    vsps.onFinishFreshAndLoad()
-                }
-                override fun onRefresh() {
-                    //scrollBack()
-                    pm?.toPage(false)
-                    vsps.onFinishFreshAndLoad()
-                }
-            })
+            (vsp as SpringView).apply {
+                footerView.lht.setText(R.string.button_more)
+                headerView.lht.setText(R.string.button_more)
+                setListener(object :SpringView.OnFreshListener{
+                    override fun onLoadmore() {
+                        //scrollForward()
+                        pm?.toPage(true)
+                        onFinishFreshAndLoad()
+                    }
+                    override fun onRefresh() {
+                        //scrollBack()
+                        pm?.toPage(false)
+                        onFinishFreshAndLoad()
+                    }
+                })
+            }
             vp.visibility = View.GONE
             vsp.visibility = View.VISIBLE
             initImgList()
@@ -623,7 +628,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         }
         idtbvh.setOnClickListener {
             pb["vertical"] = idtbvh.isChecked
-            Toast.makeText(this, "下次浏览生效", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, R.string.take_effect_on_reload, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -633,7 +638,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
             Log.d("MyVM", "Do scroll back, isVertical: $isVertical, pageNum: $pageNum")
             handler.obtainMessage(VMHandler.LOAD_ITEM_SCROLL_MODE, currentItem - verticalLoadMaxCount, 0).sendToTarget()    //loadImgsIntoLine(currentItem - verticalLoadMaxCount)
             psivl.postDelayed({ pageNum-- }, 233)
-        }else pageNum--
+        } else pageNum--
     }
 
     fun scrollForward() {
@@ -674,7 +679,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
             @SuppressLint("ClickableViewAccessibility", "SetTextI18n")
             override fun onBindViewHolder(holder: ViewData, position: Int) {
                 val pos = if (r2l) realCount - position - 1 else position
-                val index2load = if(cut) Math.abs(indexMap[pos]) -1 else pos
+                val index2load = if(cut) abs(indexMap[pos]) -1 else pos
                 val useCut = cut && isCut[index2load]
                 val isLeft = cut && indexMap[pos] > 0
                 if (zipFile?.exists() == true) getImgBitmap(index2load)?.let {
@@ -684,15 +689,17 @@ class ViewMangaActivity : TitleActivityTemplate() {
                 else getImgUrl(index2load)?.let{
                     if(useCut){
                         val thisOneI = holder.itemView.onei
-                        Glide.with(this@ViewMangaActivity)
+                        Glide.with(this@ViewMangaActivity.applicationContext)
                             .asBitmap()
                             .load(GlideUrl(CMApi.proxy?.wrap(it)?:it, CMApi.myGlideHeaders))
                             .placeholder(BitmapDrawable(resources, getLoadingBitmap(pos)))
-                            .into(object : SimpleTarget<Bitmap>() {
+                            .into(object : CustomTarget<Bitmap>() {
                                 override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
                                     thisOneI.setImageBitmap(cutBitmap(resource, isLeft))
-                                } })
-                    } else Glide.with(this@ViewMangaActivity)
+                                }
+                                override fun onLoadCleared(placeholder: Drawable?) { }
+                            })
+                    } else Glide.with(this@ViewMangaActivity.applicationContext)
                         .load(GlideUrl(CMApi.proxy?.wrap(it)?:it, CMApi.myGlideHeaders))
                         .placeholder(BitmapDrawable(resources, getLoadingBitmap(pos)))
                         .into(holder.itemView.onei)
@@ -705,7 +712,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         }
     }
 
-    fun showObjs() {
+    fun showDrawer() {
         infseek.visibility = View.VISIBLE
         isearch.visibility = View.VISIBLE
         ObjectAnimator.ofFloat(
@@ -717,7 +724,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         clicked = true
     }
 
-    fun hideObjs() {
+    fun hideDrawer() {
         ObjectAnimator.ofFloat(
             oneinfo,
             "alpha",

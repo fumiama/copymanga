@@ -4,6 +4,8 @@
     ]>
 <resources>
     <string name="app_name">拷贝漫画</string>
+    <string name="file_provider_authority">top.fumiama.copymanga.fileprovider</string>
+
     <string name="action_settings">设定</string>
     <string name="action_info">关于</string>
     <string name="action_download">下载</string>
@@ -40,6 +42,17 @@
     <string name="web_error">网络错误</string>
     <string name="download_cover_failed">保存封面失败</string>
     <string name="download_cover_timeout">保存封面超时</string>
+    <string name="take_effect_on_reload">下次浏览生效</string>
+    <string name="end_of_chapter">已经到头了~</string>
+    <string name="press_again_to_load_previous_chapter">再次按下加载上一章</string>
+    <string name="press_again_to_load_next_chapter">再次按下加载下一章</string>
+    <string name="load_local_chapter_info_failed">读取本地章节信息失败</string>
+    <string name="download_chapter_info_failed">下载章节信息失败</string>
+    <string name="load_manga_error">加载漫画错误</string>
+    <string name="count_zip_entries_error">统计zip图片数错误</string>
+    <string name="load_page_number_error">第%1$d页加载异常</string>
+    <string name="load_chapter_error">加载章节错误</string>
+    <string name="show_image_error_try_lower_resolution">图片加载错误，请尝试下载后使用较低图片质量查看</string>
 
     <string name="mainPageApiUrl">https://%1$s/api/v3/h5/homeIndex?platform=3</string>
     <string name="referUrl">https://%1$s</string>
@@ -153,4 +166,5 @@
 
     <string name="old_download_card_name">前往旧版下载</string>
     <string name="new_download_card_option_hint">选择您的操作</string>
+    <string name="choose_how_download_folder">选择如何打开漫画下载目录</string>
 </resources>

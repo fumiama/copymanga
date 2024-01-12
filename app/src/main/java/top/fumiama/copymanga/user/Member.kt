@@ -1,12 +1,9 @@
 package top.fumiama.copymanga.user
 
 import android.content.SharedPreferences
-import android.widget.Toast
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.json.LoginInfoStructure
 import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.copymanga.tools.http.DownloadTools
@@ -47,6 +44,12 @@ class Member(private val pref: SharedPreferences, private val getString: (Int) -
 
 
     fun refreshAvatar() : LoginInfoStructure {
+        if (!pref.contains("token")) {
+            val l = LoginInfoStructure()
+            l.code = 400
+            l.message = getString(R.string.noLogin)
+            return l
+        }
         try {
             DownloadTools.getHttpContent(getString(R.string.memberInfoApiUrl).format(
                 CMApi.myHostApiUrl))?.decodeToString()?.let {
@@ -65,7 +68,7 @@ class Member(private val pref: SharedPreferences, private val getString: (Int) -
         }
         val l = LoginInfoStructure()
         l.code = 400
-        l.message =  getString(R.string.login_get_avatar_failed)
+        l.message = getString(R.string.login_get_avatar_failed)
         return l
     }
 

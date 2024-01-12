@@ -14,7 +14,7 @@
         android:usesCleartextTraffic="true">
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="top.fumiama.copymanga.fileprovider"
+            android:authorities="@string/file_provider_authority"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

@@ -1,5 +1,6 @@
 package top.fumiama.copymanga.tools.ui
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
@@ -39,6 +40,10 @@ class UITools(that: Context?, w: WeakReference<Activity>? = null) {
             } ?: transportStringError
         }
     fun toastError(s: String, willFinish: Boolean = true) {
+        Toast.makeText(zis, s, Toast.LENGTH_SHORT).show()
+        if (willFinish) weak?.get()?.finish()
+    }
+    fun toastError(s: Int, willFinish: Boolean = true) {
         Toast.makeText(zis, s, Toast.LENGTH_SHORT).show()
         if (willFinish) weak?.get()?.finish()
     }
@@ -84,7 +89,7 @@ class UITools(that: Context?, w: WeakReference<Activity>? = null) {
     fun dp2px(dp:Int):Int?{
         return zis?.resources?.displayMetrics?.density?.let { (dp * it + 0.5).toInt()}
     }
-    fun px2dp(px:Int):Int?{
+    private fun px2dp(px:Int):Int?{
         return zis?.resources?.displayMetrics?.density?.let { (px.toDouble() / it + 0.5).toInt()}
     }
     fun calcWidthFromDp(marginLeftDp:Int, widthDp:Int):List<Int>{
@@ -124,22 +129,24 @@ class UITools(that: Context?, w: WeakReference<Activity>? = null) {
                 }
                 toString()
             }
+        @SuppressLint("DiscouragedApi", "InternalInsetResource")
         fun getNavigationBarHeight(context: Context): Int {
             val resources = context.resources
             val resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android")
             return if (resourceId > 0) {
                 resources.getDimensionPixelSize(resourceId)
             } else {
-                0
+                64
             }
         }
+        @SuppressLint("DiscouragedApi", "InternalInsetResource")
         fun getStatusBarHeight(context: Context): Int {
             val resources = context.resources
             val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
             return if (resourceId > 0) {
                 resources.getDimensionPixelSize(resourceId)
             } else {
-                0
+                64
             }
         }
     }

@@ -26,6 +26,7 @@ import java.lang.ref.WeakReference
 class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
     var fbibinfo: View? = null
     var fbtinfo: View? = null
+    var isOnPause = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -67,14 +68,21 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
         }
     }
 
-    /*override fun onResume() {
+    override fun onResume() {
         super.onResume()
-        mainWeakReference?.get()?.apply {
+        isOnPause = false
+        /*mainWeakReference?.get()?.apply {
             toolbar.title = bookHandler?.book?.results?.comic?.name
         }
         setStartRead()
         fbibinfo?.layoutParams?.height = ((fbibinfo?.width?:0) * 4.0 / 9.0 + 0.5).toInt()
-    }*/
+        */
+    }
+
+    override fun onPause() {
+        super.onPause()
+        isOnPause = true
+    }
 
     override fun onDestroy() {
         super.onDestroy()

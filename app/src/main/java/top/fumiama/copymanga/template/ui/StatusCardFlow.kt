@@ -10,7 +10,7 @@ import top.fumiama.dmzj.copymanga.R
 
 @ExperimentalStdlibApi
 open class StatusCardFlow(private val api: Int, nav: Int) : InfoCardLoader(R.layout.fragment_statuscardflow, nav) {
-    val sortWay = listOf("datetime_updated", "-datetime_updated", "popular", "-popular")
+    val sortWay = listOf("-datetime_updated", "datetime_updated", "popular", "-popular")
     var sortValue = 0
 
     override fun getApiUrl() =

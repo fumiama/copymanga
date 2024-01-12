@@ -16,6 +16,7 @@ import android.view.MotionEvent
 import android.widget.ImageView
 import top.fumiama.copymanga.ui.vm.PagesManager
 import top.fumiama.copymanga.ui.vm.ViewMangaActivity
+import top.fumiama.dmzj.copymanga.R
 import java.lang.ref.WeakReference
 import java.util.*
 import kotlin.math.sqrt
@@ -563,7 +564,7 @@ class ScaleImageView : ImageView {
             }
         }catch (e:Exception){
             e.printStackTrace()
-            ViewMangaActivity.va?.get()?.toolsBox?.toastError("图片加载错误，请尝试下载后使用较低图片质量查看", false)
+            ViewMangaActivity.va?.get()?.toolsBox?.toastError(R.string.show_image_error_try_lower_resolution, false)
         }
     }
     ////////////////////////////////有效性判断////////////////////////////////
@@ -688,7 +689,7 @@ class ScaleImageView : ImageView {
                 (event.x / width).let {
                     when {
                         it <= 1.0 / 3.0 -> pm?.toPreviousPage()
-                        it <= 2.0 / 3.0 -> pm?.manageInfo()
+                        it <= 2.0 / 3.0 -> pm?.toggleDrawer()
                         else -> pm?.toNextPage()
                     }
                 }

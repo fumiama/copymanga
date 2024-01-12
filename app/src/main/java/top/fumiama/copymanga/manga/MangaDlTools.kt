@@ -19,21 +19,26 @@ class MangaDlTools {
         get() = pool?.wait
         set(value) { if (value != null) { pool?.wait = value } }
 
-    fun downloadChapterInVol(url: CharSequence, chapterName: CharSequence, group: CharSequence, index: Int){
+    fun downloadChapterInVol(url: CharSequence, chapterName: CharSequence, group: CharSequence, index: Int) {
         Log.d("MyMDT", "下载：$url, index：$index")
-        AutoDownloadThread(url.toString()){ data ->
-            Gson().fromJson(data?.decodeToString(), Chapter2Return::class.java)?.let {
-                getChapterInfo(it, index, chapterName, group)
+        AutoDownloadThread(url.toString(), 1000) { data ->
+            try {
+                Gson().fromJson(data?.decodeToString(), Chapter2Return::class.java)?.let {
+                    getChapterInfo(it, index, chapterName, group)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                onDownloadedListener?.handleMessage(index, false, e.localizedMessage?:"Gson parsing error")
             }
         }.start()
     }
 
     @Synchronized private fun prepareDownloadListener() {
-        pool?.setOnDownloadListener { fileName: String, isSuccess: Boolean ->
-            indexMap[fileName]?.let { onDownloadedListener?.handleMessage(it, isSuccess) }
+        pool?.setOnDownloadListener { fileName: String, isSuccess: Boolean, message: String ->
+            indexMap[fileName]?.let { onDownloadedListener?.handleMessage(it, isSuccess, message) }
         }
-        pool?.setOnPageDownloadListener { fileName: String, downloaded: Int, total: Int, isSuccess: Boolean ->
-            indexMap[fileName]?.let { onDownloadedListener?.handleMessage(it, downloaded, total, isSuccess) }
+        pool?.setOnPageDownloadListener { fileName: String, downloaded: Int, total: Int, isSuccess: Boolean, message: String ->
+            indexMap[fileName]?.let { onDownloadedListener?.handleMessage(it, downloaded, total, isSuccess, message) }
         }
     }
 
@@ -83,7 +88,7 @@ class MangaDlTools {
 
     var onDownloadedListener: OnDownloadedListener? = null
     interface OnDownloadedListener{
-        fun handleMessage(index: Int, isSuccess: Boolean)
-        fun handleMessage(index: Int, downloaded: Int, total: Int, isSuccess: Boolean)
+        fun handleMessage(index: Int, isSuccess: Boolean, message: String)
+        fun handleMessage(index: Int, downloaded: Int, total: Int, isSuccess: Boolean, message: String)
     }
 }

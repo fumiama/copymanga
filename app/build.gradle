@@ -8,8 +8,8 @@ android {
         applicationId 'top.fumiama.copymanga'
         minSdkVersion 23
         targetSdkVersion 34
-        versionCode 41
-        versionName '2.0.5'
+        versionCode 42
+        versionName '2.0.6'
         resConfigs 'zh', 'zh-rCN'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -58,10 +58,10 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'com.google.android.material:material:1.10.0'
+    implementation 'com.google.android.material:material:1.11.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'androidx.navigation:navigation-fragment-ktx:2.7.5'
-    implementation 'androidx.navigation:navigation-ui-ktx:2.7.5'
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.7.6'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.7.6'
     testImplementation 'junit:junit:4.13.2'
     implementation "androidx.preference:preference-ktx:1.2.1"
     implementation 'com.afollestad.material-dialogs:input:3.3.0'
@@ -74,5 +74,6 @@ dependencies {
     implementation 'com.liaoinstan.springview:library:1.7.0'
     implementation 'com.github.zawadz88.materialpopupmenu:material-popup-menu:4.0.1'
     implementation 'com.lapism:search:2.4.1@aar'
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.2'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
+    implementation 'com.airbnb.android:lottie:6.3.0'
 }

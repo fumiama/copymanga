@@ -7,11 +7,11 @@ import android.os.Looper
 import android.os.Message
 import android.util.Log
 import android.view.View
+import com.afollestad.materialdialogs.utils.MDUtil.getStringArray
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_viewmanga.*
 import kotlinx.android.synthetic.main.widget_infodrawer.*
 import kotlinx.android.synthetic.main.widget_infodrawer.view.*
-import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.json.Chapter2Return
 import top.fumiama.copymanga.json.ChapterWithContent
 import top.fumiama.copymanga.json.ComicStructure
@@ -21,21 +21,20 @@ import top.fumiama.copymanga.ui.vm.ViewMangaActivity.Companion.pn
 import top.fumiama.copymanga.ui.vm.ViewMangaActivity.Companion.position
 import top.fumiama.copymanga.ui.vm.ViewMangaActivity.Companion.uuidArray
 import top.fumiama.copymanga.views.ScaleImageView
+import top.fumiama.dmzj.copymanga.R
 import java.io.File
-import java.lang.Exception
-import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
 import java.util.*
-import java.util.concurrent.atomic.AtomicInteger
 
 class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
     url, Chapter2Return::class.java, Looper.myLooper()!!
 ) {
     var manga: Chapter2Return? = null
     private val wv = WeakReference(activity)
-    private val infcard = wv.get()?.infcard
-    private var infcShowed = false
+    private val drawer = wv.get()?.infcard
+    private val weeks = wv.get()?.getStringArray(R.array.weeks)
+    private var hasDrawerShown = false
     val dl = activity.let {
         val re = Dialog(it)
         re.setContentView(R.layout.dialog_unzipping)
@@ -49,16 +48,9 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
     private val week: String
         get() {
             val cal = Calendar.getInstance()
-            return when (cal[Calendar.DAY_OF_WEEK]) {
-                1 -> "周日"
-                2 -> "周一"
-                3 -> "周二"
-                4 -> "周三"
-                5 -> "周四"
-                6 -> "周五"
-                7 -> "周六"
-                else -> ""
-            }
+            val w = cal[Calendar.DAY_OF_WEEK]
+            if (w > 7 || w <= 0) return ""
+            return weeks?.get(w-1) ?: ""
         }
     private var remainingImageCount = 0
 
@@ -66,21 +58,22 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
     override fun handleMessage(msg: Message) {
         super.handleMessage(msg)
         when (msg.what) {
-            HIDE_INFO_CARD -> if (infcShowed) {
-                hideInfCard(); infcShowed = false
+            HIDE_INFO_CARD -> if (hasDrawerShown) {
+                hideInfCard(); hasDrawerShown = false
             }
-            SHOW_INFO_CARD -> if (!infcShowed) {
-                showInfCard(); infcShowed = true
+            SHOW_INFO_CARD -> if (!hasDrawerShown) {
+                showInfCard(); hasDrawerShown = true
             }
-            TRIGGER_INFO_CARD -> infcShowed = if (infcShowed) {
+            TRIGGER_INFO_CARD -> hasDrawerShown = if (hasDrawerShown) {
                 hideInfCard(); false
             } else {
                 showInfCard(); true
             }
             LOAD_IMG_ON -> {
-                val simg = msg.obj as ScaleImageView
-                wv.get()?.loadImgOn(simg, msg.arg1, msg.arg2)
-                //simg.setHeight2FitImgWidth()
+                val scaleImageView = msg.obj as ScaleImageView
+                // msg.arg2: isLast
+                wv.get()?.loadImgOn(scaleImageView, msg.arg1)
+                //scaleImageView.setHeight2FitImgWidth()
                 //if(msg.arg2 == 1) sendEmptyMessage(DELAYED_RESTORE_PAGE_NUMBER)
             }
             CLEAR_IMG_ON -> {
@@ -106,13 +99,13 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
                 Log.d("MyVMH", "Load page from $item")
             }
             DIALOG_HIDE -> dl.hide()
-            HIDE_INFO_CARD_FULL -> if (infcShowed) {
-                hideInfCardFull(); infcShowed = false
+            HIDE_INFO_CARD_FULL -> if (hasDrawerShown) {
+                hideInfCardFull(); hasDrawerShown = false
             }
-            SHOW_INFO_CARD_FULL -> if (!infcShowed) {
-                showInfCardFull(); infcShowed = true
+            SHOW_INFO_CARD_FULL -> if (!hasDrawerShown) {
+                showInfCardFull(); hasDrawerShown = true
             }
-            TRIGGER_INFO_CARD_FULL -> infcShowed = if (infcShowed) {
+            TRIGGER_INFO_CARD_FULL -> hasDrawerShown = if (hasDrawerShown) {
                 hideInfCardFull(); false
             } else {
                 showInfCardFull(); true
@@ -147,7 +140,7 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
     override fun onError() {
         super.onError()
         if(exit) return
-        wv.get()?.toolsBox?.toastError("下载章节信息失败")
+        wv.get()?.toolsBox?.toastError(R.string.download_chapter_info_failed)
     }
 
     override fun doWhenFinishDownload() {
@@ -181,7 +174,7 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
             true
         } catch (e: Exception){
             e.printStackTrace()
-            //wv.get()?.toolsBox?.toastError("读取本地章节信息失败")
+            wv.get()?.toolsBox?.toastError(R.string.load_local_chapter_info_failed)
             false
         }
     }
@@ -225,23 +218,23 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
 
     private fun showInfCard() {
         Log.d("MyVMH", "Read info drawer delta: $delta")
-        ObjectAnimator.ofFloat(infcard?.idc, "alpha", 0.3F, 0.8F).setDuration(233).start()
-        ObjectAnimator.ofFloat(infcard, "translationY", delta, 0F).setDuration(233).start()
+        ObjectAnimator.ofFloat(drawer?.idc, "alpha", 0.3F, 0.8F).setDuration(233).start()
+        ObjectAnimator.ofFloat(drawer, "translationY", delta, 0F).setDuration(233).start()
     }
 
     private fun showInfCardFull() {
         Log.d("MyVMH", "Read info drawer delta: $delta")
-        ObjectAnimator.ofFloat(infcard?.idc, "alpha", 0.0F, 0.8F).setDuration(233).start()
-        ObjectAnimator.ofFloat(infcard, "translationY", delta, 0F).setDuration(233).start()
+        ObjectAnimator.ofFloat(drawer?.idc, "alpha", 0.0F, 0.8F).setDuration(233).start()
+        ObjectAnimator.ofFloat(drawer, "translationY", delta, 0F).setDuration(233).start()
     }
 
     private fun hideInfCard() {
-        ObjectAnimator.ofFloat(infcard?.idc, "alpha", 0.8F, 0.3F).setDuration(233).start()
-        ObjectAnimator.ofFloat(infcard, "translationY", 0F, delta).setDuration(233).start()
+        ObjectAnimator.ofFloat(drawer?.idc, "alpha", 0.8F, 0.3F).setDuration(233).start()
+        ObjectAnimator.ofFloat(drawer, "translationY", 0F, delta).setDuration(233).start()
     }
     private fun hideInfCardFull() {
-        ObjectAnimator.ofFloat(infcard?.idc, "alpha", 0.8F, 0.0F).setDuration(233).start()
-        ObjectAnimator.ofFloat(infcard, "translationY", 0F, delta).setDuration(233).start()
+        ObjectAnimator.ofFloat(drawer?.idc, "alpha", 0.8F, 0.0F).setDuration(233).start()
+        ObjectAnimator.ofFloat(drawer, "translationY", 0F, delta).setDuration(233).start()
     }
 
     companion object {

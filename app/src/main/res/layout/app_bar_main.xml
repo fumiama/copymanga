@@ -16,16 +16,13 @@
             android:id="@+id/coordiv"
             android:layout_width="match_parent"
             android:layout_height="16dp"
-            android:background="?attr/colorPrimarySurface"
-            android:visibility="visible"
-            app:layout_scrollFlags="scroll|enterAlways" />
+            android:background="?attr/colorPrimarySurface" />
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimarySurface"
-            app:layout_scrollFlags="scroll|enterAlways"
             app:popupTheme="@style/AppTheme.PopupOverlay" />
 
     </com.google.android.material.appbar.AppBarLayout>

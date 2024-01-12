@@ -3,11 +3,14 @@ package top.fumiama.copymanga.tools.http
 import android.util.Log
 import top.fumiama.copymanga.tools.api.CMApi
 import java.io.File
+import java.io.FileOutputStream
 import java.lang.Thread.sleep
 import java.util.zip.CRC32
 import java.util.zip.CheckedOutputStream
 import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
+import kotlin.random.Random
 
 class DownloadPool(folder: String) {
     class Quest(val fileName: String, val imgUrl: Array<String>, val refer: String? = null)
@@ -22,9 +25,9 @@ class DownloadPool(folder: String) {
     var wait = false
     private val saveFolder = File(folder)
     //fileName: String, isSuccess: Boolean
-    private var mOnDownloadListener: ((String, Boolean) -> Unit)? = null
+    private var mOnDownloadListener: ((String, Boolean, String) -> Unit)? = null
     //fileName: String, downloaded: Int, total: Int, isSuccess: Boolean
-    private var mOnPageDownloadListener: ((String, Int, Int, Boolean) -> Unit)? = null
+    private var mOnPageDownloadListener: ((String, Int, Int, Boolean, String) -> Unit)? = null
     init {
         if(!saveFolder.exists()) saveFolder.mkdirs()
     }
@@ -37,50 +40,76 @@ class DownloadPool(folder: String) {
         Thread{
             quests.forEach { quest ->
                 packZipFile(quest.fileName, quest.imgUrl, quest.refer)
-                sleep(1000)
             }
         }.start()
     }
 
-    fun setOnDownloadListener(onDownloadListener: (String, Boolean) -> Unit) {
+    fun setOnDownloadListener(onDownloadListener: (String, Boolean, String) -> Unit) {
         mOnDownloadListener = onDownloadListener
     }
 
-    fun setOnPageDownloadListener(onPageDownloadListener: (String, Int, Int, Boolean) -> Unit) {
+    fun setOnPageDownloadListener(onPageDownloadListener: (String, Int, Int, Boolean, String) -> Unit) {
         mOnPageDownloadListener = onPageDownloadListener
     }
 
     private fun packZipFile(fileName: String, imgUrls: Array<String>, refer: String?) {
         Thread{
-            File(saveFolder, fileName).let { f ->
+            File(saveFolder, "$fileName.tmp").let { f ->
                 f.parentFile?.let { if(!it.exists()) it.mkdirs() }
-                if(f.exists()) f.delete()
-                f.createNewFile()
+                var start = 0
                 Log.d("MyDP", "Zip file: ${f.absolutePath}")
-                val zip = ZipOutputStream(CheckedOutputStream(f.outputStream(), CRC32()))
+                if(f.exists()) {
+                    try {
+                        val zipFile = ZipFile(f)
+                        start = zipFile.size() - 1
+                        zipFile.close()
+                        Log.d("MyDP", "last downloaded index: $start")
+                        if (start <= 0 || start >= imgUrls.size) { // error or re-download
+                            f.delete()
+                            f.createNewFile()
+                            start = 0
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        f.delete()
+                        f.createNewFile()
+                    }
+                } else f.createNewFile()
+                val zip = ZipOutputStream(CheckedOutputStream(FileOutputStream(f, true), CRC32()))
                 zip.setLevel(9)
                 var succeed = true
-                for(index in imgUrls.indices) {
-                    while (wait && !exit) sleep(1000)
-                    if(exit) break
-                    zip.putNextEntry(ZipEntry("$index.${if(imgUrls[index].contains(".webp")) "webp" else "jpg"}"))
-                    var tryTimes = 3
-                    var s = false
-                    while (!s && tryTimes-- > 0){
-                        val u = imgUrls[index]
-                        s = (DownloadTools.getHttpContent(CMApi.proxy?.wrap(u)?:u, -1))?.let { zip.write(it); true }?:false
-                        if (!s) sleep(2000)
+                var lastIndex = -8
+                try {
+                    for(index in start until imgUrls.size) {
+                        while (wait && !exit) sleep(100+Random.nextLong(1000))
+                        if(exit) break
+                        var tryTimes = 3
+                        var s = false
+                        while (!s && tryTimes-- > 0) {
+                            val u = imgUrls[index]
+                            s = (DownloadTools.getHttpContent(CMApi.proxy?.wrap(u)?:u, -1))?.let {
+                                zip.putNextEntry(ZipEntry("$index.${if(imgUrls[index].contains(".webp")) "webp" else "jpg"}"))
+                                zip.write(it)
+                                zip.closeEntry()
+                                true
+                            }?:false
+                            if (!s) sleep(2000)
+                        }
+                        if(!s && tryTimes <= 0) {
+                            succeed = false
+                            mOnPageDownloadListener?.let { it(fileName, index + 1, imgUrls.size, false, "超过最大重试次数") }
+                            break
+                        } else mOnPageDownloadListener?.let { it(fileName, index + 1, imgUrls.size, true, "") }
+                        lastIndex = index
                     }
-                    if(!s && tryTimes <= 0) {
-                        succeed = false
-                        mOnPageDownloadListener?.let { it(fileName, index + 1, imgUrls.size, false) }
-                        break
-                    } else mOnPageDownloadListener?.let { it(fileName, index + 1, imgUrls.size, true) }
-                    //zip.flush()
+                    zip.close()
+                    if (succeed && lastIndex+1 >= imgUrls.size) f.renameTo(File(saveFolder, fileName))
+                    mOnPageDownloadListener?.let { it(fileName, 0, 0, true, "") }
+                    mOnDownloadListener?.let { it(fileName, succeed, "") }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    mOnDownloadListener?.let { it(fileName, false, e.localizedMessage?:"packZipFile") }
                 }
-                zip.close()
-                mOnPageDownloadListener?.let { it(fileName, 0, 0, true) }
-                mOnDownloadListener?.let { it(fileName, succeed) }
             }
         }.start()
     }
