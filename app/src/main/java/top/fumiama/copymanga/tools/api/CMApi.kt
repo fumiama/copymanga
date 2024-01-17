@@ -7,11 +7,13 @@ import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.tools.http.DownloadTools
 import top.fumiama.copymanga.tools.http.Proxy
+import top.fumiama.copymanga.tools.http.Resolution
 import java.io.File
 import java.net.URLEncoder
 
 object CMApi {
     var proxy = if(Proxy.useImageProxy) Proxy(R.string.imgProxyApiUrl, R.string.imgProxyApiPrefix, R.string.imgProxyKeyID) else null
+    var resolution = Resolution(Regex("\\.c\\d+x\\."))
     var myGlideHeaders: LazyHeaders? = null
         get() {
             MainActivity.mainWeakReference?.get()?.let {

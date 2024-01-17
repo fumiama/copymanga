@@ -20,7 +20,8 @@ class ScrollRefreshView : NestedScrollView {
 
     override fun onScrollChanged(l: Int, t: Int, oldl: Int, oldt: Int) {
         super.onScrollChanged(l, t, oldl, oldt)
-        //Log.d("MyOSV", "$l, $t, $oldl, $oldt")
-        swipeRefreshLayout?.isEnabled = t == 0
+        if(swipeRefreshLayout?.isRefreshing == false) {
+            swipeRefreshLayout?.isEnabled = t == 0
+        }
     }
 }

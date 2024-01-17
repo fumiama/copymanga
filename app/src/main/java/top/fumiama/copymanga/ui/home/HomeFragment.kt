@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.ImageButton
+import android.widget.Toast
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -41,6 +42,19 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         if(isFirstInflate) {
+            val tb = mainWeakReference?.get()?.toolsBox
+            val netInfo = tb?.netInfo
+            if(netInfo != null && netInfo != tb.transportStringNull && netInfo != tb.transportStringError) Thread {
+                val l = MainActivity.member?.refreshAvatar()
+                if (l?.code != 200) {
+                    mainWeakReference?.get()?.runOnUiThread {
+                        Toast.makeText(context, "${getString(R.string.login_get_avatar_failed)}: 代码${l?.code}, 信息: ${l?.message}", Toast.LENGTH_SHORT).show()
+                    }
+                    MainActivity.member?.logout()
+                }
+            }.start()
+            homeHandler = HomeHandler(WeakReference(this))
+
             val theme = resources.newTheme()
             swiperefresh?.setColorSchemeColors(
                 resources.getColor(R.color.colorAccent, theme),
@@ -150,20 +164,6 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
             }.start()
         }
     }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        val tb = mainWeakReference?.get()?.toolsBox
-        val netInfo = tb?.netInfo
-        if(netInfo != null && netInfo != tb.transportStringNull && netInfo != tb.transportStringError) Thread {
-            val l = MainActivity.member?.refreshAvatar()
-            if (l?.code != 200) {
-                MainActivity.member?.logout()
-            }
-        }.start()
-        homeHandler = HomeHandler(WeakReference(this))
-    }
-
     override fun onDestroy() {
         super.onDestroy()
         homeHandler.destroy()

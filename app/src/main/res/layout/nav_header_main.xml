@@ -8,7 +8,7 @@
     <ImageView
         android:id="@+id/navhbg"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="match_parent"
         android:foreground="@drawable/mask_blackbottom"
         android:onClick="onNavHBgClicked"
         android:scaleType="centerCrop"
@@ -41,10 +41,10 @@
 
     <ImageView
         android:id="@+id/navhicon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="@dimen/user_icon_size"
+        android:layout_height="@dimen/user_icon_size"
         android:layout_marginBottom="@dimen/nav_header_vertical_spacing"
-        android:alpha="@dimen/global_alpha"
+        android:alpha="@dimen/user_icon_alpha"
         android:onClick="startLoginActivity"
         app:layout_constraintBottom_toTopOf="@+id/navttitle"
         app:layout_constraintEnd_toEndOf="parent"

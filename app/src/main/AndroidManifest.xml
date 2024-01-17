@@ -14,7 +14,7 @@
         android:usesCleartextTraffic="true">
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="@string/file_provider_authority"
+            android:authorities="${applicationId}.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
@@ -22,25 +22,25 @@
                 android:resource="@xml/provider_paths" />
         </provider>
         <activity
-            android:name="top.fumiama.copymanga.MainActivity"
+            android:name="${applicationId}.MainActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
-                <action android:name="top.fumiama.copymanga.SHARE"/>
+                <action android:name="${applicationId}.SHARE"/>
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
         <activity
-            android:name="top.fumiama.copymanga.LoginActivity"
+            android:name="${applicationId}.LoginActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
         <activity
             android:name="com.yalantis.ucrop.UCropActivity"
             android:screenOrientation="fullSensor"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
         <activity
-            android:name="top.fumiama.copymanga.ui.vm.ViewMangaActivity"
+            android:name="${applicationId}.ui.vm.ViewMangaActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
     </application>
 

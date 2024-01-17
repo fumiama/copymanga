@@ -31,7 +31,7 @@ object Reader {
             }
             if (zipf.exists()) {
                 ViewMangaActivity.zipFile = zipf
-                intent.putExtra("callFrom", "zipFirst")
+                //intent.putExtra("callFrom", "zipFirst")
                 startActivity(intent)
             } else {
                 ViewMangaActivity.zipFile = null
