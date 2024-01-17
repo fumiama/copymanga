@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string-array name="search_types">
+        <item>全部</item>
+        <item>名称</item>
+        <item>作者</item>
+        <item>汉化组</item>
+    </string-array>
     <string-array name="weeks">
         <item>周日</item>
         <item>周一</item>
@@ -8,5 +14,10 @@
         <item>周四</item>
         <item>周五</item>
         <item>周六</item>
+    </string-array>
+    <string-array name="resolutions">
+        <item>1500</item>
+        <item>1200</item>
+        <item>800</item>
     </string-array>
 </resources>

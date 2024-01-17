@@ -352,7 +352,7 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
                     it.tbtn.setBackgroundResource(R.drawable.rndbg_checked)
                     it.tbtn.isChecked = false
                     ViewMangaActivity.zipFile = zipf
-                    ViewMangaActivity.dlhandler = this
+                    ViewMangaActivity.dlHandler = this
                     ViewMangaActivity.position = it.tbtn.index
                     dl?.show()
                     val intent = Intent(that?.context, ViewMangaActivity::class.java)
@@ -380,7 +380,7 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
                     toolsBox.buildInfo("直接观看", "不下载而进行观看", "确定",
                         null, "取消", {
                             ViewMangaActivity.zipFile = null
-                            ViewMangaActivity.dlhandler = this
+                            ViewMangaActivity.dlHandler = this
                             ViewMangaActivity.position = it.tbtn.index
                             dl?.show()
 

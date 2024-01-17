@@ -73,9 +73,8 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
             //0 -> setLayouts()
             1 -> setCover()
             2 -> setTexts()
-            3 -> that?.fbibinfo?.let { setInfoHeight(it) }
-            4 -> setAuthorsAndTags()
-            5 -> setOverScale()
+            3 -> setAuthorsAndTags()
+            4 -> setOverScale()
             6 -> if(complete) that?.navigate2dl()
             7 -> setVolumes()
             8 -> that?.apply { fbl?.addView(msg.obj as View) }
@@ -102,7 +101,6 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
     override fun doWhenFinishDownload() {
         super.doWhenFinishDownload()
         if(exit) return
-        inflateComponents()
         if(keys.isEmpty()) book?.results?.groups?.values?.forEach{
             keys += it.name
             gpws += it.path_word
@@ -112,7 +110,7 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
             cnts += it.count
             Log.d("MyBFH", "Add caption: ${it.name} @ ${it.path_word} of ${it.count}")
         }
-        for (i in 1..5) {
+        for (i in 1..4) {
             sendEmptyMessageDelayed(i, (100*i).toLong())
         }
         if(vols?.isEmpty() != false) initComicData()
@@ -126,24 +124,15 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
         that?.setAddToShelf()
         Log.d("MyBH", "Set complete: true")
     }
-
-    private fun inflateComponents(){
-        if(that?.fbibinfo == null) that?.fbibinfo = that?.layoutInflater?.inflate(R.layout.line_bookinfo, that?.fbl, false)
-        if(that?.fbtinfo == null) that?.fbtinfo = that?.layoutInflater?.inflate(R.layout.line_text_info, that?.fbl, false)
-    }
-
     private fun setOverScale(){
         that?.fbov?.setScaleView(that!!.lbibg)
     }
 
-    private fun setCover(){
+    private fun setCover() {
         that?.apply {
-            try {
-                fbl.addView(fbibinfo)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                (fbibinfo?.parent as LinearLayout?)?.removeAllViews()
-                fbl?.addView(fbibinfo)
+            that?.layoutInflater?.inflate(R.layout.line_bookinfo, that?.fbl, false)?.let {
+                fbl.addView(it)
+                setInfoHeight(it)
             }
             book?.results?.comic?.cover?.let { cover ->
                 val load = Glide.with(this).load(
@@ -180,8 +169,9 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
             book?.results?.comic?.status?.display
         ) }?:""
         that?.bttime?.text = book?.results?.comic?.datetime_updated
-        (that?.fbtinfo as TextView).text = book?.results?.comic?.brief
-        that?.fbl?.addView(that?.fbtinfo)
+        val v = that?.layoutInflater?.inflate(R.layout.line_text_info, that?.fbl, false)
+        (v as TextView).text = book?.results?.comic?.brief
+        that?.fbl?.addView(v)
         that?.fbl?.addView(divider)
     }
 

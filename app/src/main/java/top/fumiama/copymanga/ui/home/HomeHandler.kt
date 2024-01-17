@@ -12,6 +12,7 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.cardview.widget.CardView
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.animation.doOnEnd
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
@@ -43,9 +44,9 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
     var fhib: View? = null
         get() {
             Log.d("MyHH", "Get fhib.")
-            if(field == null){
+            if (field == null) {
                 field = homeF?.layoutInflater?.inflate(R.layout.viewpage_banner, homeF?.fhl, false)
-                Thread{homeF?.homeHandler?.sendEmptyMessage(3)}.start()
+                Thread{ homeF?.homeHandler?.sendEmptyMessage(3) }.start()
             }
             return field
         }
@@ -57,17 +58,16 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
             -1 -> homeF?.swiperefresh?.isRefreshing = msg.obj as Boolean
             //0 -> setLayouts()
             1 -> inflateCardLines()
-
             3 -> setBanner(fhib as Banner)
-
             5 -> setBannerInfo(msg.obj as Banner)
             6 -> {
                 homeF?.fhl?.let {
-                    ObjectAnimator.ofFloat(it, "alpha", 1f, 0f).setDuration(233).start()
-                    it.postDelayed({
+                    val oa = ObjectAnimator.ofFloat(it, "alpha", 1f, 0f).setDuration(233)
+                    oa.doOnEnd { _ ->
                         it.removeAllViews()
-                        ObjectAnimator.ofFloat(it, "alpha", 0f, 1f).setDuration(233).start()
-                    }, 233)
+                        it.alpha = 1f
+                    }
+                    oa.start()
                 }
             }
             7 -> inflateBanner()
@@ -213,7 +213,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
         }
     }
 
-    private fun inflateCardLines() = Thread{
+    private fun inflateCardLines() = Thread {
         if (indexLines.isNotEmpty()) indexLines = arrayOf()
         inflateRec()
         inflateTopics()

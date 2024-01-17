@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE resources [
-    <!ENTITY hosturl "api.mangacopy.com">
+    <!ENTITY hosturl "api.copymanga.tv">
     ]>
 <resources>
     <string name="app_name">拷贝漫画</string>
-    <string name="file_provider_authority">top.fumiama.copymanga.fileprovider</string>
 
     <string name="action_settings">设定</string>
     <string name="action_info">关于</string>
@@ -42,7 +41,7 @@
     <string name="web_error">网络错误</string>
     <string name="download_cover_failed">保存封面失败</string>
     <string name="download_cover_timeout">保存封面超时</string>
-    <string name="take_effect_on_reload">下次浏览生效</string>
+    <string name="unsupported_mode_switching">不支持在此模式下切换</string>
     <string name="end_of_chapter">已经到头了~</string>
     <string name="press_again_to_load_previous_chapter">再次按下加载上一章</string>
     <string name="press_again_to_load_next_chapter">再次按下加载下一章</string>
@@ -85,6 +84,7 @@
     <string name="apiProxyApiUrl">https://copymanga.azurewebsites.net/api/api?url=%1$s</string>
     <string name="apiProxyApiPrefix">https://api.mangacopy.com/api/</string>
     -->
+    <string name="imgResolutionKeyID">settings_cat_net_sb_image_resolution</string>
 
     <string name="complete">已完结</string>
 
@@ -129,6 +129,8 @@
     <string name="caption">标签</string>
 
     <string name="settings_cat_net">网络</string>
+    <string name="settings_cat_net_sb_title_image_resolution">图片分辨率</string>
+    <string name="settings_cat_net_sb_summary_image_resolution">默认1500</string>
     <string name="settings_cat_net_sw_use_cellar">总是使用流量观看</string>
     <string name="settings_cat_net_sm_use_cellar">打开后不再在开始阅读时提示</string>
     <string name="settings_cat_net_sw_use_foreign">使用海外线路</string>

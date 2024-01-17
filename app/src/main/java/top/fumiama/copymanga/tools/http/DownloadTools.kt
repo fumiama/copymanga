@@ -124,6 +124,26 @@ object DownloadTools {
             task
         }
 
+    fun prepare(url: String?): FutureTask<ByteArray?>? =
+        url?.let {
+            Log.d("Mydl", "prepareHttp: $it")
+            var ret: ByteArray? = null
+            val task = FutureTask(Callable {
+                try {
+                    val connection = getNormalConnection(it, "GET")
+
+                    val ci = connection?.inputStream
+                    ret = ci?.readBytes()
+                    ci?.close()
+                    connection?.disconnect()
+                } catch (ex: Exception) {
+                    ex.printStackTrace()
+                }
+                return@Callable ret
+            })
+            task
+        }
+
     /*private fun replaceChineseCharacters(string: String?) : String? {
         if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.M) return string
         else return string?.replace(Regex("(?<=/)[\\w\\s\\d\\u4e00-\\u9fa5.-]+(?=/?)")) { match ->

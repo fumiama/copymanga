@@ -7,10 +7,11 @@
     <dimen name="icon_size">32dp</dimen>
     <dimen name="icon_size_middle">24dp</dimen>
     <dimen name="icon_size_small">16dp</dimen>
+    <dimen name="user_icon_size">64dp</dimen>
+    <dimen name="user_icon_alpha">0.8</dimen>
 
-    <dimen name="global_alpha">0.8</dimen>
-    <dimen name="global_radius">16dp</dimen>
-    <dimen name="global_card_elevation">4dp</dimen>
+    <dimen name="book_card_radius">16dp</dimen>
+    <dimen name="book_card_elevation">4dp</dimen>
 
-    <dimen name="global_content_padding_bottom">48dp</dimen>
+    <dimen name="search_layout_padding">64dp</dimen>
 </resources>

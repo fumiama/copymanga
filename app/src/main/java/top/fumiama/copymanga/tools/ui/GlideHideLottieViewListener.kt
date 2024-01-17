@@ -9,7 +9,7 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import java.lang.ref.WeakReference
 
-class GlideHideLottieViewListener(private val wla: WeakReference<LottieAnimationView>): RequestListener<Drawable> {
+class GlideHideLottieViewListener(private val wla: WeakReference<LottieAnimationView>, private val runAfterLoad: (() -> Unit)? = null): RequestListener<Drawable> {
     override fun onLoadFailed(
         e: GlideException?,
         model: Any?,
@@ -29,6 +29,7 @@ class GlideHideLottieViewListener(private val wla: WeakReference<LottieAnimation
         wla.get()?.apply {
             pauseAnimation()
             visibility = View.GONE
+            runAfterLoad?.let { it() }
         }
         return false
     }

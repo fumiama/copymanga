@@ -24,8 +24,6 @@ import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 
 class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
-    var fbibinfo: View? = null
-    var fbtinfo: View? = null
     var isOnPause = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

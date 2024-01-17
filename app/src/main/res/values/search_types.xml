@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string-array name="search_types">
-        <item>全部</item>
-        <item>名称</item>
-        <item>作者</item>
-        <item>汉化组</item>
-    </string-array>
-</resources>

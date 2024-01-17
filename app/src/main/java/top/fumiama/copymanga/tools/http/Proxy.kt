@@ -35,7 +35,7 @@ class Proxy(id: Int, apiPrefixID: Int, keyID: Int? = null) {
                 }
                 return false
             }
-        val useApiProxy: Boolean
+        /*val useApiProxy: Boolean
             get() {
                 MainActivity.mainWeakReference?.get()?.let {
                     PreferenceManager.getDefaultSharedPreferences(it).apply {
@@ -45,6 +45,6 @@ class Proxy(id: Int, apiPrefixID: Int, keyID: Int? = null) {
                     }
                 }
                 return false
-            }
+            }*/
     }
 }

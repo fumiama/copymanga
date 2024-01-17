@@ -69,8 +69,9 @@ class MainActivity : AppCompatActivity() {
     private var isMenuWaiting = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+        super.onCreate(null)
 
+        // must init before setContentView because HomeF need them to init
         mainWeakReference = WeakReference(this)
         toolsBox = UITools(this)
 

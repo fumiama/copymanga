@@ -4,6 +4,16 @@
     <PreferenceCategory
         app:iconSpaceReserved="false"
         app:title="@string/settings_cat_net">
+        <ListPreference
+            android:max="1500"
+            app:iconSpaceReserved="false"
+            app:key="settings_cat_net_sb_image_resolution"
+            app:selectable="true"
+            app:summary="@string/settings_cat_net_sb_summary_image_resolution"
+            app:title="@string/settings_cat_net_sb_title_image_resolution"
+            app:entries="@array/resolutions"
+            app:entryValues="@array/resolutions"
+            android:defaultValue="1500"/>
         <SwitchPreferenceCompat
             app:iconSpaceReserved="false"
             app:key="settings_cat_net_sw_use_cellar"
