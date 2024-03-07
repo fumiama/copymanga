@@ -57,7 +57,6 @@ import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 
 class MainActivity : AppCompatActivity() {
-    var isDrawerClosed = true
     private var menuMain: Menu? = null
     private var navController: NavController? = null
 
@@ -366,6 +365,7 @@ class MainActivity : AppCompatActivity() {
 
     companion object{
         var mainWeakReference: WeakReference<MainActivity>? = null
+        var isDrawerClosed = true
         var ime: InputMethodManager? = null
         const val MSG_CROP_IMAGE = 1
         var shelf: Shelf? = null

@@ -17,6 +17,7 @@ import android.util.TypedValue
 import android.view.*
 import android.widget.SeekBar
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.animation.doOnEnd
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
@@ -127,10 +128,19 @@ class ViewMangaActivity : TitleActivityTemplate() {
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
+        val settingsPref = MainActivity.mainWeakReference?.get()?.let { PreferenceManager.getDefaultSharedPreferences(it) }
+        settingsPref?.getBoolean("settings_cat_vm_sw_always_dark_bg", false)?.let {
+            if (it) {
+                Log.d("MyVM", "force dark")
+                delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_YES
+            } else {
+                delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+            }
+        }
         postponeEnterTransition()
         setContentView(R.layout.activity_viewmanga)
         super.onCreate(null)
-        val settingsPref =  MainActivity.mainWeakReference?.get()?.let { PreferenceManager.getDefaultSharedPreferences(it) }
+
         va = WeakReference(this)
         //dlZip2View = intent.getStringExtra("callFrom") == "Dl" || p["dlZip2View"] == "true"
         //zipFirst = intent.getStringExtra("callFrom") == "zipFirst"

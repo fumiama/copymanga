@@ -12,6 +12,10 @@
 
     <dimen name="book_card_radius">16dp</dimen>
     <dimen name="book_card_elevation">4dp</dimen>
+    <dimen name="book_bg_card_padding">8dp</dimen>
+    <dimen name="book_card_width">128dp</dimen>
+
+    <dimen name="caption_text_padding">16dp</dimen>
 
     <dimen name="search_layout_padding">64dp</dimen>
 </resources>

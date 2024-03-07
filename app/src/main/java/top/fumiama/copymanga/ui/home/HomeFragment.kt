@@ -156,7 +156,7 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
 
             Thread{
                 homeHandler.obtainMessage(-1, true).sendToTarget()
-                while(mainWeakReference?.get()?.isDrawerClosed != true) sleep(233)
+                while(!MainActivity.isDrawerClosed) sleep(233)
                 //homeHandler.sendEmptyMessage(6)    //removeAllViews
                 homeHandler.fhib = null
                 sleep(600)
@@ -164,6 +164,12 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
             }.start()
         }
     }
+
+    override fun onResume() {
+        super.onResume()
+        swiperefresh?.isRefreshing = false
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         homeHandler.destroy()

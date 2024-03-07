@@ -145,6 +145,8 @@
     <string name="settings_cat_net_et_summary_img_proxy">为避免滥用，代理密钥需加群（559748702）获得，且随时可能会刷新</string>
 
     <string name="settings_cat_vm">漫画浏览</string>
+    <string name="settings_cat_vm_sw_always_dark_bg">深色阅读背景</string>
+    <string name="settings_cat_vm_sm_always_dark_bg">打开后阅览漫画的背景色永远为黑色</string>
     <string name="settings_cat_vm_sw_hide_info">隐藏底部时间栏</string>
     <string name="settings_cat_vm_sm_hide_info">打开后不再在底部显示时间和网络状态</string>
     <string name="settings_cat_vm_sw_vol_turn">音量键翻页</string>

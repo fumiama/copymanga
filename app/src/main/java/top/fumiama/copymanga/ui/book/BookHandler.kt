@@ -6,7 +6,6 @@ import android.os.Looper
 import android.os.Message
 import android.util.Log
 import android.view.View
-import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.graphics.drawable.toBitmap
@@ -74,7 +73,7 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
             1 -> setCover()
             2 -> setTexts()
             3 -> setAuthorsAndTags()
-            4 -> setOverScale()
+            //4 -> setOverScale()
             6 -> if(complete) that?.navigate2dl()
             7 -> setVolumes()
             8 -> that?.apply { fbl?.addView(msg.obj as View) }
@@ -118,22 +117,24 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
 
     private fun endSetLayouts() {
         if (exit) return
-        that?.fbloading?.visibility = View.GONE
+        that?.fbloading?.apply {
+            pauseAnimation()
+            visibility = View.GONE
+        }
         complete = true
         that?.setStartRead()
         that?.setAddToShelf()
         Log.d("MyBH", "Set complete: true")
     }
-    private fun setOverScale(){
-        that?.fbov?.setScaleView(that!!.lbibg)
-    }
+
+    /*private fun setOverScale() {
+        if (exit) return
+        that?.fbov?.setScaleView(that!!.fbapp)
+    }*/
 
     private fun setCover() {
+        if (exit) return
         that?.apply {
-            that?.layoutInflater?.inflate(R.layout.line_bookinfo, that?.fbl, false)?.let {
-                fbl.addView(it)
-                setInfoHeight(it)
-            }
             book?.results?.comic?.cover?.let { cover ->
                 val load = Glide.with(this).load(
                     GlideUrl(CMApi.proxy?.wrap(cover)?:cover, CMApi.myGlideHeaders)
@@ -144,7 +145,7 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
                     ?.let { it3 -> load.apply(it3).into(lbibg) }
             }
             imf?.visibility = View.GONE
-            fbl?.addView(divider)
+            //fbl?.addView(divider)
         }
     }
 
@@ -155,6 +156,7 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
     }
 
     private fun setTexts(){
+        if (exit) return
         //that?.tic?.text = book?.name
         that?.tic?.visibility = View.GONE
         mainWeakReference?.get()?.toolbar?.title = book?.results?.comic?.name
@@ -173,15 +175,6 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
         (v as TextView).text = book?.results?.comic?.brief
         that?.fbl?.addView(v)
         that?.fbl?.addView(divider)
-    }
-
-    private fun setInfoHeight(v: View){
-        v.viewTreeObserver.addOnGlobalLayoutListener {
-            Log.d("MyMy", "Width: ${v.width}")
-            val newH = (v.width * 4.0 / 9.0 + 0.5).toInt()
-            v.layoutParams.height = newH
-            v.invalidate()
-        }
     }
 
     private fun setTheme(caption: String, themeStructure: Array<ThemeStructure>, nav: Int) {
@@ -225,6 +218,7 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
     }
 
     private fun setAuthorsAndTags() {
+        if (exit) return
         that?.apply {
             book?.results?.comic?.apply {
                 author?.let {

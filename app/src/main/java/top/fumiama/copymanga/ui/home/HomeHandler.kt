@@ -14,6 +14,7 @@ import androidx.cardview.widget.CardView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.animation.doOnEnd
 import androidx.navigation.fragment.findNavController
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
 import com.to.aboomy.pager2banner.Banner
@@ -58,6 +59,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
             -1 -> homeF?.swiperefresh?.isRefreshing = msg.obj as Boolean
             //0 -> setLayouts()
             1 -> inflateCardLines()
+            2 -> homeF?.swiperefresh?.let { setSwipe(it) }
             3 -> setBanner(fhib as Banner)
             5 -> setBannerInfo(msg.obj as Banner)
             6 -> {
@@ -107,6 +109,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
         if(exit) return
         try {
             Thread {
+                sendEmptyMessage(2)         //setSwipe
                 sendEmptyMessage(7)         //inflateBanner
                 sendEmptyMessage(1)         //inflateCardLines
             }.start()
@@ -255,8 +258,11 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
                 ).adapter = homeF?.ViewData(v)?.RecyclerViewAdapter()
         }
         v.invalidate()
-        homeF?.fhov?.swipeRefreshLayout = homeF?.swiperefresh
-        homeF?.swiperefresh?.setOnRefreshListener {
+    }
+
+    private fun setSwipe(sw: SwipeRefreshLayout) {
+        homeF?.fhov?.swipeRefreshLayout = sw
+        sw.setOnRefreshListener {
             Log.d("MyHFH", "Refresh items.")
             //index = null
             //Thread{this@HomeHandler.obtainMessage(-1, true).sendToTarget()}.start()  //startLoad
@@ -271,7 +277,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
         }
     }
 
-    private fun allocateLine(title: String, iconResId: Int, comics: Array<ComicStructure>, finish: Boolean = false, isTopic: Boolean = false, onClick: (() -> Unit)? = null): Int{
+            private fun allocateLine(title: String, iconResId: Int, comics: Array<ComicStructure>, finish: Boolean = false, isTopic: Boolean = false, onClick: (() -> Unit)? = null): Int{
         val p = indexLines.size
         val c = comics.size / 3
         homeF?.layoutInflater?.inflate(

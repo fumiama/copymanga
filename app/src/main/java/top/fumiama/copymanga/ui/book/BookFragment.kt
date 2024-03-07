@@ -8,6 +8,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.navigation.fragment.findNavController
 import com.google.gson.Gson
+import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.fragment_book.*
 import kotlinx.android.synthetic.main.line_bookinfo_text.*
 import kotlinx.android.synthetic.main.line_booktandb.*
@@ -25,6 +26,7 @@ import java.lang.ref.WeakReference
 
 class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
     var isOnPause = false
+    private var mBookHandler: BookHandler? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -57,24 +59,26 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
                     }
                 }
             }
-            bookHandler = BookHandler(WeakReference(this), path)
+            mBookHandler = BookHandler(WeakReference(this), path)
             Log.d("MyBF", "read path: $path")
+            bookHandler = mBookHandler
             Thread {
                 sleep(600)
-                bookHandler?.startLoad()
+                mBookHandler?.startLoad()
             }.start()
+        } else {
+            bookHandler = mBookHandler
         }
     }
 
     override fun onResume() {
         super.onResume()
         isOnPause = false
-        /*mainWeakReference?.get()?.apply {
-            toolbar.title = bookHandler?.book?.results?.comic?.name
+        bookHandler = mBookHandler
+        mainWeakReference?.get()?.apply {
+            toolbar.title = mBookHandler?.book?.results?.comic?.name
         }
         setStartRead()
-        fbibinfo?.layoutParams?.height = ((fbibinfo?.width?:0) * 4.0 / 9.0 + 0.5).toInt()
-        */
     }
 
     override fun onPause() {
@@ -84,25 +88,25 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
 
     override fun onDestroy() {
         super.onDestroy()
-        bookHandler?.destroy()
-        bookHandler?.ads?.forEach {
+        mBookHandler?.destroy()
+        mBookHandler?.ads?.forEach {
             it.exit = true
         }
         bookHandler = null
     }
 
     fun setStartRead() {
-        if(bookHandler?.chapterNames?.isNotEmpty() == true) mainWeakReference?.get()?.apply {
-            bookHandler?.book?.results?.comic?.let { comic ->
+        if(mBookHandler?.chapterNames?.isNotEmpty() == true) mainWeakReference?.get()?.apply {
+            mBookHandler?.book?.results?.comic?.let { comic ->
                 getPreferences(MODE_PRIVATE).getInt(comic.name, -1).let { p ->
                     this@BookFragment.lbbstart.apply {
                         var i = 0
                         if(p >= 0) {
-                            text = bookHandler!!.chapterNames[p]
+                            text = mBookHandler!!.chapterNames[p]
                             i = p
                         }
                         setOnClickListener {
-                            bookHandler?.urlArray?.let {
+                            mBookHandler?.urlArray?.let {
                                 Reader.viewMangaAt(comic.name, i, it)
                             }
                         }
@@ -114,22 +118,22 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
 
     @SuppressLint("SetTextI18n")
     fun setAddToShelf() {
-        if(bookHandler?.chapterNames?.isNotEmpty() == true) {
-            val b = MainActivity.shelf?.query(bookHandler?.path!!)
-            bookHandler?.collect = b?.results?.collect?:-2
-            Log.d("MyBF", "get collect of ${bookHandler?.path} = ${bookHandler?.collect}")
+        if(mBookHandler?.chapterNames?.isNotEmpty() == true) {
+            val b = MainActivity.shelf?.query(mBookHandler?.path!!)
+            mBookHandler?.collect = b?.results?.collect?:-2
+            Log.d("MyBF", "get collect of ${mBookHandler?.path} = ${mBookHandler?.collect}")
             b?.results?.browse?.chapter_name?.let { name ->
                 btsub.text = "${btsub.text} ${getString(R.string.text_format_cloud_read_to).format(name)}"
             }
-            bookHandler?.collect?.let { collect ->
+            mBookHandler?.collect?.let { collect ->
                 if (collect > 0) {
                     this@BookFragment.lbbsub.setText(R.string.button_sub_subscribed)
                 }
             }
-            bookHandler?.book?.results?.comic?.let { comic ->
+            mBookHandler?.book?.results?.comic?.let { comic ->
                 this@BookFragment.lbbsub.setOnClickListener {
                     if (this@BookFragment.lbbsub.text != getString(R.string.button_sub)) {
-                        bookHandler?.collect?.let { collect ->
+                        mBookHandler?.collect?.let { collect ->
                             if (collect < 0) return@setOnClickListener
                             Thread{
                                 val re = MainActivity.shelf?.del(collect)
@@ -160,13 +164,13 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
     fun navigate2dl(){
         val bundle = Bundle()
         bundle.putString("path", arguments?.getString("path")?:"null")
-        bundle.putString("name", bookHandler!!.book?.results?.comic?.name)
-        if(bookHandler!!.vols != null) {
+        bundle.putString("name", mBookHandler!!.book?.results?.comic?.name)
+        if(mBookHandler!!.vols != null) {
             bundle.putBoolean("loadJson", true)
         }
-        bundle.putStringArray("group", bookHandler!!.gpws)
-        bundle.putStringArray("groupNames", bookHandler!!.keys)
-        bundle.putIntArray("count", bookHandler!!.cnts)
+        bundle.putStringArray("group", mBookHandler!!.gpws)
+        bundle.putStringArray("groupNames", mBookHandler!!.keys)
+        bundle.putIntArray("count", mBookHandler!!.cnts)
         findNavController().let {
             Navigate.safeNavigateTo(it, R.id.action_nav_book_to_nav_group, bundle)
         }

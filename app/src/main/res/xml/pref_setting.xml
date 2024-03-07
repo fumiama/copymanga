@@ -67,6 +67,12 @@
         app:title="@string/settings_cat_vm">
         <SwitchPreferenceCompat
             app:iconSpaceReserved="false"
+            app:key="settings_cat_vm_sw_always_dark_bg"
+            app:selectable="true"
+            app:summary="@string/settings_cat_vm_sm_always_dark_bg"
+            app:title="@string/settings_cat_vm_sw_always_dark_bg" />
+        <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
             app:key="settings_cat_vm_sw_hide_info"
             app:selectable="true"
             app:summary="@string/settings_cat_vm_sm_hide_info"

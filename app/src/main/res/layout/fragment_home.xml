@@ -11,14 +11,14 @@
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swiperefresh"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:isScrollContainer="true"
-        android:layout_marginTop="@dimen/search_layout_padding">
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/search_layout_padding"
+        android:isScrollContainer="true">
 
         <top.fumiama.copymanga.views.ScrollRefreshView
             android:id="@+id/fhov"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -28,7 +28,7 @@
             <LinearLayout
                 android:id="@+id/fhl"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:orientation="vertical">
 
             </LinearLayout>
