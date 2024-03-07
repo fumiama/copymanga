@@ -7,8 +7,8 @@
     alt="Get it on F-Droid"
     height="80">](https://f-droid.org/packages/top.fumiama.copymanga)
 
-  [![qgroup559748702](https://img.shields.io/badge/%E4%BA%A4%E6%B5%81%E7%BE%A4-559748702-red?style=for-the-badge&labelColor=orange&logo=tencent-qq)](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=oOqUXGFiSRjuZ7K1GPATRuITmE-Hdj_o&authKey=p0ZT8UhPrYLUtvVdm38lMzpT4Mmw8mnqyU3%2FWXbZgUJVd7o18l0HXFaqxMqgXaNN&noverify=0&group_code=559748702)
-  [![t.me/cpmanga3p](https://img.shields.io/badge/%E4%BA%A4%E6%B5%81%E7%BE%A4-cpmanga3p-4488ff?style=for-the-badge&labelColor=88aaff&logo=telegram)](https://t.me/cpmanga3p)
+  [![qgroup559748702](https://img.shields.io/badge/-559748702-red?style=for-the-badge&labelColor=orange&logo=tencent-qq)](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=oOqUXGFiSRjuZ7K1GPATRuITmE-Hdj_o&authKey=p0ZT8UhPrYLUtvVdm38lMzpT4Mmw8mnqyU3%2FWXbZgUJVd7o18l0HXFaqxMqgXaNN&noverify=0&group_code=559748702)
+  [![t.me/cpmanga3p](https://img.shields.io/badge/-cpmanga3p-4488ff?style=for-the-badge&labelColor=88aaff&logo=telegram)](https://t.me/cpmanga3p)
 
 </div>
 
