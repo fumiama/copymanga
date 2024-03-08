@@ -7,17 +7,17 @@ class SimpleKanban(private val client: Client, private val pwd: String) {   //mu
         get() {
             var times = 3
             var re: ByteArray
-            var firstRecv: ByteArray
+            var firstReceived: ByteArray
             do {
                 re = byteArrayOf()
                 if(client.initConnect()) {
                     client.sendMessage("${pwd}catquit")
                     client.receiveRawMessage(33)    //Welcome to simple kanban server.
                     try {
-                        firstRecv = client.receiveRawMessage(4)     //le
-                        val length = convert2Int(firstRecv)
+                        firstReceived = client.receiveRawMessage(4)     //le
+                        val length = convert2Int(firstReceived)
                         Log.d("MySK", "Msg len: $length")
-                        if(firstRecv.size > 4) re += firstRecv.copyOfRange(4, firstRecv.size)
+                        if(firstReceived.size > 4) re += firstReceived.copyOfRange(4, firstReceived.size)
                         re += client.receiveRawMessage(length - re.size, setProgress = true)
                         break
                     } catch (e: Exception) {
@@ -35,9 +35,9 @@ class SimpleKanban(private val client: Client, private val pwd: String) {   //mu
             (buffer[1].toInt() and 0xff shl 8) or
             (buffer[0].toInt() and 0xff)
 
-    fun fetchRaw(doOnLoadFailure: ()->Unit = {
+    suspend fun fetchRaw(doOnLoadFailure: suspend ()->Unit = {
         Log.d("MySD", "Fetch dict failed")
-    }, doOnLoadSuccess: (data: ByteArray)->Unit = {
+    }, doOnLoadSuccess: suspend (data: ByteArray)->Unit = {
         Log.d("MySD", "Fetch dict success")
     }) {
         raw?.apply {

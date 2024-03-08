@@ -224,7 +224,7 @@
 
     <fragment
         android:id="@+id/nav_newest"
-        android:name="top.fumiama.copymanga.ui.cardflow.search.SearchFragment"
+        android:name="top.fumiama.copymanga.ui.cardflow.newest.NewestFragment"
         android:label="@string/new_list"
         tools:layout="@layout/fragment_newest" >
         <action

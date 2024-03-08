@@ -4,7 +4,6 @@ import android.os.Bundle
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.fragment_topic.*
-import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.json.TopicStructure
 import top.fumiama.copymanga.template.http.AutoDownloadThread
 import top.fumiama.copymanga.template.ui.InfoCardLoader
@@ -23,12 +22,11 @@ class TopicFragment : InfoCardLoader(R.layout.fragment_topic, R.id.action_nav_to
             if(ad?.exit == true) return@AutoDownloadThread
             data?.apply {
                 val r = inputStream().reader()
-                val topic = Gson().fromJson(r, TopicStructure::class.java)
-                topic?.apply {
-                    if(ad?.exit != false) return@AutoDownloadThread
+                Gson().fromJson(r, TopicStructure::class.java)?.apply {
+                    if(ad?.exit == true) return@AutoDownloadThread
                     activity?.let {
                         it.runOnUiThread {
-                            if(ad?.exit != false) return@runOnUiThread
+                            if(ad?.exit == true) return@runOnUiThread
                             it.toolbar.title = results.title
                             ftttime.text = results.datetime_created
                             fttintro.text = results.intro

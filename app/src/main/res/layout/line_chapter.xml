@@ -15,7 +15,7 @@
         android:layout_marginStart="@dimen/nav_header_vertical_spacing"
         android:layout_marginTop="@dimen/nav_header_vertical_spacing"
         android:layout_marginBottom="@dimen/nav_header_vertical_spacing"
-        android:background="@drawable/ic_list"
+        android:background="@drawable/ic_circle"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"

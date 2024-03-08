@@ -19,6 +19,7 @@ class LoginActivity : AppCompatActivity() {
         val isLogout = pref.getString("token", null) != null
         if (isLogout) {
             alblogin.setText(R.string.logout)
+            altusrnm.setText(pref.getString("username", "N/A"))
         }
         alblogin.setOnClickListener {
             lifecycleScope.launch {

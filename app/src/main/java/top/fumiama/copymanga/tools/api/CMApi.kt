@@ -13,7 +13,7 @@ import java.net.URLEncoder
 
 object CMApi {
     var proxy = if(Proxy.useImageProxy) Proxy(R.string.imgProxyApiUrl, R.string.imgProxyApiPrefix, R.string.imgProxyKeyID) else null
-    var resolution = Resolution(Regex("\\.c\\d+x\\."))
+    var resolution = Resolution(Regex("c\\d+x\\."))
     var myGlideHeaders: LazyHeaders? = null
         get() {
             MainActivity.mainWeakReference?.get()?.let {

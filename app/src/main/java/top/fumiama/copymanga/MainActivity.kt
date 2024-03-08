@@ -2,6 +2,7 @@ package top.fumiama.copymanga
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -18,6 +19,7 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -25,6 +27,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -40,6 +43,9 @@ import com.yalantis.ucrop.UCrop
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.nav_header_main.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.manga.Shelf
 import top.fumiama.copymanga.tools.ui.UITools
 import top.fumiama.copymanga.ui.book.BookFragment.Companion.bookHandler
@@ -64,7 +70,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var headPic: File
     lateinit var toolsBox: UITools
 
-    private var latestDestination = 0
     private var isMenuWaiting = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -114,6 +119,7 @@ class MainActivity : AppCompatActivity() {
 
         ime = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
 
+        var latestDestination: Int
         navController!!.addOnDestinationChangedListener { _, destination, _ ->
             latestDestination = destination.id
             Log.d("MyMA", "latestDestination: $latestDestination")
@@ -122,51 +128,16 @@ class MainActivity : AppCompatActivity() {
             }
             isMenuWaiting = true
             Log.d("MyMA", "start menu waiting")
-            Thread {
-                sleep(1000)
-                isMenuWaiting = false
-                Log.d("MyMA", "finish menu waiting")
-                runOnUiThread {
-                    when (latestDestination) {
-                        R.id.nav_home -> {
-                            Log.d("MyMA", "enter home")
-                            menuMain?.findItem(R.id.action_info)?.isVisible = true
-                            menuMain?.findItem(R.id.action_download)?.isVisible = false
-                            menuMain?.findItem(R.id.action_sort)?.isVisible = false
-                        }
-                        R.id.nav_book -> {
-                            Log.d("MyMA", "enter book")
-                            menuMain?.findItem(R.id.action_info)?.isVisible = false
-                            menuMain?.findItem(R.id.action_download)?.isVisible = true
-                            menuMain?.findItem(R.id.action_sort)?.isVisible = false
-                        }
-                        R.id.nav_group -> {
-                            Log.d("MyMA", "enter group")
-                            menuMain?.findItem(R.id.action_info)?.isVisible = false
-                            menuMain?.findItem(R.id.action_download)?.isVisible = false
-                            menuMain?.findItem(R.id.action_sort)?.isVisible = true
-                        }
-                        R.id.nav_new_download -> {
-                            Log.d("MyMA", "enter new_download")
-                            menuMain?.findItem(R.id.action_info)?.isVisible = false
-                            menuMain?.findItem(R.id.action_download)?.isVisible = false
-                            menuMain?.findItem(R.id.action_sort)?.isVisible = true
-                        }
-                        R.id.nav_rank -> {
-                            Log.d("MyMA", "enter rank")
-                            menuMain?.findItem(R.id.action_info)?.isVisible = false
-                            menuMain?.findItem(R.id.action_download)?.isVisible = false
-                            menuMain?.findItem(R.id.action_sort)?.isVisible = true
-                        }
-                        else -> {
-                            Log.d("MyMA", "enter others")
-                            menuMain?.findItem(R.id.action_info)?.isVisible = false
-                            menuMain?.findItem(R.id.action_download)?.isVisible = false
-                            menuMain?.findItem(R.id.action_sort)?.isVisible = false
-                        }
+            lifecycleScope.launch {
+                withContext(Dispatchers.IO) {
+                    sleep(1000)
+                    withContext(Dispatchers.Main) {
+                        isMenuWaiting = false
+                        Log.d("MyMA", "finish menu waiting")
+                        changeMenuList(latestDestination)
                     }
                 }
-            }.start()
+            }
         }
     }
 
@@ -218,24 +189,6 @@ class MainActivity : AppCompatActivity() {
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 
-    @Deprecated("Deprecated in Java")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == RESULT_OK) when (requestCode) {
-            UCrop.REQUEST_CROP -> {
-                val fi = headPic.inputStream()
-                navhbg.setImageBitmap(BitmapFactory.decodeStream(fi))
-                fi.close()
-            }
-            MSG_CROP_IMAGE -> {
-                data?.data?.let {
-                    saveFile(it)
-                    cropImageUri()
-                }
-            }
-        }
-    }
-
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String?>,
@@ -263,6 +216,47 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun changeMenuList(latestDestination: Int) {
+        when (latestDestination) {
+            R.id.nav_home -> {
+                Log.d("MyMA", "enter home")
+                menuMain?.findItem(R.id.action_info)?.isVisible = true
+                menuMain?.findItem(R.id.action_download)?.isVisible = false
+                menuMain?.findItem(R.id.action_sort)?.isVisible = false
+            }
+            R.id.nav_book -> {
+                Log.d("MyMA", "enter book")
+                menuMain?.findItem(R.id.action_info)?.isVisible = false
+                menuMain?.findItem(R.id.action_download)?.isVisible = true
+                menuMain?.findItem(R.id.action_sort)?.isVisible = false
+            }
+            R.id.nav_group -> {
+                Log.d("MyMA", "enter group")
+                menuMain?.findItem(R.id.action_info)?.isVisible = false
+                menuMain?.findItem(R.id.action_download)?.isVisible = false
+                menuMain?.findItem(R.id.action_sort)?.isVisible = true
+            }
+            R.id.nav_new_download -> {
+                Log.d("MyMA", "enter new_download")
+                menuMain?.findItem(R.id.action_info)?.isVisible = false
+                menuMain?.findItem(R.id.action_download)?.isVisible = false
+                menuMain?.findItem(R.id.action_sort)?.isVisible = true
+            }
+            R.id.nav_rank -> {
+                Log.d("MyMA", "enter rank")
+                menuMain?.findItem(R.id.action_info)?.isVisible = false
+                menuMain?.findItem(R.id.action_download)?.isVisible = false
+                menuMain?.findItem(R.id.action_sort)?.isVisible = true
+            }
+            else -> {
+                Log.d("MyMA", "enter others")
+                menuMain?.findItem(R.id.action_info)?.isVisible = false
+                menuMain?.findItem(R.id.action_download)?.isVisible = false
+                menuMain?.findItem(R.id.action_sort)?.isVisible = false
+            }
+        }
+    }
+
     private fun checkReadPermission(): Boolean {
         return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N && ContextCompat.checkSelfPermission(
                 this,
@@ -277,11 +271,18 @@ class MainActivity : AppCompatActivity() {
         } else true
     }
 
+    private var pickerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) result.data?.data?.let {
+            saveFile(it)
+            cropImageUri()
+        } else Toast.makeText(this, R.string.err_pick_img, Toast.LENGTH_SHORT).show()
+    }
+
     @SuppressLint("IntentReset")
     private fun pickPicture() {
         val i = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
         i.type = "image/*"
-        startActivityForResult(i, MSG_CROP_IMAGE)
+        pickerLauncher.launch(i)
     }
 
     private fun saveFile(uri: Uri) {
@@ -302,11 +303,18 @@ class MainActivity : AppCompatActivity() {
         if (headPic.exists()) navhbg.setImageURI(headPic.toUri())
     }
 
+    private var cropLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val fi = headPic.inputStream()
+            navhbg.setImageBitmap(BitmapFactory.decodeStream(fi))
+            fi.close()
+        } else Toast.makeText(this, R.string.err_crop_img, Toast.LENGTH_SHORT).show()
+    }
+
     private fun cropImageUri() {
         val op = UCrop.Options()
         val r = navhbg.width.toFloat() / navhbg.height.toFloat()
         Log.d("MyMain", "Img info: (${navhbg.width}, ${navhbg.height})")
-        Log.d("MyMain", "Result code: ${UCrop.REQUEST_CROP}")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             op.setCompressionFormat(Bitmap.CompressFormat.WEBP_LOSSY)
         } else {
@@ -315,17 +323,17 @@ class MainActivity : AppCompatActivity() {
         op.setStatusBarColor(resources.getColor(R.color.colorPrimaryDark, theme))
         op.setToolbarColor(resources.getColor(R.color.colorPrimary, theme))
         op.setActiveControlsWidgetColor(resources.getColor(R.color.colorAccent, theme))
-        UCrop.of(headPic.toUri(), headPic.toUri())
+        cropLauncher.launch(UCrop.of(headPic.toUri(), headPic.toUri())
             .withAspectRatio(r, 1F)
             .withMaxResultSize(navhbg.width, navhbg.height)
             .withOptions(op)
-            .start(this)
+            .getIntent(this))
     }
 
     private fun checkUpdate(ignoreSkip: Boolean) {
-        Thread{
-            Update.checkUpdate(this, toolsBox, ignoreSkip)
-        }.start()
+        lifecycleScope.launch {
+            Update.checkUpdate(this@MainActivity, toolsBox, ignoreSkip)
+        }
     }
 
     private fun showAbout() {

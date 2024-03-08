@@ -2,9 +2,14 @@ package top.fumiama.copymanga.ui.cardflow.shelf
 
 import android.animation.ObjectAnimator
 import android.os.Bundle
+import android.view.View
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import kotlinx.android.synthetic.main.anchor_popular.view.*
 import kotlinx.android.synthetic.main.line_shelf.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.template.ui.InfoCardLoader
 import top.fumiama.copymanga.tools.api.CMApi
@@ -37,6 +42,7 @@ class ShelfFragment : InfoCardLoader(R.layout.fragment_shelf, R.id.action_nav_su
 
     override fun setListeners() {
         super.setListeners()
+        fade()
         setUpdate()
         setModify()
         setBrowse()
@@ -46,20 +52,10 @@ class ShelfFragment : InfoCardLoader(R.layout.fragment_shelf, R.id.action_nav_su
         if (ad?.exit == true) return
         line_shelf_updated.apt.setText(R.string.menu_update_time)
         line_shelf_updated.setOnClickListener {
-            sortValue = if (it.apim.rotation == 0f) {
-                ObjectAnimator.ofFloat(it.apim, "rotation", 0f, 180f).setDuration(233).start()
-                1
-            } else {
-                ObjectAnimator.ofFloat(it.apim, "rotation", 180f, 0f).setDuration(233).start()
-                0
-            }
-            Thread {
-                sleep(400)
-                activity?.runOnUiThread {
-                    reset()
-                    addPage()
-                }
-            }.start()
+            val same = sortValue in 0..1
+            sortValue = rotate(it.apim, same, 0)
+            if (!same) fade()
+            resetDelayed()
         }
     }
 
@@ -67,20 +63,10 @@ class ShelfFragment : InfoCardLoader(R.layout.fragment_shelf, R.id.action_nav_su
         if (ad?.exit == true) return
         line_shelf_modifier.apt.setText(R.string.menu_add_time)
         line_shelf_modifier.setOnClickListener {
-            sortValue = if (it.apim.rotation == 0f) {
-                ObjectAnimator.ofFloat(it.apim, "rotation", 0f, 180f).setDuration(233).start()
-                3
-            } else {
-                ObjectAnimator.ofFloat(it.apim, "rotation", 180f, 0f).setDuration(233).start()
-                2
-            }
-            Thread {
-                sleep(400)
-                activity?.runOnUiThread {
-                    reset()
-                    addPage()
-                }
-            }.start()
+            val same = sortValue in 2..3
+            sortValue = rotate(it.apim, same, 2)
+            if (!same) fade()
+            resetDelayed()
         }
     }
 
@@ -88,20 +74,60 @@ class ShelfFragment : InfoCardLoader(R.layout.fragment_shelf, R.id.action_nav_su
         if (ad?.exit == true) return
         line_shelf_browse.apt.setText(R.string.menu_read_time)
         line_shelf_browse.setOnClickListener {
-            sortValue = if (it.apim.rotation == 0f) {
-                ObjectAnimator.ofFloat(it.apim, "rotation", 0f, 180f).setDuration(233).start()
-                5
+            val same = sortValue>=4
+            sortValue = rotate(it.apim, same, 4)
+            if (!same) fade()
+            resetDelayed()
+        }
+    }
+
+    private fun rotate(img: View, isSameSlot: Boolean, offset: Int): Int {
+        return if (isSameSlot) {
+            if (img.rotation == 0f) {
+                ObjectAnimator.ofFloat(img, "rotation", 0f, 180f).setDuration(233).start()
+                offset+1
             } else {
-                ObjectAnimator.ofFloat(it.apim, "rotation", 180f, 0f).setDuration(233).start()
-                4
+                ObjectAnimator.ofFloat(img, "rotation", 180f, 0f).setDuration(233).start()
+                offset
             }
-            Thread {
+        } else {
+            if (img.rotation == 0f) {
+                offset
+            } else {
+                offset+1
+            }
+        }
+    }
+
+    private fun fade() {
+        when(sortValue) {
+            0, 1 -> {
+                line_shelf_updated.alpha = 1f
+                line_shelf_modifier.alpha = 0.5f
+                line_shelf_browse.alpha = 0.5f
+            }
+            2, 3 -> {
+                line_shelf_updated.alpha = 0.5f
+                line_shelf_modifier.alpha = 1f
+                line_shelf_browse.alpha = 0.5f
+            }
+            4, 5 -> {
+                line_shelf_updated.alpha = 0.5f
+                line_shelf_modifier.alpha = 0.5f
+                line_shelf_browse.alpha = 1f
+            }
+        }
+    }
+
+    private fun resetDelayed() {
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO) {
                 sleep(400)
-                activity?.runOnUiThread {
+                withContext(Dispatchers.Main) {
                     reset()
                     addPage()
                 }
-            }.start()
+            }
         }
     }
 }

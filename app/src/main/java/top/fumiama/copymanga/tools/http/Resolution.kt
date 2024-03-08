@@ -16,5 +16,5 @@ class Resolution(private val original: Regex) {
             }
             return 1500
         }
-    fun wrap(u: String) : String = u.replace(original, ".c${imageResolution}x.")
+    fun wrap(u: String) : String = u.replace(original, "c${imageResolution}x.")
 }

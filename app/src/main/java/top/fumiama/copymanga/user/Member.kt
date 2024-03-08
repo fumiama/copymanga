@@ -11,7 +11,7 @@ import top.fumiama.dmzj.copymanga.R
 
 class Member(private val pref: SharedPreferences, private val getString: (Int) -> String) {
     val hasLogin: Boolean get() = pref.getString("token", "")?.isNotEmpty()?:false
-    suspend fun login(username: String, pwd: String, salt: Int): LoginInfoStructure  = withContext(Dispatchers.IO) {
+    suspend fun login(username: String, pwd: String, salt: Int): LoginInfoStructure = withContext(Dispatchers.IO) {
         try {
             CMApi.getLoginConnection(username, pwd, salt)?.apply {
                 Gson().fromJson(inputStream.reader(), LoginInfoStructure::class.java)?.let { data ->

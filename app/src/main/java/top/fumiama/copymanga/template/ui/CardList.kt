@@ -7,7 +7,6 @@ import android.view.View
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
-import kotlinx.android.synthetic.main.card_book.*
 import kotlinx.android.synthetic.main.card_book.view.*
 import kotlinx.android.synthetic.main.line_horizonal_empty.view.*
 import kotlinx.android.synthetic.main.line_lazybooklines.*
@@ -36,6 +35,7 @@ class CardList(
         rows = arrayOfNulls(20)
         index = 0
         count = 0
+        cardLoadingWaits.set(0)
         exitCardList = false
     }
 

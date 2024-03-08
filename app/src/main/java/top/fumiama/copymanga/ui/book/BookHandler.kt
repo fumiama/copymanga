@@ -6,13 +6,18 @@ import android.os.Looper
 import android.os.Message
 import android.util.Log
 import android.view.View
+import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.graphics.drawable.toBitmap
+import androidx.core.widget.NestedScrollView
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.request.RequestOptions
+import com.google.android.material.tabs.TabLayoutMediator
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.card_book.*
@@ -22,6 +27,7 @@ import kotlinx.android.synthetic.main.line_bookinfo.*
 import kotlinx.android.synthetic.main.line_bookinfo_text.*
 import kotlinx.android.synthetic.main.line_caption.view.*
 import kotlinx.android.synthetic.main.line_chapter.view.*
+import kotlinx.android.synthetic.main.page_nested_list.view.*
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.json.BookInfoStructure
 import top.fumiama.copymanga.json.ChapterStructure
@@ -62,7 +68,7 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
     var vols: Array<VolumeStructure>? = null
     var chapterNames = arrayOf<String>()
     var collect: Int = -1
-    private val divider get() = that?.layoutInflater?.inflate(R.layout.div_h, that?.fbl, false)
+    private val divider get() = that?.layoutInflater?.inflate(R.layout.div_h, that?.lbl, false)
 
     var urlArray = arrayOf<String>()
 
@@ -73,10 +79,7 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
             1 -> setCover()
             2 -> setTexts()
             3 -> setAuthorsAndTags()
-            //4 -> setOverScale()
             6 -> if(complete) that?.navigate2dl()
-            7 -> setVolumes()
-            8 -> that?.apply { fbl?.addView(msg.obj as View) }
             9 -> endSetLayouts()
         }
     }
@@ -127,11 +130,6 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
         Log.d("MyBH", "Set complete: true")
     }
 
-    /*private fun setOverScale() {
-        if (exit) return
-        that?.fbov?.setScaleView(that!!.fbapp)
-    }*/
-
     private fun setCover() {
         if (exit) return
         that?.apply {
@@ -144,63 +142,69 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
                     ?.let { it2 -> RequestOptions.bitmapTransform(it2) }
                     ?.let { it3 -> load.apply(it3).into(lbibg) }
             }
-            imf?.visibility = View.GONE
+            //imf?.visibility = View.GONE
             //fbl?.addView(divider)
         }
     }
 
-    private fun getThemeSeq(authors: Array<ThemeStructure>): CharSequence{
+    /*private fun getThemeSeq(authors: Array<ThemeStructure>): CharSequence{
         var re = ""
         for(author in authors) re += author.name + ' '
         return re
-    }
+    }*/
 
-    private fun setTexts(){
+    private fun setTexts() {
         if (exit) return
         //that?.tic?.text = book?.name
-        that?.tic?.visibility = View.GONE
+        //that?.tic?.visibility = View.GONE
         mainWeakReference?.get()?.toolbar?.title = book?.results?.comic?.name
-        that?.btauth?.text = book?.results?.comic?.author?.let { getThemeSeq(it) }
-        that?.bttag?.text = book?.results?.comic?.theme?.let { getThemeSeq(it) }
-        that?.bthit?.text = that?.getString(R.string.text_format_hit)?.let { String.format(
-            it,
+        that?.btauth?.text = that?.getString(R.string.text_format_region)?.format(
+            book?.results?.comic?.region?.display
+        )
+        that?.bttag?.text = that?.getString(R.string.text_format_img_type)?.format(when(book?.results?.comic?.img_type) {
+            1 -> "条漫"
+            2 -> "普通"
+            else -> "未知类型${book?.results?.comic?.img_type}"
+        })
+        that?.bthit?.text = that?.getString(R.string.text_format_hit)?.format(
             book?.results?.comic?.popular
-        ) }?:""
-        that?.btsub?.text = that?.getString(R.string.text_format_stat)?.let { String.format(
-            it,
+        )
+        that?.btsub?.text = that?.getString(R.string.text_format_stat)?.format(
             book?.results?.comic?.status?.display
-        ) }?:""
+        )
         that?.bttime?.text = book?.results?.comic?.datetime_updated
-        val v = that?.layoutInflater?.inflate(R.layout.line_text_info, that?.fbl, false)
+        val v = that?.layoutInflater?.inflate(R.layout.line_text_info, that?.lbl, false)
         (v as TextView).text = book?.results?.comic?.brief
-        that?.fbl?.addView(v)
-        that?.fbl?.addView(divider)
+        that?.lbl?.addView(v)
+        that?.lbl?.addView(divider)
     }
 
     private fun setTheme(caption: String, themeStructure: Array<ThemeStructure>, nav: Int) {
         that?.apply {
-            val t = layoutInflater.inflate(R.layout.line_caption, fbl, false)
+            val t = layoutInflater.inflate(R.layout.line_caption, lbl, false)
             t.tcptn.text = caption
-            fbl.addView(t)
-            fbl.addView(layoutInflater.inflate(R.layout.div_h, fbl, false))
+            lbl.addView(t)
+            lbl.addView(layoutInflater.inflate(R.layout.div_h, lbl, false))
         }
         var line: View? = null
         val last = themeStructure.size - 1
         themeStructure.onEachIndexed { i, it ->
             if(line == null) {
                 if(i == last) {
-                    line = that?.layoutInflater?.inflate(R.layout.line_chapter, that!!.fbl, false)
+                    line = that?.layoutInflater?.inflate(R.layout.line_chapter, that!!.lbl, false)
                     line?.lcc?.apply {
                         lct.text = it.name
+                        lci.setBackgroundResource(R.drawable.ic_list)
                         setOnClickListener { _ ->
                             loadVolume(it.name, it.path_word, nav)
                         }
                     }
-                    that?.fbl?.addView(line)
+                    that?.lbl?.addView(line)
                 } else {
-                    line = that?.layoutInflater?.inflate(R.layout.line_2chapters, that!!.fbl, false)
+                    line = that?.layoutInflater?.inflate(R.layout.line_2chapters, that!!.lbl, false)
                     line?.l2cl?.apply {
                         lct.text = it.name
+                        lci.setBackgroundResource(R.drawable.ic_list)
                         setOnClickListener { _ ->
                             loadVolume(it.name, it.path_word, nav)
                         }
@@ -208,10 +212,11 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
                 }
             } else line?.l2cr?.apply {
                 lct.text = it.name
+                lci.setBackgroundResource(R.drawable.ic_list)
                 setOnClickListener { _ ->
                     loadVolume(it.name, it.path_word, nav)
                 }
-                that?.fbl?.addView(line)
+                that?.lbl?.addView(line)
                 line = null
             }
         }
@@ -228,7 +233,7 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
                         R.id.action_nav_book_to_nav_author
                     )
                 }
-                fbl.addView(layoutInflater.inflate(R.layout.div_h, fbl, false))
+                lbl.addView(layoutInflater.inflate(R.layout.div_h, lbl, false))
                 theme?.let {
                     setTheme(
                         getString(R.string.caption),
@@ -240,11 +245,68 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
         }
     }
 
-    private fun addVolumesView(v: View) {
-        obtainMessage(8, v).sendToTarget()
+    private fun addVolumesView(l: LinearLayout, v: View) {
+        that?.activity?.runOnUiThread {
+            l.addView(v)
+        }
     }
 
-    private fun setVolumes() = Thread {
+    private fun setVolume(fbl: LinearLayout, p: Int) = Thread {
+        if (exit) return@Thread
+        that?.apply {
+            book?.results?.apply {
+                var i = 0
+                for (j in 0 until p) {
+                    i += vols?.get(j)?.results?.list?.size?:0
+                }
+                var last = i-1
+                vols?.get(p)?.let { v ->
+                    if(exit) return@Thread
+                    var line: View? = null
+                    last += v.results.list.size
+                    v.results.list.forEach {
+                        val f = CMApi.getZipFile(context?.getExternalFilesDir(""), comic.name, keys[p], it.name)
+                        Log.d("MyBH", "i = $i, last=$last, add chapter ${it.name}, line is null: ${line == null}")
+                        that?.isOnPause?.let { isOnPause ->
+                            while (isOnPause && !exit) sleep(1000)
+                            if (exit) return@Thread
+                        }?:return@Thread
+                        if(line == null) {
+                            if(i == last) {
+                                line = layoutInflater.inflate(R.layout.line_chapter, fbl, false)
+                                line?.lcc?.apply {
+                                    lct.text = it.name
+                                    if (f.exists()) lci.setBackgroundResource(R.drawable.ic_success)
+                                    Log.d("MyBH", "add last single chapter ${it.name}")
+                                    val index = i
+                                    setOnClickListener { Reader.viewMangaAt(comic.name, index, urlArray) }
+                                }
+                                line?.let { l -> addVolumesView(fbl, l) }
+                            } else {
+                                line = layoutInflater.inflate(R.layout.line_2chapters, fbl, false)
+                                line?.l2cl?.apply {
+                                    lct.text = it.name
+                                    if (f.exists()) lci.setBackgroundResource(R.drawable.ic_success)
+                                    val index = i
+                                    setOnClickListener { Reader.viewMangaAt(comic.name, index, urlArray) }
+                                }
+                            }
+                        } else line?.l2cr?.apply {
+                            lct.text = it.name
+                            if (f.exists()) lci.setBackgroundResource(R.drawable.ic_success)
+                            val index = i
+                            setOnClickListener { Reader.viewMangaAt(comic.name, index, urlArray) }
+                            line?.let { l -> addVolumesView(fbl, l) }
+                            line = null
+                        }
+                        i++
+                    }
+                }
+            }
+        }
+    }.start()
+
+    private fun setViewManga() = Thread {
         if (exit) return@Thread
         that?.apply {
             book?.results?.apply {
@@ -255,58 +317,26 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
                 var last = -1
                 vols?.forEachIndexed { groupIndex, v ->
                     if(exit) return@Thread
-                    addVolumesView(layoutInflater.inflate(R.layout.div_h, fbl, false))
-                    val t = layoutInflater.inflate(R.layout.line_caption, fbl, false)
-                    t.tcptn.text = keys[groupIndex]
-                    addVolumesView(t)
-                    addVolumesView(layoutInflater.inflate(R.layout.div_h, fbl, false))
-                    var line: View? = null
                     last += v.results.list.size
                     v.results.list.forEach {
                         urlArray += CMApi.getChapterInfoApiUrl(
                             comic.path_word,
                             it.uuid
                         )?:""
-                        ViewMangaActivity.fileArray += CMApi.getZipFile(context?.getExternalFilesDir(""), comic.name, keys[groupIndex], it.name)
+                        val f = CMApi.getZipFile(context?.getExternalFilesDir(""), comic.name, keys[groupIndex], it.name)
+                        ViewMangaActivity.fileArray += f
                         chapterNames += it.name
                         ViewMangaActivity.uuidArray += it.uuid
-                        Log.d("MyBH", "i = $i, last=$last, add chapter ${it.name}, line is null: ${line == null}")
                         that?.isOnPause?.let { isOnPause ->
                             while (isOnPause && !exit) sleep(1000)
                             if (exit) return@Thread
                         }?:return@Thread
-                        if(line == null) {
-                            if(i == last) {
-                                line = layoutInflater.inflate(R.layout.line_chapter, that!!.fbl, false)
-                                line?.lcc?.apply {
-                                    lct.text = it.name
-                                    Log.d("MyBH", "add last single chapter ${it.name}")
-                                    val index = i
-                                    setOnClickListener { Reader.viewMangaAt(comic.name, index, urlArray) }
-                                }
-                                line?.let { l -> addVolumesView(l) }
-
-                            } else {
-                                line = layoutInflater.inflate(R.layout.line_2chapters, that!!.fbl, false)
-                                line?.l2cl?.apply {
-                                    lct.text = it.name
-                                    val index = i
-                                    setOnClickListener { Reader.viewMangaAt(comic.name, index, urlArray) }
-                                }
-                            }
-                        } else line?.l2cr?.apply {
-                            lct.text = it.name
-                            val index = i
-                            setOnClickListener { Reader.viewMangaAt(comic.name, index, urlArray) }
-                            line?.let { l -> addVolumesView(l) }
-                            line = null
-                        }
                         i++
                     }
                 }
-                sendEmptyMessage(9) // end set layout
             }
         }
+        sendEmptyMessage(9) // end set layout
     }.start()
 
     private fun loadVolume(name: String, path: String, nav: Int){
@@ -375,10 +405,18 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
             c++
         }
         if (volumes.size == gpws.size) {
-            that?.activity?.runOnUiThread {
-                saveVolumes(volumes)
-                sendEmptyMessage(7)
+            saveVolumes(volumes)
+            that?.fbtab?.let { tab ->
+                that?.fbvp?.let { vp ->
+                    that?.activity?.runOnUiThread {
+                        vp.adapter = ViewData(vp).RecyclerViewAdapter()
+                        TabLayoutMediator(tab, vp) { t, p ->
+                            t.text = keys[p]
+                        }.attach()
+                    }
+                }
             }
+            setViewManga()
         }
     }.start()
 
@@ -416,5 +454,19 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
             }
         }
         vols = volumes
+    }
+
+    inner class ViewData(itemView: View): RecyclerView.ViewHolder(itemView) {
+        inner class RecyclerViewAdapter: RecyclerView.Adapter<ViewData>() {
+            override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewData {
+                return ViewData(that?.layoutInflater?.inflate(R.layout.page_nested_list, parent, false) as NestedScrollView)
+            }
+
+            override fun onBindViewHolder(holder: ViewData, position: Int) {
+                setVolume(holder.itemView.fbl, position)
+            }
+
+            override fun getItemCount(): Int = keys.size
+        }
     }
 }

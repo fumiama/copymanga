@@ -7,7 +7,6 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.line_lazybooklines.*
-import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.json.BookListStructure
 import top.fumiama.copymanga.json.HistoryBookListStructure
 import top.fumiama.copymanga.json.ShelfStructure
@@ -25,8 +24,8 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
 
     override fun addPage(){
         super.addPage()
-        ad = AutoDownloadThread(subUrl) {
-            if (it == null) {
+        ad = AutoDownloadThread(subUrl) { data ->
+            if (data == null) {
                 activity?.runOnUiThread {
                     findNavController().popBackStack()
                 }
@@ -37,7 +36,7 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
                 isRefresh = false
             }
             if(isTypeBook) {
-                val bookList = Gson().fromJson(it?.decodeToString(), TypeBookListStructure::class.java)
+                val bookList = Gson().fromJson(data.decodeToString(), TypeBookListStructure::class.java)
                 bookList?.apply {
                     Log.d("MyICL", "offset:${results.offset}, total:${results.total}")
                     if(results.offset < results.total) {
@@ -56,7 +55,7 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
                     page++
                 }
             } else if(isHistoryBook) {
-                val bookList = Gson().fromJson(it?.decodeToString(), HistoryBookListStructure::class.java)
+                val bookList = Gson().fromJson(data.decodeToString(), HistoryBookListStructure::class.java)
                 bookList?.apply {
                     Log.d("MyICL", "offset:${results?.offset}, total:${results?.total}")
                     if(results.offset < results.total) {
@@ -75,7 +74,7 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
                     page++
                 }
             } else if (isShelfBook) {
-                val bookList = Gson().fromJson(it?.decodeToString(), ShelfStructure::class.java)
+                val bookList = Gson().fromJson(data.decodeToString(), ShelfStructure::class.java)
                 bookList?.apply {
                     Log.d("MyICL", "offset:${results?.offset}, total:${results?.total}")
                     if(results.offset < results.total) {
@@ -83,7 +82,7 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
                             results?.list?.forEach{ book ->
                                 if(ad?.exit == true) return@AutoDownloadThread
                                 cardList?.addCard(
-                                    book?.comic?.name?:"null", "\n读到${book?.last_browse?.last_browse_name}", book?.comic?.cover,
+                                    book?.comic?.name?:"null", "\n${book?.last_browse?.last_browse_name?.let { "读到$it" }?:"未读"}", book?.comic?.cover,
                                     book?.comic?.path_word, null, null,
                                     book?.comic?.status==1,
                                     book.comic?.browse?.chapter_uuid != book.comic?.last_chapter_id
@@ -95,7 +94,7 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
                     page++
                 }
             } else {
-                val bookList = Gson().fromJson(it?.decodeToString(), BookListStructure::class.java)
+                val bookList = Gson().fromJson(data.decodeToString(), BookListStructure::class.java)
                 bookList?.apply {
                     Log.d("MyICL", "offset:${results?.offset}, total:${results?.total}")
                     if(results.offset < results.total) {

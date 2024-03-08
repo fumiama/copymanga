@@ -16,29 +16,30 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/nav_header_vertical_spacing"
-            app:layout_constraintBottom_toTopOf="@id/fbov"
+            app:layout_constraintBottom_toTopOf="@id/fbvp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_scrollFlags="scroll|enterAlways" />
+            app:layout_scrollFlags="scroll|exitUntilCollapsed" />
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/fbtab"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_scrollFlags="scroll"/>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/fbov"
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/fbvp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:layout_height="match_parent"
+        android:isScrollContainer="true"
+        android:nestedScrollingEnabled="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/fbiinf">
-
-        <LinearLayout
-            android:id="@+id/fbl"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical" />
-    </androidx.core.widget.NestedScrollView>
+        app:layout_constraintTop_toBottomOf="@+id/fbiinf"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
     <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/fbloading"
