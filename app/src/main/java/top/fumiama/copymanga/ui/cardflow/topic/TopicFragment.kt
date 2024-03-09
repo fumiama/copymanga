@@ -1,11 +1,15 @@
 package top.fumiama.copymanga.ui.cardflow.topic
 
 import android.os.Bundle
+import androidx.lifecycle.lifecycleScope
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.fragment_topic.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.json.TopicStructure
-import top.fumiama.copymanga.template.http.AutoDownloadThread
+import top.fumiama.copymanga.template.http.PausableDownloader
 import top.fumiama.copymanga.template.ui.InfoCardLoader
 import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.dmzj.copymanga.R
@@ -18,23 +22,27 @@ class TopicFragment : InfoCardLoader(R.layout.fragment_topic, R.id.action_nav_to
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AutoDownloadThread(getString(R.string.topicApiUrl).format(CMApi.myHostApiUrl, arguments?.getString("path"))) { data ->
-            if(ad?.exit == true) return@AutoDownloadThread
-            data?.apply {
-                val r = inputStream().reader()
-                Gson().fromJson(r, TopicStructure::class.java)?.apply {
-                    if(ad?.exit == true) return@AutoDownloadThread
-                    activity?.let {
-                        it.runOnUiThread {
-                            if(ad?.exit == true) return@runOnUiThread
-                            it.toolbar.title = results.title
-                            ftttime.text = results.datetime_created
-                            fttintro.text = results.intro
-                            type = results.type
+        lifecycleScope.launch {
+            PausableDownloader(getString(R.string.topicApiUrl).format(CMApi.myHostApiUrl, arguments?.getString("path"))) { data ->
+                withContext(Dispatchers.IO) {
+                    if(ad?.exit == true) return@withContext
+                    data.apply {
+                        val r = inputStream().reader()
+                        Gson().fromJson(r, TopicStructure::class.java)?.apply {
+                            if(ad?.exit == true) return@withContext
+                            activity?.let {
+                                withContext(Dispatchers.Main) withMain@ {
+                                    if(ad?.exit == true) return@withMain
+                                    it.toolbar.title = results.title
+                                    ftttime.text = results.datetime_created
+                                    fttintro.text = results.intro
+                                    type = results.type
+                                }
+                            }
                         }
                     }
                 }
-            }
-        }.start()
+            }.run()
+        }
     }
 }

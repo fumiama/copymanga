@@ -2,12 +2,17 @@ package top.fumiama.copymanga.ui.cardflow.sort
 
 import android.os.Bundle
 import android.view.View
+import androidx.lifecycle.lifecycleScope
 import com.github.zawadz88.materialpopupmenu.popupMenu
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.anchor_popular.view.*
 import kotlinx.android.synthetic.main.line_sort.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.json.FilterStructure
-import top.fumiama.copymanga.template.http.AutoDownloadThread
+import top.fumiama.copymanga.json.ThemeStructure
+import top.fumiama.copymanga.template.http.PausableDownloader
 import top.fumiama.copymanga.template.ui.StatusCardFlow
 import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.dmzj.copymanga.R
@@ -36,102 +41,69 @@ class SortFragment : StatusCardFlow(0, R.id.action_nav_sort_to_nav_book, R.layou
 
     override fun setListeners() {
         super.setListeners()
-        AutoDownloadThread(getString(R.string.filterApiUrl).format(CMApi.myHostApiUrl)) {
-            if(ad?.exit == true) return@AutoDownloadThread
-            it?.let {
-                filter = Gson().fromJson(it.inputStream().reader(), FilterStructure::class.java)
-                if(ad?.exit == true) return@AutoDownloadThread
-                activity?.runOnUiThread{
-                    if(ad?.exit != true) setClasses()
+        lifecycleScope.launch {
+            PausableDownloader(getString(R.string.filterApiUrl).format(CMApi.myHostApiUrl)) {
+                if(ad?.exit == true) return@PausableDownloader
+                it.let {
+                    filter = Gson().fromJson(it.inputStream().reader(), FilterStructure::class.java)
+                    if(ad?.exit == true) return@PausableDownloader
+                    withContext(Dispatchers.Main) {
+                        if(ad?.exit != true) setClasses()
+                    }
                 }
-            }
-        }.start()
+            }.run()
+        }
     }
 
-    private fun setClasses(){
+    private fun setClasses() {
         filter?.results?.top?.let { items ->
-            if(ad?.exit == true) return@let
-            line_sort_region.apt.text = "全部"
-            line_sort_region.setOnClickListener {
-                val popupMenu = popupMenu {
-                    style = R.style.Widget_MPM_Menu_Dark_CustomBackground
-                    section {
-                        item {
-                            label = "全部"
-                            labelColor = it.apt.currentTextColor
-                            callback = {
-                                region = -1
-                                it.apt.text = "全部"
-                                Thread{
-                                    sleep(400)
-                                    activity?.runOnUiThread {
-                                        reset()
-                                        addPage()
-                                    }
-                                }.start()
-                            }
-                        }
-                        for(i in items.indices) item {
-                            label = items[i].name
-                            labelColor = it.apt.currentTextColor
-                            callback = { //optional
-                                it.apt.text = label
-                                region = i
-                                Thread{
-                                    sleep(400)
-                                    activity?.runOnUiThread {
-                                        reset()
-                                        addPage()
-                                    }
-                                }.start()
-                            }
-                        }
-                    }
-                }
-                this.context?.let { it1 -> popupMenu.show(it1, it) }
-            }
+            setMenu(items, line_sort_region)
         }
         filter?.results?.theme?.let { items ->
-            if(ad?.exit == true) return@let
-            line_sort_class.apt.text = "全部"
-            line_sort_class.setOnClickListener {
-                val popupMenu = popupMenu {
-                    style = R.style.Widget_MPM_Menu_Dark_CustomBackground
-                    section {
-                        item {
-                            label = "全部"
-                            labelColor = it.apt.currentTextColor
-                            callback = {
-                                theme = -1
-                                it.apt.text = "全部"
-                                Thread{
-                                    sleep(400)
-                                    activity?.runOnUiThread {
-                                        reset()
-                                        addPage()
-                                    }
-                                }.start()
-                            }
+            setMenu(items, line_sort_class)
+        }
+    }
+
+    private fun suspendReset() {
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO) {
+                sleep(400)
+                withContext(Dispatchers.Main) {
+                    reset()
+                    addPage()
+                }
+            }
+        }
+    }
+
+    private fun setMenu(items: Array<out ThemeStructure>, line: View) {
+        if(ad?.exit == true) return
+        line.apt.text = "全部"
+        line.setOnClickListener {
+            val popupMenu = popupMenu {
+                style = R.style.Widget_MPM_Menu_Dark_CustomBackground
+                section {
+                    item {
+                        label = "全部"
+                        labelColor = it.apt.currentTextColor
+                        callback = {
+                            region = -1
+                            it.apt.text = "全部"
+                            suspendReset()
                         }
-                        for(i in items.indices) item {
-                            label = items[i].name
-                            labelColor = it.apt.currentTextColor
-                            callback = { //optional
-                                it.apt.text = label
-                                theme = i
-                                Thread{
-                                    sleep(400)
-                                    activity?.runOnUiThread {
-                                        reset()
-                                        addPage()
-                                    }
-                                }.start()
-                            }
+                    }
+                    for(i in items.indices) item {
+                        label = items[i].name
+                        labelColor = it.apt.currentTextColor
+                        callback = { //optional
+                            it.apt.text = label
+                            region = i
+                            suspendReset()
                         }
                     }
                 }
-                this.context?.let { it1 -> popupMenu.show(it1, it) }
             }
+            context?.let { c -> popupMenu.show(c, it) }
         }
     }
 }

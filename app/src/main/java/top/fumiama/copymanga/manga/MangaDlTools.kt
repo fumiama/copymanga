@@ -4,7 +4,7 @@ import android.util.Log
 import com.google.gson.Gson
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.json.Chapter2Return
-import top.fumiama.copymanga.template.http.AutoDownloadThread
+import top.fumiama.copymanga.template.http.PausableDownloader
 import top.fumiama.copymanga.tools.http.DownloadPool
 import java.io.File
 
@@ -19,18 +19,18 @@ class MangaDlTools {
         get() = pool?.wait
         set(value) { if (value != null) { pool?.wait = value } }
 
-    fun downloadChapterInVol(url: CharSequence, chapterName: CharSequence, group: CharSequence, index: Int) {
+    suspend fun downloadChapterInVol(url: CharSequence, chapterName: CharSequence, group: CharSequence, index: Int) {
         Log.d("MyMDT", "下载：$url, index：$index")
-        AutoDownloadThread(url.toString(), 1000) { data ->
+        PausableDownloader(url.toString(), 1000) { data ->
             try {
-                Gson().fromJson(data?.decodeToString(), Chapter2Return::class.java)?.let {
+                Gson().fromJson(data.decodeToString(), Chapter2Return::class.java)?.let {
                     getChapterInfo(it, index, chapterName, group)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
                 onDownloadedListener?.handleMessage(index, false, e.localizedMessage?:"Gson parsing error")
             }
-        }.start()
+        }.run()
     }
 
     @Synchronized private fun prepareDownloadListener() {

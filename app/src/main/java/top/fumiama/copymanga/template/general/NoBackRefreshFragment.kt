@@ -18,7 +18,7 @@ open class NoBackRefreshFragment(private val layoutToLoad: Int): Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        if(_rootView == null){
+        if(_rootView == null) {
             isFirstInflate = true
             _rootView = inflater.inflate(layoutToLoad, container, false)
             Log.d("MyNBRF", "is first inflate")

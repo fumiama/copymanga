@@ -4,21 +4,30 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import android.util.Log
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import com.google.gson.Gson
-import top.fumiama.dmzj.copymanga.R
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.json.ReturnBase
 import top.fumiama.copymanga.tools.http.DownloadTools
 import top.fumiama.copymanga.tools.thread.TimeThread
+import top.fumiama.dmzj.copymanga.R
 import java.io.File
 import java.lang.Thread.sleep
 import java.security.MessageDigest
 
-open class AutoDownloadHandler(private val url: String, private val jsonClass: Class<*>, looper: Looper, private val callCheckMsg: Int = -1, private val loadFromCache: Boolean = false, private val customCacheFile: File? = null): Handler(looper) {
-    var exit = false
+open class AutoDownloadHandler(
+    private val url: String, private val jsonClass: Class<*>,
+    private val context: LifecycleOwner?,
+    private val callCheckMsg: Int = -1,
+    private val loadFromCache: Boolean = false,
+    private val customCacheFile: File? = null): Handler(Looper.myLooper()!!) {
     private var timeThread: TimeThread? = null
     private var checkTimes = 0
-    private var cnt = 0
+    var exit = false
     override fun handleMessage(msg: Message) {
         super.handleMessage(msg)
         when(msg.what){
@@ -29,19 +38,21 @@ open class AutoDownloadHandler(private val url: String, private val jsonClass: C
     open fun setGsonItem(gsonObj: Any): Boolean = true
     open fun getGsonItem(): ReturnBase? = null
     open fun onError() {}
-    open fun doWhenFinishDownload() {}
+    open suspend fun doWhenFinishDownload() {}
     fun startLoad() {
         sendEmptyMessage(0)
     }
     fun destroy() {
         exit = true
     }
-    private fun download() {
-        Thread{ dlThread() }.start()
+    private suspend fun download() = withContext(Dispatchers.IO) {
         checkTimes = 0
-        timeThread = TimeThread(this, callCheckMsg)
-        timeThread?.canDo = true
-        timeThread?.start()
+        TimeThread(this@AutoDownloadHandler, callCheckMsg, 100).let {
+            timeThread = it
+            it.canDo = true
+            it.start()
+        }
+        downloadCoroutine()
     }
     private fun toHexStr(byteArray: ByteArray) =
         with(StringBuilder()) {
@@ -53,7 +64,7 @@ open class AutoDownloadHandler(private val url: String, private val jsonClass: C
             }
             toString()
         }
-    private fun dlThread() {
+    private suspend fun downloadCoroutine() = withContext(Dispatchers.IO) {
         val cacheName = toHexStr(MessageDigest.getInstance("MD5").digest(url.encodeToByteArray()))
         val cacheFile = customCacheFile?:(mainWeakReference?.get()?.externalCacheDir?.let { File(it, cacheName) })
         if(loadFromCache) {
@@ -67,31 +78,29 @@ open class AutoDownloadHandler(private val url: String, private val jsonClass: C
                         e.printStackTrace()
                     }
                     fi.close()
-                    if (pass) return
+                    if (pass) return@withContext
                 }
             }
         }
-        DownloadTools.getHttpContent(url, null, mainWeakReference?.get()?.getString(R.string.pc_ua)!!).let {
-            if(exit) return
-            if(it == null) {
-                if (cnt++>3) return
-                sleep(2000)
-                dlThread()
-                return
-            }
-            val fi = it.inputStream()
-            var pass = true
+        var cnt = 0
+        while (cnt++ <= 3) {
             try {
-                pass = setGsonItem(Gson().fromJson(fi.reader(), jsonClass))
+                val data = DownloadTools.getHttpContent(url, null, mainWeakReference?.get()?.getString(R.string.pc_ua)!!)
+                if(exit) return@withContext
+                val fi = data.inputStream()
+                val pass = setGsonItem(Gson().fromJson(fi.reader(), jsonClass))
                 if (pass && loadFromCache) {
-                    cacheFile?.writeBytes(it)
+                    cacheFile?.writeBytes(data)
                 }
+                fi.close()
+                if(!pass) {
+                    sleep(2000)
+                    continue
+                }
+                break
             } catch (e: Exception) {
                 e.printStackTrace()
-            }
-            fi.close()
-            if(!pass) {
-                dlThread()
+                sleep(2000)
             }
         }
     }
@@ -102,9 +111,9 @@ open class AutoDownloadHandler(private val url: String, private val jsonClass: C
             if(g.code == 200) sendEmptyMessage(0)
             else onError()
             Log.d("MyADH", "[${g.code}]${g.message}")
-        } else if(checkTimes++ > 3) timeThread?.canDo = false
+        } else if(checkTimes++ > 1000) timeThread?.canDo = false
     }
-    private fun setLayouts() {
+    private fun setLayouts() = context?.lifecycleScope?.launch {
         if(getGsonItem() == null) download()
         else doWhenFinishDownload()
     }

@@ -2,7 +2,6 @@ package top.fumiama.copymanga.ui.book
 
 import android.graphics.Bitmap
 import android.os.Bundle
-import android.os.Looper
 import android.os.Message
 import android.util.Log
 import android.view.View
@@ -12,6 +11,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.widget.NestedScrollView
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -28,6 +28,9 @@ import kotlinx.android.synthetic.main.line_bookinfo_text.*
 import kotlinx.android.synthetic.main.line_caption.view.*
 import kotlinx.android.synthetic.main.line_chapter.view.*
 import kotlinx.android.synthetic.main.page_nested_list.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.json.BookInfoStructure
 import top.fumiama.copymanga.json.ChapterStructure
@@ -35,7 +38,7 @@ import top.fumiama.copymanga.json.ThemeStructure
 import top.fumiama.copymanga.json.VolumeStructure
 import top.fumiama.copymanga.manga.Reader
 import top.fumiama.copymanga.template.http.AutoDownloadHandler
-import top.fumiama.copymanga.template.http.AutoDownloadThread
+import top.fumiama.copymanga.template.http.PausableDownloader
 import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.copymanga.tools.ui.GlideBlurTransformation
 import top.fumiama.copymanga.tools.ui.GlideHideLottieViewListener
@@ -51,7 +54,7 @@ import java.lang.ref.WeakReference
 class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
     : AutoDownloadHandler(th.get()?.getString(R.string.bookInfoApiUrl)?.format(CMApi.myHostApiUrl, path)?: "",
     BookInfoStructure::class.java,
-    Looper.myLooper()!!){
+    th.get()){
     private val that get() = th.get()
     private var hasToastedError = false
     get(){
@@ -61,13 +64,14 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
     }
     var book: BookInfoStructure? = null
     private var complete = false
-    var ads = emptyArray<AutoDownloadThread>()
+    var ads = emptyArray<PausableDownloader>()
     var gpws = arrayOf<String>()
     var keys = arrayOf<String>()
     var cnts = intArrayOf()
     var vols: Array<VolumeStructure>? = null
     var chapterNames = arrayOf<String>()
     var collect: Int = -1
+    var json: String? = null
     private val divider get() = that?.layoutInflater?.inflate(R.layout.div_h, that?.lbl, false)
 
     var urlArray = arrayOf<String>()
@@ -87,7 +91,7 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
     override fun onError() {
         super.onError()
         if(exit) return
-        if(!hasToastedError) that?.activity?.runOnUiThread {
+        if(!hasToastedError) /*that?.activity?.runOnUiThread*/ {
             Toast.makeText(that?.context, R.string.null_book, Toast.LENGTH_SHORT).show()
             that?.apply { findNavController().popBackStack() }
         }
@@ -100,10 +104,11 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
     }
 
     override fun getGsonItem() = book
-    override fun doWhenFinishDownload() {
+    override suspend fun doWhenFinishDownload() = withContext(Dispatchers.IO) {
         super.doWhenFinishDownload()
-        if(exit) return
-        if(keys.isEmpty()) book?.results?.groups?.values?.forEach{
+        if(exit) return@withContext
+
+        if(keys.isEmpty()) book?.results?.groups?.values?.forEach {
             keys += it.name
             gpws += it.path_word
             if (it.count == 0) {
@@ -245,14 +250,12 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
         }
     }
 
-    private fun addVolumesView(l: LinearLayout, v: View) {
-        that?.activity?.runOnUiThread {
-            l.addView(v)
-        }
+    private suspend fun addVolumesView(l: LinearLayout, v: View) = withContext(Dispatchers.Main) {
+        l.addView(v)
     }
 
-    private fun setVolume(fbl: LinearLayout, p: Int) = Thread {
-        if (exit) return@Thread
+    private suspend fun setVolume(fbl: LinearLayout, p: Int) = withContext(Dispatchers.IO) {
+        if (exit) return@withContext
         that?.apply {
             book?.results?.apply {
                 var i = 0
@@ -261,16 +264,16 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
                 }
                 var last = i-1
                 vols?.get(p)?.let { v ->
-                    if(exit) return@Thread
+                    if(exit) return@withContext
                     var line: View? = null
                     last += v.results.list.size
                     v.results.list.forEach {
                         val f = CMApi.getZipFile(context?.getExternalFilesDir(""), comic.name, keys[p], it.name)
-                        Log.d("MyBH", "i = $i, last=$last, add chapter ${it.name}, line is null: ${line == null}")
+                        //Log.d("MyBH", "i = $i, last=$last, add chapter ${it.name}, line is null: ${line == null}")
                         that?.isOnPause?.let { isOnPause ->
-                            while (isOnPause && !exit) sleep(1000)
-                            if (exit) return@Thread
-                        }?:return@Thread
+                            while (isOnPause && !exit) sleep(100)
+                            if (exit) return@withContext
+                        }?:return@withContext
                         if(line == null) {
                             if(i == last) {
                                 line = layoutInflater.inflate(R.layout.line_chapter, fbl, false)
@@ -304,10 +307,10 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
                 }
             }
         }
-    }.start()
+    }
 
-    private fun setViewManga() = Thread {
-        if (exit) return@Thread
+    private suspend fun setViewManga() = withContext(Dispatchers.IO) {
+        if (exit) return@withContext
         that?.apply {
             book?.results?.apply {
                 ViewMangaActivity.fileArray = arrayOf()
@@ -316,7 +319,7 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
                 var i = 0
                 var last = -1
                 vols?.forEachIndexed { groupIndex, v ->
-                    if(exit) return@Thread
+                    if(exit) return@withContext
                     last += v.results.list.size
                     v.results.list.forEach {
                         urlArray += CMApi.getChapterInfoApiUrl(
@@ -328,16 +331,16 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
                         chapterNames += it.name
                         ViewMangaActivity.uuidArray += it.uuid
                         that?.isOnPause?.let { isOnPause ->
-                            while (isOnPause && !exit) sleep(1000)
-                            if (exit) return@Thread
-                        }?:return@Thread
+                            while (isOnPause && !exit) sleep(100)
+                            if (exit) return@withContext
+                        }?:return@withContext
                         i++
                     }
                 }
             }
         }
         sendEmptyMessage(9) // end set layout
-    }.start()
+    }
 
     private fun loadVolume(name: String, path: String, nav: Int){
         if(complete) {
@@ -349,7 +352,7 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
         }
     }
 
-    private fun initComicData() = Thread {
+    private suspend fun initComicData() = withContext(Dispatchers.IO) withIO@ {
         var volumes = emptyArray<VolumeStructure>()
         val counts = cnts.clone()
         gpws.forEachIndexed { i, gpw ->
@@ -358,49 +361,58 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
             val times = counts[i] / 100
             val remain = counts[i] % 100
             val re = arrayOfNulls<VolumeStructure>(if(remain != 0) (times+1) else (times))
-            if (re.isEmpty()) that?.activity?.runOnUiThread {
-                Toast.makeText(that?.context, "获取${gpw}失败", Toast.LENGTH_SHORT).show()
-                return@runOnUiThread
+            if (re.isEmpty()) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(that?.context, "获取${gpw}失败", Toast.LENGTH_SHORT).show()
+                }
+                return@forEachIndexed
             }
             Log.d("MyBFH", "${i}卷共${if(times == 0) 1 else times}次加载")
             do {
                 counts[i] = counts[i] - 100
                 CMApi.getGroupInfoApiUrl(path, gpw, offset)?.let {
                     Log.d("MyBFH", "get api: $it")
-                    if(ComicDlFragment.exit) return@Thread
-                    val ad = AutoDownloadThread(it) { result ->
-                        val r = Gson().fromJson(result?.decodeToString(), VolumeStructure::class.java)
-                        re[r.results.offset / 100] = r
-                        Log.d("MyBFH", "第${i}卷返回, 大小: ${r.results.list.size}")
-                    }
-                    ads += ad
-                    ad.start()
-                    offset += 100
-                    sleep(1000)
-                }
-            } while (counts[i] > 0)
-                var c = 0
-                while (c++ < 80) {
-                    sleep(1000)
-                    if(ComicDlFragment.exit) return@Thread
-                    if(re.all { it != null }) break
-                }
-                if(re.isNotEmpty()) {
-                    val r = re[0]
-                    var s = emptyArray<ChapterStructure>()
-                    re.forEach {
-                        it?.results?.list?.forEach {
-                            s += it
+                    if(ComicDlFragment.exit) return@withIO
+                    val ad = PausableDownloader(it) { result ->
+                        try {
+                            val r = Gson().fromJson(result.decodeToString(), VolumeStructure::class.java)
+                            re[r.results.offset / 100] = r
+                            Log.d("MyBFH", "第${i}卷返回, 大小: ${r.results.list.size}")
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            that?.findNavController()?.popBackStack()
                         }
                     }
-                    r?.results?.list = s
-                    r?.apply { volumes += this }
-                } else re[0]?.apply { volumes += this }
+                    ads += ad
+                    ad.run()
+                    offset += 100
+                    sleep(100)
+                }
+            } while (counts[i] > 0)
+
+            var c = 0
+            while (c++ < 80) {
+                sleep(100)
+                if(ComicDlFragment.exit) return@withIO
+                if(re.all { it != null }) break
+            }
+            if(re.isNotEmpty()) {
+                val r = re[0]
+                var s = emptyArray<ChapterStructure>()
+                re.forEach { v ->
+                    v?.results?.list?.forEach {
+                        s += it
+                    }
+                }
+                r?.results?.list = s
+                r?.apply { volumes += this }
+            } else re[0]?.apply { volumes += this }
         }
+
         var c = 0
         while (c < 80 && volumes.size != gpws.size) {
-            sleep(1000)
-            if(ComicDlFragment.exit) return@Thread
+            sleep(100)
+            if(ComicDlFragment.exit) return@withIO
             Log.d("MyBFH", "已有：${volumes.size} 共：${gpws.size}")
             c++
         }
@@ -408,7 +420,7 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
             saveVolumes(volumes)
             that?.fbtab?.let { tab ->
                 that?.fbvp?.let { vp ->
-                    that?.activity?.runOnUiThread {
+                    withContext(Dispatchers.Main) {
                         vp.adapter = ViewData(vp).RecyclerViewAdapter()
                         TabLayoutMediator(tab, vp) { t, p ->
                             t.text = keys[p]
@@ -418,9 +430,9 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
             }
             setViewManga()
         }
-    }.start()
+    }
 
-    private fun saveVolumes(volumes: Array<VolumeStructure>) {
+    private suspend fun saveVolumes(volumes: Array<VolumeStructure>) = withContext(Dispatchers.IO) {
         that?.context?.getExternalFilesDir("")?.let { home ->
             book?.results?.comic?.name?.let { name ->
                 val mangaFolder = File(home, name)
@@ -429,27 +441,25 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
                 File(mangaFolder, "info.json").writeText(json!!)
                 File(mangaFolder, "grps.json").writeText(Gson().toJson(keys))
                 that?.apply {
-                    Thread {
-                        var cnt = 0
-                        var success = false
-                        while (cnt++ < 10 && !success) {
-                            sleep(1000)
-                            if (exit) return@Thread
-                            File(mangaFolder, "head.jpg").let { head ->
-                                val fo = head.outputStream()
-                                try {
-                                    imic.drawable.toBitmap().compress(Bitmap.CompressFormat.JPEG, 90, fo)
-                                    success = true
-                                } catch (e: Exception) {
-                                    e.printStackTrace()
-                                }
-                                fo.close()
+                    var cnt = 0
+                    var success = false
+                    while (cnt++ < 10 && !success) {
+                        sleep(100)
+                        if (exit) return@withContext
+                        File(mangaFolder, "head.jpg").let { head ->
+                            val fo = head.outputStream()
+                            try {
+                                imic.drawable.toBitmap().compress(Bitmap.CompressFormat.JPEG, 90, fo)
+                                success = true
+                            } catch (e: Exception) {
+                                e.printStackTrace()
                             }
+                            fo.close()
                         }
-                        if (!success) that?.activity?.runOnUiThread {
-                            Toast.makeText(that?.context, R.string.download_cover_timeout, Toast.LENGTH_SHORT).show()
-                        }
-                    }.start()
+                    }
+                    if (!success) withContext(Dispatchers.Main) {
+                        Toast.makeText(that?.context, R.string.download_cover_timeout, Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         }
@@ -463,7 +473,7 @@ class BookHandler(private val th: WeakReference<BookFragment>, val path: String)
             }
 
             override fun onBindViewHolder(holder: ViewData, position: Int) {
-                setVolume(holder.itemView.fbl, position)
+                that?.lifecycleScope?.launch { setVolume(holder.itemView.fbl, position) }
             }
 
             override fun getItemCount(): Int = keys.size

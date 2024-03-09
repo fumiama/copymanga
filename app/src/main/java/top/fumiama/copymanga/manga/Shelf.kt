@@ -51,8 +51,13 @@ class Shelf(private val token: String, getString: (Int) -> String) {
     }
 
     suspend fun query(pathWord: String): BookQueryStructure? = withContext(Dispatchers.IO) {
-        return@withContext DownloadTools.getHttpContent(queryApiUrl.format(hostUrl, pathWord), referer, ua)?.let {
-            Gson().fromJson(it.decodeToString(), BookQueryStructure::class.java)
+        try {
+            Gson().fromJson(DownloadTools.getHttpContent(
+                queryApiUrl.format(hostUrl, pathWord), referer, ua
+            ).decodeToString(), BookQueryStructure::class.java)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
         }
     }
 }

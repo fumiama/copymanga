@@ -10,6 +10,8 @@ import com.bumptech.glide.load.model.GlideUrl
 import kotlinx.android.synthetic.main.card_book.view.*
 import kotlinx.android.synthetic.main.line_horizonal_empty.view.*
 import kotlinx.android.synthetic.main.line_lazybooklines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.copymanga.tools.ui.GlideHideLottieViewListener
 import top.fumiama.dmzj.copymanga.R
@@ -31,7 +33,7 @@ class CardList(
     var initClickListeners: InitClickListeners? = null
     var exitCardList = false
 
-    fun reset(){
+    fun reset() {
         rows = arrayOfNulls(20)
         index = 0
         count = 0
@@ -39,18 +41,18 @@ class CardList(
         exitCardList = false
     }
 
-    private fun manageRow() {
+    private suspend fun manageRow() {
         if(!exitCardList && count++ % cardPerRow == 0) inflateRow()
         Log.d("MyCL", "index: $index, cardPR: $cardPerRow")
     }
 
-    private fun inflateRow(){
+    private suspend fun inflateRow() = withContext(Dispatchers.IO) {
         that?.apply {
             layoutInflater.inflate(R.layout.line_horizonal_empty, mydll, false)?.let {
-                if(exitCardList) return
+                if(exitCardList) return@withContext
                 it.layoutParams.height = cardHeight + 16
-                activity?.runOnUiThread {
-                    if(exitCardList) return@runOnUiThread
+                withContext(Dispatchers.Main) withMainContext@ {
+                    if(exitCardList) return@withMainContext
                     mydll?.addView(it)
                 }
                 recycleOneRow(it)
@@ -58,14 +60,14 @@ class CardList(
             }
         }
     }
-    private fun recycleOneRow(v:View?){
+    private suspend fun recycleOneRow(v:View?) = withContext(Dispatchers.IO) {
         val relativeIndex = index % 20
         if(rows[relativeIndex] == null) rows[relativeIndex] = v
         else {
             val victim = rows[relativeIndex]
             that?.apply {
-                activity?.runOnUiThread {
-                    if(exitCardList) return@runOnUiThread
+                withContext(Dispatchers.Main) withMainContext@ {
+                    if(exitCardList) return@withMainContext
                     mydll?.removeView(victim)
                     mys?.scrollY = mys?.scrollY?.minus(cardHeight + 16)?:0
                 }
@@ -75,8 +77,9 @@ class CardList(
     }
 
     @ExperimentalStdlibApi
-    fun addCard(name: String, append: String? = null, head: String? = null, path: String? = null, chapterUUID: String? = null, pn: Int? = null, isFinish: Boolean = false, isNew: Boolean = false) {
-        if (exitCardList) return
+    suspend fun addCard(name: String, append: String? = null, head: String? = null, path: String? = null, chapterUUID: String? = null, pn: Int? = null, isFinish: Boolean = false, isNew: Boolean = false) =
+        withContext(Dispatchers.IO) {
+        if (exitCardList) return@withContext
         manageRow()
         that?.apply {
             layoutInflater.inflate(R.layout.card_book, mydll?.ltbtn, false)?.let {
@@ -90,26 +93,23 @@ class CardList(
                 card.pageNumber = pn
                 card.isFinish = isFinish
                 card.isNew = isNew
-                activity?.runOnUiThread {
-                    if (exitCardList) return@runOnUiThread
-                    addCard(it)
-                }
+                addCard(it)
             }
         }
     }
 
     @SuppressLint("SetTextI18n")
     @ExperimentalStdlibApi
-    fun addCard(cardFrame: View) {
+    private suspend fun addCard(cardFrame: View) = withContext(Dispatchers.IO) withIO@ {
         val card = cardFrame.cic
-        if (card.index < 0) return
+        if (card.index < 0) return@withIO
         val name = card.name + (card.append?:"")
         val head = card.headImageUrl
         val file = File(that?.context?.getExternalFilesDir(""), card.name)
-        if(exitCardList) return
+        if(exitCardList) return@withIO
         cardFrame.let {
-            it.tic.text = name
-            if(!file.exists()){
+            withContext(Dispatchers.Main) { it.tic.text = name }
+            if(!file.exists()) {
                 if(head != null) {
                     that?.context?.let { context ->
                         val waitMillis = cardLoadingWaits.getAndIncrement().toLong()*200
@@ -119,35 +119,45 @@ class CardList(
                             if (exitCardList) return@GlideHideLottieViewListener
                             cardLoadingWaits.decrementAndGet()
                         })
-                        if (waitMillis > 0) it.imic.postDelayed({
-                            if (exitCardList) return@postDelayed
-                            g.into(it.imic)
-                        }, waitMillis) else g.into(it.imic)
+                        withContext(Dispatchers.Main) {
+                            if (waitMillis > 0) it.imic.postDelayed({
+                                if (exitCardList) return@postDelayed
+                                g.into(it.imic)
+                            }, waitMillis) else g.into(it.imic)
+                        }
                     }
-                } else {
+                } else withContext(Dispatchers.Main) {
                     it.laic.pauseAnimation()
                     it.laic.visibility = View.GONE
                     it.imic.setImageResource(R.drawable.img_defmask)
                 }
             } else {
                 val img = File(file, "head.jpg")
-                it.laic.pauseAnimation()
-                it.laic.visibility = View.GONE
+                withContext(Dispatchers.Main) {
+                    it.laic.pauseAnimation()
+                    it.laic.visibility = View.GONE
+                }
                 if(img.exists()) {
-                    it.imic.setImageURI(Uri.fromFile(img))
+                    withContext(Dispatchers.Main) {
+                        it.imic.setImageURI(Uri.fromFile(img))
+                    }
                 } else {
-                    it.imic.setImageResource(R.drawable.img_defmask)
+                    withContext(Dispatchers.Main) {
+                        it.imic.setImageResource(R.drawable.img_defmask)
+                    }
                 }
             }
-            if(card.isFinish) it.sgnic.visibility = View.VISIBLE
-            if(card.isNew) it.sgnnew.visibility = View.VISIBLE
-            initClickListeners?.prepareListeners(card, card.name, card.path, card.chapterUUID, card.pageNumber)
-            rows[card.index % 20]?.ltbtn?.addView(it)
-            it.layoutParams?.height = cardHeight
-            it.layoutParams?.width  = cardWidth
+            withContext(Dispatchers.Main) {
+                if(card.isFinish) it.sgnic.visibility = View.VISIBLE
+                if(card.isNew) it.sgnnew.visibility = View.VISIBLE
+                initClickListeners?.prepareListeners(card, card.name, card.path, card.chapterUUID, card.pageNumber)
+                rows[card.index % 20]?.ltbtn?.addView(it)
+                it.layoutParams?.height = cardHeight
+                it.layoutParams?.width  = cardWidth
+            }
         }
     }
-    interface InitClickListeners{
+    interface InitClickListeners {
         fun prepareListeners(v: View, name: String, path: String?, chapterUUID: String?, pn: Int?)
     }
 }

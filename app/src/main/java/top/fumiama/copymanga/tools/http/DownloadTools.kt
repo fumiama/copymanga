@@ -3,7 +3,8 @@ package top.fumiama.copymanga.tools.http
 import android.content.Context
 import android.util.Log
 import androidx.preference.PreferenceManager
-import okhttp3.RequestBody
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.dmzj.copymanga.R
 import java.net.HttpURLConnection
@@ -12,12 +13,12 @@ import java.util.concurrent.Callable
 import java.util.concurrent.FutureTask
 
 object DownloadTools {
-    fun getConnection(url: String?, method: String = "GET", refer: String? = null, ua: String? = null) =
-        url?.let {
+    fun getApiConnection(url: String, method: String = "GET", refer: String? = null, ua: String? = null, timeout: Int = 20000) =
+        url.let {
             val connection = URL(url).openConnection() as HttpURLConnection
             connection.requestMethod = method
-            connection.connectTimeout = 20000
-            connection.readTimeout = 20000
+            connection.connectTimeout = timeout
+            connection.readTimeout = timeout
             connection.apply {
                 setRequestProperty("host", url.substringAfter("://").substringBefore("/"))
                 ua?.let { setRequestProperty("user-agent", it) }
@@ -37,44 +38,31 @@ object DownloadTools {
                 }
                 setRequestProperty("platform", "3")
             }
-            Log.d("Mydl", "getHttp: ${connection.requestProperties.map { "${it.key}: ${it.value}" }.joinToString("\n")}")
+            Log.d("Mydl", "getConnection: ${connection.requestProperties.map { "${it.key}: ${it.value}" }.joinToString("\n")}")
             connection
         }
 
-    private fun getNormalConnection(url: String?, method: String = "GET", ua: String? = null) =
-        url?.let {
+    private fun getNormalConnection(url: String, method: String = "GET", ua: String? = null, timeout: Int = 20000) =
+        url.let {
             val connection = URL(url).openConnection() as HttpURLConnection
             connection.requestMethod = method
-            connection.connectTimeout = 20000
-            connection.readTimeout = 20000
+            connection.connectTimeout = timeout
+            connection.readTimeout = timeout
             connection.apply {
                 setRequestProperty("host", url.substringAfter("://").substringBefore("/"))
                 ua?.let { setRequestProperty("user-agent", it) }
             }
         }
 
-    fun getHttpContent(u: String, refer: String? = null, ua: String? = null): ByteArray? {
-        Log.d("Mydl", "getHttp: $u")
-        var ret: ByteArray? = null
-        val task = FutureTask(Callable {
-            try {
-                getConnection(u, "GET", refer, ua)?.apply {
-                    ret = inputStream.readBytes()
-                    disconnect()
-                }
-            } catch (ex: Exception) {
-                ex.printStackTrace()
+    suspend fun getHttpContent(u: String, refer: String? = null, ua: String? = null): ByteArray =
+        withContext(Dispatchers.IO) {
+            getApiConnection(u, "GET", refer, ua).let {
+                val ret = it.inputStream.readBytes()
+                it.disconnect()
+                Log.d("Mydl", "getHttpContent: ${ret.size} bytes")
+                ret
             }
-            return@Callable ret
-        })
-        Thread(task).start()
-        return try {
-            task.get()
-        } catch (ex: Exception) {
-            ex.printStackTrace()
-            null
         }
-    }
 
     fun getHttpContent(u: String, readSize: Int): ByteArray? {
         Log.d("Mydl", "getHttp: $u")
@@ -82,13 +70,13 @@ object DownloadTools {
         val task = FutureTask(Callable {
             try {
                 val connection = getNormalConnection(u, "GET")
-                val ci = connection?.inputStream
+                val ci = connection.inputStream
                 if(readSize > 0) {
                     ret = ByteArray(readSize)
                     ci?.read(ret, 0, readSize)
                 } else ret = ci?.readBytes()
                 ci?.close()
-                connection?.disconnect()
+                connection.disconnect()
             } catch (ex: Exception) {
                 ex.printStackTrace()
             }
@@ -103,7 +91,7 @@ object DownloadTools {
         }
     }
 
-    fun touch(url: String?): FutureTask<ByteArray?>? =
+    /*fun touch(url: String?): FutureTask<ByteArray?>? =
         url?.let {
             Log.d("Mydl", "touchHttp: $it")
             var ret: ByteArray? = null
@@ -122,7 +110,7 @@ object DownloadTools {
             })
             Thread(task).start()
             task
-        }
+        }*/
 
     fun prepare(url: String?): FutureTask<ByteArray?>? =
         url?.let {
@@ -156,7 +144,7 @@ object DownloadTools {
         var ret: ByteArray? = null
         val task = FutureTask(Callable {
             try {
-                getConnection(url, method, refer, ua)?.apply {
+                getApiConnection(url, method, refer, ua)?.apply {
                     outputStream.write(body)
                     ret = inputStream.readBytes()
                     disconnect()

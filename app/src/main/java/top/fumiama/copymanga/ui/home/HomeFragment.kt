@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.ImageButton
 import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -22,12 +23,15 @@ import kotlinx.android.synthetic.main.card_book_plain.view.*
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.line_word.view.*
 import kotlinx.android.synthetic.main.viewpage_horizonal.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.MainActivity.Companion.ime
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.json.BookListStructure
 import top.fumiama.copymanga.template.general.NoBackRefreshFragment
-import top.fumiama.copymanga.template.http.AutoDownloadThread
+import top.fumiama.copymanga.template.http.PausableDownloader
 import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.copymanga.tools.ui.GlideHideLottieViewListener
 import top.fumiama.copymanga.tools.ui.Navigate
@@ -44,15 +48,15 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
         if(isFirstInflate) {
             val tb = mainWeakReference?.get()?.toolsBox
             val netInfo = tb?.netInfo
-            if(netInfo != null && netInfo != tb.transportStringNull && netInfo != tb.transportStringError) Thread {
-                val l = MainActivity.member?.refreshAvatar()
-                if (l?.code != 200) {
-                    mainWeakReference?.get()?.runOnUiThread {
-                        Toast.makeText(context, "${getString(R.string.login_get_avatar_failed)}: 代码${l?.code}, 信息: ${l?.message}", Toast.LENGTH_SHORT).show()
+            if(netInfo != null && netInfo != tb.transportStringNull && netInfo != tb.transportStringError)
+                MainActivity.member?.apply { lifecycleScope.launch {
+                    info().let { l ->
+                        if (l.code != 200 && l.code != 449) {
+                            Toast.makeText(context, l.message, Toast.LENGTH_SHORT).show()
+                            logout()
+                        }
                     }
-                    MainActivity.member?.logout()
-                }
-            }.start()
+                } }
             homeHandler = HomeHandler(WeakReference(this))
 
             val theme = resources.newTheme()
@@ -92,12 +96,14 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                     override fun onQueryTextChange(newText: CharSequence): Boolean {
                         if (newText.contentEquals("__notice_focus_change__") || newText.contentEquals(lastSearch)) return true
                         postDelayed({
-                            val diff = System.currentTimeMillis() - lastChangeTime
-                            if(diff > 500) {
-                                if (newText.isNotEmpty()) {
-                                    Log.d("MyHF", "new text: $newText")
-                                    lastSearch = newText.toString()
-                                    adapter.refresh(newText)
+                            lifecycleScope.launch {
+                                val diff = System.currentTimeMillis() - lastChangeTime
+                                if(diff > 500) {
+                                    if (newText.isNotEmpty()) {
+                                        Log.d("MyHF", "new text: $newText")
+                                        lastSearch = newText.toString()
+                                        adapter.refresh(newText)
+                                    }
                                 }
                             }
                         }, 1024)
@@ -154,14 +160,16 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                 }
             }
 
-            Thread{
-                homeHandler.obtainMessage(-1, true).sendToTarget()
-                while(!MainActivity.isDrawerClosed) sleep(233)
-                //homeHandler.sendEmptyMessage(6)    //removeAllViews
-                homeHandler.fhib = null
-                sleep(600)
-                homeHandler.startLoad()
-            }.start()
+            lifecycleScope.launch{
+                withContext(Dispatchers.IO) {
+                    homeHandler.obtainMessage(-1, true).sendToTarget()
+                    while(!MainActivity.isDrawerClosed) sleep(233)
+                    //homeHandler.sendEmptyMessage(6)    //removeAllViews
+                    homeHandler.fhib = null
+                    sleep(600)
+                    homeHandler.startLoad()
+                }
+            }
         }
     }
 
@@ -261,14 +269,16 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
 
             override fun getItemCount() = (results?.results?.list?.size?:0) + if (query?.isNotEmpty() == true) 1 else 0
 
-            fun refresh(q: CharSequence) {
+            suspend fun refresh(q: CharSequence) = withContext(Dispatchers.IO) {
                 query = q.toString()
                 activity?.apply {
-                    AutoDownloadThread(getString(R.string.searchApiUrl).format(CMApi.myHostApiUrl, 0, query, type)) {
-                        results = Gson().fromJson(it?.decodeToString(), BookListStructure::class.java)
+                    PausableDownloader(getString(R.string.searchApiUrl).format(CMApi.myHostApiUrl, 0, query, type)) {
+                        results = Gson().fromJson(it.decodeToString(), BookListStructure::class.java)
                         count = results?.results?.total?:0
-                        runOnUiThread { notifyDataSetChanged() }
-                    }.start()
+                        withContext(Dispatchers.Main) {
+                            notifyDataSetChanged()
+                        }
+                    }.run()
                 }
             }
         }

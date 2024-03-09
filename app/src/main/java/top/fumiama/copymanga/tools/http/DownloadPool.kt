@@ -9,6 +9,7 @@ import java.util.zip.CRC32
 import java.util.zip.CheckedOutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
+import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 import kotlin.random.Random
 
@@ -33,15 +34,7 @@ class DownloadPool(folder: String) {
     }
 
     operator fun plusAssign(quest: Quest) {
-        packZipFile(quest.fileName, quest.imgUrl, quest.refer)
-    }
-
-    operator fun plusAssign(quests: Array<Quest>) {
-        Thread{
-            quests.forEach { quest ->
-                packZipFile(quest.fileName, quest.imgUrl, quest.refer)
-            }
-        }.start()
+        packZipFile(quest.fileName, quest.imgUrl)
     }
 
     fun setOnDownloadListener(onDownloadListener: (String, Boolean, String) -> Unit) {
@@ -52,8 +45,8 @@ class DownloadPool(folder: String) {
         mOnPageDownloadListener = onPageDownloadListener
     }
 
-    private fun packZipFile(fileName: String, imgUrls: Array<String>, refer: String?) {
-        Thread{
+    private fun packZipFile(fileName: String, imgUrls: Array<String>) {
+        Thread {
             File(saveFolder, "$fileName.tmp").let { f ->
                 f.parentFile?.let { if(!it.exists()) it.mkdirs() }
                 var start = 0
@@ -61,9 +54,9 @@ class DownloadPool(folder: String) {
                 if(f.exists()) {
                     try {
                         val zipFile = ZipFile(f)
-                        start = zipFile.size() - 1
+                        start = zipFile.size()
                         zipFile.close()
-                        Log.d("MyDP", "last downloaded index: $start")
+                        Log.d("MyDP", "next download index: $start")
                         if (start <= 0 || start >= imgUrls.size) { // error or re-download
                             f.delete()
                             f.createNewFile()
@@ -75,8 +68,25 @@ class DownloadPool(folder: String) {
                         f.createNewFile()
                     }
                 } else f.createNewFile()
-                val zip = ZipOutputStream(CheckedOutputStream(FileOutputStream(f, true), CRC32()))
-                zip.setLevel(9)
+                val zip: ZipOutputStream
+                if (start > 0) {
+                    val fromZip = ZipInputStream(f.readBytes().inputStream())
+                    zip = ZipOutputStream(CheckedOutputStream(FileOutputStream(f), CRC32()))
+                    zip.setLevel(9)
+                    fromZip.use { z ->
+                        var e = z.nextEntry
+                        while (e != null) {
+                            zip.putNextEntry(e)
+                            z.copyTo(zip)
+                            zip.closeEntry()
+                            z.closeEntry()
+                            e = z.nextEntry
+                        }
+                    }
+                } else {
+                    zip = ZipOutputStream(CheckedOutputStream(FileOutputStream(f), CRC32()))
+                    zip.setLevel(9)
+                }
                 var succeed = true
                 var lastIndex = -8
                 try {
@@ -93,7 +103,9 @@ class DownloadPool(folder: String) {
                                 zip.closeEntry()
                                 true
                             }?:false
+                            if(exit) break
                             if (!s) sleep(2000)
+                            if(exit) break
                         }
                         if(!s && tryTimes <= 0) {
                             succeed = false

@@ -27,6 +27,7 @@ import top.fumiama.dmzj.copymanga.R
 import java.io.File
 import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
+import java.util.concurrent.atomic.AtomicReference
 
 class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
     var isOnPause = false
@@ -65,7 +66,7 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
             }
             mBookHandler = BookHandler(WeakReference(this), path)
             Log.d("MyBF", "read path: $path")
-            bookHandler = mBookHandler
+            bookHandler.set(mBookHandler)
             lifecycleScope.launch {
                 withContext(Dispatchers.IO) {
                     sleep(600)
@@ -73,14 +74,14 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
                 }
             }
         } else {
-            bookHandler = mBookHandler
+            bookHandler.set(mBookHandler)
         }
     }
 
     override fun onResume() {
         super.onResume()
         isOnPause = false
-        bookHandler = mBookHandler
+        bookHandler.set(mBookHandler)
         activity?.apply {
             toolbar.title = mBookHandler?.book?.results?.comic?.name
         }
@@ -98,7 +99,7 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
         mBookHandler?.ads?.forEach {
             it.exit = true
         }
-        bookHandler = null
+        bookHandler.set(null)
     }
 
     fun setStartRead() {
@@ -126,12 +127,14 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
     fun setAddToShelf() {
         if(mBookHandler?.chapterNames?.isNotEmpty() != true) return
         lifecycleScope.launch {
-            val b = MainActivity.shelf?.query(mBookHandler?.path!!)
-            mBookHandler?.collect = b?.results?.collect?:-2
-            Log.d("MyBF", "get collect of ${mBookHandler?.path} = ${mBookHandler?.collect}")
-            tic.text = b?.results?.browse?.chapter_name?.let { name ->
-                getString(R.string.text_format_cloud_read_to).format(name)
+            MainActivity.shelf?.query(mBookHandler?.path!!)?.let { b ->
+                mBookHandler?.collect = b.results?.collect?:-2
+                Log.d("MyBF", "get collect of ${mBookHandler?.path} = ${mBookHandler?.collect}")
+                tic.text = b.results?.browse?.chapter_name?.let { name ->
+                    getString(R.string.text_format_cloud_read_to).format(name)
+                }
             }
+
             mBookHandler?.collect?.let { collect ->
                 if (collect > 0) {
                     this@BookFragment.lbbsub.setText(R.string.button_sub_subscribed)
@@ -162,12 +165,13 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
         }
     }
 
-    fun navigate2dl(){
+    fun navigate2dl() {
         val bundle = Bundle()
+        Log.d("MyBF", "nav2: ${arguments?.getString("path")?:"null"}")
         bundle.putString("path", arguments?.getString("path")?:"null")
         bundle.putString("name", mBookHandler!!.book?.results?.comic?.name)
-        if(mBookHandler!!.vols != null) {
-            bundle.putBoolean("loadJson", true)
+        if(mBookHandler!!.vols != null && mBookHandler!!.json != null) {
+            bundle.putString("loadJson", mBookHandler!!.json)
         }
         bundle.putStringArray("group", mBookHandler!!.gpws)
         bundle.putStringArray("groupNames", mBookHandler!!.keys)
@@ -178,6 +182,6 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
     }
 
     companion object {
-        var bookHandler: BookHandler? = null
+        var bookHandler: AtomicReference<BookHandler?> = AtomicReference(null)
     }
 }

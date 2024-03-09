@@ -2,7 +2,7 @@
 <!DOCTYPE resources [
     <!ENTITY hosturl "api.copymanga.tv">
     ]>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">拷贝漫画</string>
 
     <string name="action_settings">设定</string>
@@ -81,7 +81,7 @@
     <string name="shelfOperateApiUrl">https://%1$s/api/v3/member/collect/comic</string>
 
     <string name="imgProxyApiUrl">https://copymanga.azurewebsites.net/api/img?code=%1$s&amp;url=%2$s</string>
-    <string name="imgProxyApiPrefix">https://hi77-overseas.mangafuna.xyz/</string>
+    <string name="imgProxyApiRegex" tools:ignore="TypographyDashes">^https://[0-9a-z-]+\.mangafuna\.xyz/</string>
     <string name="imgProxyKeyID">settings_cat_net_et_img_proxy_code</string>
     <!--
     <string name="apiProxyApiUrl">https://copymanga.azurewebsites.net/api/api?url=%1$s</string>
@@ -170,7 +170,7 @@
     <string name="login_null_username">用户名为空</string>
     <string name="login_null_pwd">密码为空</string>
     <string name="login_get_conn_failed">登录失败</string>
-    <string name="login_get_avatar_failed">刷新头像失败</string>
+    <string name="login_get_avatar_failed">恢复登录失败</string>
     <string name="login_restart_to_apply">重启应用以彻底退出登录</string>
 
     <string name="old_download_card_name">前往旧版下载</string>

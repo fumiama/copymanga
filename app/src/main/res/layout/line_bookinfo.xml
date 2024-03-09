@@ -19,7 +19,7 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:padding="@dimen/book_bg_card_padding">
 
         <include
@@ -37,7 +37,7 @@
             android:id="@+id/lbitb"
             layout="@layout/line_booktandb"
             android:layout_width="0dp"
-            android:layout_height="@dimen/nav_header_height"
+            android:layout_height="wrap_content"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_weight="2"
             app:layout_constraintStart_toEndOf="@+id/lbc"

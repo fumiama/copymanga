@@ -7,7 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
 import top.fumiama.copymanga.tools.ui.UITools
 
-open class ActivityTemplate:AppCompatActivity() {
+open class ActivityTemplate: AppCompatActivity() {
     lateinit var toolsBox: UITools
     val pb = BoolPref()
     private val allFullScreen

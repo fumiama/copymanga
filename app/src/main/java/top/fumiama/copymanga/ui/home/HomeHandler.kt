@@ -3,7 +3,6 @@ package top.fumiama.copymanga.ui.home
 import android.animation.ObjectAnimator
 import android.graphics.Color
 import android.os.Bundle
-import android.os.Looper
 import android.os.Message
 import android.util.Log
 import android.view.View
@@ -13,6 +12,7 @@ import android.widget.Toast
 import androidx.cardview.widget.CardView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.animation.doOnEnd
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.bumptech.glide.Glide
@@ -23,6 +23,9 @@ import com.to.aboomy.pager2banner.ScaleInTransformer
 import kotlinx.android.synthetic.main.card_book.view.*
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.line_1bookline.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.json.ComicStructure
 import top.fumiama.copymanga.json.IndexStructure
 import top.fumiama.copymanga.template.http.AutoDownloadHandler
@@ -37,7 +40,7 @@ import java.lang.ref.WeakReference
 class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadHandler(
     that.get()?.getString(R.string.mainPageApiUrl)!!.format(CMApi.myHostApiUrl),
     IndexStructure::class.java,
-    Looper.myLooper()!!,
+    that.get(),
     9
 ) {
     private val homeF get() = that.get()
@@ -47,7 +50,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
             Log.d("MyHH", "Get fhib.")
             if (field == null) {
                 field = homeF?.layoutInflater?.inflate(R.layout.viewpage_banner, homeF?.fhl, false)
-                Thread{ homeF?.homeHandler?.sendEmptyMessage(3) }.start()
+                homeF?.homeHandler?.sendEmptyMessage(3)
             }
             return field
         }
@@ -104,23 +107,17 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
         if(exit) return
         Toast.makeText(homeF?.context, R.string.web_error, Toast.LENGTH_SHORT).show()
     }
-    override fun doWhenFinishDownload() {
+    override suspend fun doWhenFinishDownload() = withContext(Dispatchers.IO) {
         super.doWhenFinishDownload()
-        if(exit) return
-        try {
-            Thread {
-                sendEmptyMessage(2)         //setSwipe
-                sendEmptyMessage(7)         //inflateBanner
-                sendEmptyMessage(1)         //inflateCardLines
-            }.start()
-        } catch (e: Exception) {
-            Toast.makeText(homeF?.context, R.string.load_home_error, Toast.LENGTH_SHORT).show()
-        }
+        if(exit) return@withContext
+        sendEmptyMessage(2)         //setSwipe
+        sendEmptyMessage(7)         //inflateBanner
+        sendEmptyMessage(1)         //inflateCardLines
     }
 
     private fun inflateBanner() = homeF?.fhl?.addView(fhib)
 
-    private fun inflateTopics(){
+    private suspend fun inflateTopics() {
         index?.results?.topics?.list?.let {
             var comics = arrayOf<ComicStructure>()
             for((i, topic) in it.withIndex()){
@@ -135,7 +132,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
         }
     }
 
-    private fun inflateRec(){
+    private suspend fun inflateRec() {
         index?.results?.recComics?.list?.let {
             var comics = arrayOf<ComicStructure>()
             for((i, rec) in it.withIndex()){
@@ -150,7 +147,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
         }
     }
 
-    private fun inflateRank(){
+    private suspend fun inflateRank(){
         var comics = arrayOf<ComicStructure>()
         index?.results?.rankDayComics?.list?.let {
             for((i, book) in it.withIndex()){
@@ -175,7 +172,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
         }
     }
 
-    private fun inflateHot(){
+    private suspend fun inflateHot(){
         index?.results?.hotComics?.let {
             var comics = arrayOf<ComicStructure>()
             for((i, rec) in it.withIndex()){
@@ -186,7 +183,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
         }
     }
 
-    private fun inflateNew(){
+    private suspend fun inflateNew(){
         index?.results?.newComics?.let {
             var comics = arrayOf<ComicStructure>()
             for((i, rec) in it.withIndex()){
@@ -201,7 +198,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
         }
     }
 
-    private fun inflateFinish(){
+    private suspend fun inflateFinish(){
         index?.results?.finishComics?.list?.let {
             var comics = arrayOf<ComicStructure>()
             for((i, rec) in it.withIndex()){
@@ -216,20 +213,24 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
         }
     }
 
-    private fun inflateCardLines() = Thread {
-        if (indexLines.isNotEmpty()) indexLines = arrayOf()
-        inflateRec()
-        inflateTopics()
-        inflateHot()
-        inflateNew()
-        inflateFinish()
-        inflateRank()
-        for(i in indexLines.indices) {
-            obtainMessage(8, i, 0).sendToTarget()
-            sleep(512)
+    private fun inflateCardLines() {
+        homeF?.lifecycleScope?.launch {
+            withContext(Dispatchers.IO) {
+                if (indexLines.isNotEmpty()) indexLines = arrayOf()
+                inflateRec()
+                inflateTopics()
+                inflateHot()
+                inflateNew()
+                inflateFinish()
+                inflateRank()
+                for(i in indexLines.indices) {
+                    obtainMessage(8, i, 0).sendToTarget()
+                    sleep(512)
+                }
+                obtainMessage(-1, false).sendToTarget()                 //closeLoad
+            }
         }
-        obtainMessage(-1, false).sendToTarget()                 //closeLoad
-    }.start()
+    }
 
     private fun setBanner(v: Banner): Banner {
         v.viewTreeObserver.addOnGlobalLayoutListener(object :
@@ -241,7 +242,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
                 v.viewTreeObserver.removeOnGlobalLayoutListener(this)
             }
         })
-        Thread{this.obtainMessage(5, v).sendToTarget()}.start() //setBannerInfo
+        obtainMessage(5, v).sendToTarget() //setBannerInfo
         return v
     }
 
@@ -264,20 +265,23 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
         homeF?.fhov?.swipeRefreshLayout = sw
         sw.setOnRefreshListener {
             Log.d("MyHFH", "Refresh items.")
-            //index = null
-            //Thread{this@HomeHandler.obtainMessage(-1, true).sendToTarget()}.start()  //startLoad
-            Thread{
-                index = null
-                //fhib = null
-                indexLines = arrayOf()
-                this@HomeHandler.sendEmptyMessage(6)    //removeAllViews
-                sleep(300)
-                this@HomeHandler.sendEmptyMessage(0)    //setLayouts
-            }.start()
+            homeF?.lifecycleScope?.launch {
+                withContext(Dispatchers.IO) {
+                    index = null
+                    //fhib = null
+                    indexLines = arrayOf()
+                    this@HomeHandler.sendEmptyMessage(6)    //removeAllViews
+                    sleep(300)
+                    this@HomeHandler.sendEmptyMessage(0)    //setLayouts
+                }
+            }
         }
     }
 
-            private fun allocateLine(title: String, iconResId: Int, comics: Array<ComicStructure>, finish: Boolean = false, isTopic: Boolean = false, onClick: (() -> Unit)? = null): Int{
+    private suspend fun allocateLine(
+        title: String, iconResId: Int, comics: Array<ComicStructure>,
+        finish: Boolean = false, isTopic: Boolean = false, onClick: (() -> Unit)? = null
+    ): Int = withContext(Dispatchers.IO) {
         val p = indexLines.size
         val c = comics.size / 3
         homeF?.layoutInflater?.inflate(
@@ -285,22 +289,24 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
                 1 -> R.layout.line_1bookline
                 2 -> R.layout.line_2bookline
                 3 -> R.layout.line_3bookline
-                else -> return -1
-            }, homeF!!.fhl, false)?.apply {
-            scanCards(this, comics, finish, isTopic)
-            rttitle.text = title
-            ir.setImageResource(iconResId)
-            setLineHeight(this, c)
-            if(onClick != null) setOnClickListener { onClick() }
+                else -> return@withContext -1
+        }, homeF!!.fhl, false)?.apply {
+            withContext(Dispatchers.Main) {
+                scanCards(this@apply, comics, finish, isTopic)
+                rttitle.text = title
+                ir.setImageResource(iconResId)
+                setLineHeight(this@apply, c)
+                if(onClick != null) setOnClickListener { onClick() }
+            }
             indexLines += this
         }
-        return p
+        return@withContext p
     }
 
-    private fun scanCards(v: View, comics: Array<ComicStructure>, finish: Boolean, isTopic: Boolean){
+    private suspend fun scanCards(v: View, comics: Array<ComicStructure>, finish: Boolean, isTopic: Boolean) = withContext(Dispatchers.IO) {
         var id = v.rc1.id
         var card = v.findViewById<ConstraintLayout>(id)
-        for (data in comics){
+        for (data in comics) {
             setCards(
                 card.cic,
                 data.path_word,
@@ -313,10 +319,10 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
         }
     }
 
-    private fun setCards(cv: CardView, pw: String, name: String, img: String, isFinal: Boolean, isTopic: Boolean) {
+    private suspend fun setCards(cv: CardView, pw: String, name: String, img: String, isFinal: Boolean, isTopic: Boolean) = withContext(Dispatchers.Main) {
         cv.tic.text = name
         homeF?.let {
-            if(img.startsWith("http")) it.activity?.runOnUiThread {
+            if(img.startsWith("http")) {
                 Glide.with(it).load(GlideUrl(CMApi.proxy?.wrap(img)?:img, CMApi.myGlideHeaders))
                     .addListener(GlideHideLottieViewListener(WeakReference(cv.laic)))
                     .timeout(20000).into(cv.imic)

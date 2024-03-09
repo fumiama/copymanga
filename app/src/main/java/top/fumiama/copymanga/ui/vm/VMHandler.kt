@@ -3,19 +3,22 @@ package top.fumiama.copymanga.ui.vm
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.os.Looper
 import android.os.Message
 import android.util.Log
 import android.view.View
-import com.afollestad.materialdialogs.utils.MDUtil.getStringArray
+import androidx.lifecycle.lifecycleScope
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_viewmanga.*
 import kotlinx.android.synthetic.main.widget_infodrawer.*
 import kotlinx.android.synthetic.main.widget_infodrawer.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.json.Chapter2Return
 import top.fumiama.copymanga.json.ChapterWithContent
 import top.fumiama.copymanga.json.ComicStructure
 import top.fumiama.copymanga.template.http.AutoDownloadHandler
+import top.fumiama.copymanga.template.http.PausableDownloader
 import top.fumiama.copymanga.ui.vm.ViewMangaActivity.Companion.comicName
 import top.fumiama.copymanga.ui.vm.ViewMangaActivity.Companion.pn
 import top.fumiama.copymanga.ui.vm.ViewMangaActivity.Companion.position
@@ -27,13 +30,12 @@ import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
 import java.util.*
 
-class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
-    url, Chapter2Return::class.java, Looper.myLooper()!!
+class VMHandler(activity: ViewMangaActivity, private val chapterUrl: String, private val weeks: Array<String>) : AutoDownloadHandler(
+    chapterUrl, Chapter2Return::class.java, activity
 ) {
     var manga: Chapter2Return? = null
     private val wv = WeakReference(activity)
     private val drawer = wv.get()?.infcard
-    private val weeks = wv.get()?.getStringArray(R.array.weeks)
     private var hasDrawerShown = false
     val dl = activity.let {
         val re = Dialog(it)
@@ -50,7 +52,7 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
             val cal = Calendar.getInstance()
             val w = cal[Calendar.DAY_OF_WEEK]
             if (w > 7 || w <= 0) return ""
-            return weeks?.get(w-1) ?: ""
+            return weeks[w-1]
         }
     private var remainingImageCount = 0
 
@@ -72,7 +74,11 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
             LOAD_IMG_ON -> {
                 val scaleImageView = msg.obj as ScaleImageView
                 // msg.arg2: isLast
-                wv.get()?.loadImgOn(scaleImageView, msg.arg1)
+                wv.get()?.apply {
+                    lifecycleScope.launch {
+                        loadImgOn(scaleImageView, msg.arg1)
+                    }
+                }
                 //scaleImageView.setHeight2FitImgWidth()
                 //if(msg.arg2 == 1) sendEmptyMessage(DELAYED_RESTORE_PAGE_NUMBER)
             }
@@ -86,8 +92,8 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
 
             LOAD_ITEM_SCROLL_MODE -> loadScrollMode(msg.arg1, msg.obj as? Runnable?)
             LOAD_SCROLL_MODE -> loadScrollMode()
-            LOAD_ITEM_IMAGES_INTO_LINE -> loadImagesIntoLine(msg.arg1, msg.obj as? Runnable?)
-            LOAD_IMAGES_INTO_LINE -> loadImagesIntoLine()
+            LOAD_ITEM_IMAGES_INTO_LINE -> wv.get()?.lifecycleScope?.launch { loadImagesIntoLine(msg.arg1, msg.obj as? Runnable?) }
+            LOAD_IMAGES_INTO_LINE -> wv.get()?.lifecycleScope?.launch { loadImagesIntoLine() }
             RESTORE_PAGE_NUMBER -> {
                 sendEmptyMessage(DIALOG_HIDE)
                 wv.get()?.restorePN()
@@ -141,17 +147,22 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
     override fun onError() {
         super.onError()
         if(exit) return
-        wv.get()?.toolsBox?.toastError(R.string.download_chapter_info_failed)
+        wv.get()?.apply {
+            lifecycleScope.launch {
+                toolsBox.toastError(R.string.download_chapter_info_failed)
+            }
+        }
     }
 
-    override fun doWhenFinishDownload() {
+    override suspend fun doWhenFinishDownload() {
         super.doWhenFinishDownload()
         if(exit) return
         prepareManga()
     }
 
-    fun loadFromFile(file: File): Boolean {
-        return try {
+    suspend fun loadFromFile(file: File): Boolean = withContext(Dispatchers.IO) {
+        fakeLoad()
+        return@withContext try {
             val jsonFile = File(file.parentFile, "${file.nameWithoutExtension}.json")
             if(jsonFile.exists()) {
                 manga = Gson().fromJson(jsonFile.reader(), Chapter2Return::class.java)
@@ -180,7 +191,11 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
         }
     }
 
-    private fun prepareManga(){
+    private suspend fun fakeLoad() {
+        PausableDownloader(chapterUrl) { _ -> }.run()
+    }
+
+    private suspend fun prepareManga() = withContext(Dispatchers.Main) {
         if(comicName == null) {
             comicName = manga?.results?.comic?.name
         }
@@ -188,7 +203,7 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
         wv.get()?.initManga()
         wv.get()?.vprog?.visibility = View.GONE
     }
-    private fun loadImagesIntoLine(item: Int = (wv.get()?.currentItem?:0), doAfter: Runnable? = null) = Thread{
+    private suspend fun loadImagesIntoLine(item: Int = (wv.get()?.currentItem?:0), doAfter: Runnable? = null) = withContext(Dispatchers.IO) {
         val maxCount: Int = (wv.get()?.verticalLoadMaxCount?:20)
         Log.d("MyVMH", "Fun: loadImagesIntoLine($item, $maxCount)")
         wv.get()?.realCount?.let { count ->
@@ -204,11 +219,11 @@ class VMHandler(activity: ViewMangaActivity, url: String) : AutoDownloadHandler(
                 if(notFull) obtainMessage(PREPARE_LAST_PAGE, loadCount + 1, maxCount).sendToTarget()
                 obtainMessage(DO_LAMBDA, Runnable{
                     doAfter?.run()
-                    wv.get()?.let { it.updateSeekBar(0) }
+                    wv.get()?.updateSeekBar(0)
                 }).sendToTarget()
             }
         }
-    }.start()
+    }
 
     private fun loadScrollMode() {
         sendEmptyMessage(DIALOG_SHOW)

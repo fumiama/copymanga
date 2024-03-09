@@ -14,6 +14,8 @@ import android.view.GestureDetector
 import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.MotionEvent
 import android.widget.ImageView
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import top.fumiama.copymanga.ui.vm.PagesManager
 import top.fumiama.copymanga.ui.vm.ViewMangaActivity
 import top.fumiama.dmzj.copymanga.R
@@ -564,7 +566,11 @@ class ScaleImageView : ImageView {
             }
         }catch (e:Exception){
             e.printStackTrace()
-            ViewMangaActivity.va?.get()?.toolsBox?.toastError(R.string.show_image_error_try_lower_resolution, false)
+            ViewMangaActivity.va?.get()?.apply {
+                lifecycleScope.launch {
+                    toolsBox.toastError(R.string.show_image_error_try_lower_resolution, false)
+                }
+            }
         }
     }
     ////////////////////////////////有效性判断////////////////////////////////

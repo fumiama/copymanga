@@ -84,9 +84,12 @@ class DownloadFragment: NoBackRefreshFragment(R.layout.fragment_download) {
     private fun callDownloadFragment(jsonFile: File, isNew: Boolean = false){
         val bundle = Bundle()
         Log.d("MyDF", "Call dl and is new: $isNew")
-        bundle.putBoolean(if(isNew) "loadJson" else "callFromOldDL", true)
+        if(isNew) {
+            bundle.putString("loadJson", jsonFile.readText())
+        } else {
+            bundle.putBoolean("callFromOldDL", true)
+        }
         bundle.putString("name", jsonFile.parentFile?.name?:"Null")
-        ComicDlFragment.json = jsonFile.readText()
         Log.d("MyDF", "root view: $rootView")
         Log.d("MyDF", "action_nav_download_to_nav_group")
         Navigate.safeNavigateTo(findNavController(), R.id.action_nav_download_to_nav_group, bundle)

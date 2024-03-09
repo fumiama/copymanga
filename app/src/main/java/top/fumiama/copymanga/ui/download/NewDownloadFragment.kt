@@ -169,9 +169,8 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
     private fun callDownloadFragment(name: String){
         val bundle = Bundle()
         Log.d("MyNDF", "Call dl and is new.")
-        bundle.putBoolean("loadJson", true)
+        bundle.putString("loadJson", File(File(extDir, name), "info.json").readText())
         bundle.putString("name", name)
-        ComicDlFragment.json = File(File(extDir, name), "info.json").readText()
         Log.d("MyNDF", "root view: $rootView")
         Log.d("MyNDF", "action_nav_new_download_to_nav_group")
         Navigate.safeNavigateTo(findNavController(), R.id.action_nav_new_download_to_nav_group, bundle)

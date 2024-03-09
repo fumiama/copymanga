@@ -11,6 +11,7 @@ import android.util.Log
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.fragment_book.*
 import kotlinx.android.synthetic.main.line_chapter.view.*
@@ -20,8 +21,12 @@ import kotlinx.android.synthetic.main.line_horizonal_empty.view.*
 import kotlinx.android.synthetic.main.button_tbutton.*
 import kotlinx.android.synthetic.main.button_tbutton.view.*
 import kotlinx.android.synthetic.main.line_caption.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
+import top.fumiama.copymanga.json.ChapterStructure
 import top.fumiama.copymanga.json.ComicStructureOld
 import top.fumiama.copymanga.json.VolumeStructure
 import top.fumiama.copymanga.tools.api.CMApi
@@ -92,41 +97,35 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
                 that?.tdwn?.text = "${dldChapter}/${checkedChapter}"
             }
             6 -> that?.tdwn?.text = "${dldChapter}/${checkedChapter}"
-            7 -> deleteChapters(msg.obj as File, msg.arg1)
+            7 -> that?.lifecycleScope?.launch { deleteChapters(msg.obj as File, msg.arg1) }
             9 -> that?.cdwn?.setCardBackgroundColor(that!!.resources.getColor(R.color.colorGreen))
-            10 -> addTbtn(msg.obj as Array<String>)
-            11 -> addCaption(msg.obj as String)
-            12 -> addDiv()
+            //10 -> addButton(msg.obj as Array<String>)
+            //11 -> addCaption(msg.obj as String)
+            //12 -> addDiv()
             13 -> if(complete) showMultiSelectInfo()
         }
     }
 
-    fun startLoad(){
+    suspend fun startLoad() = withContext(Dispatchers.IO) {
         setComponents()
         if(isOld) analyzeOldStructure()
-        else Thread{
+        else {
             urlArray = arrayOf()
             ViewMangaActivity.fileArray = arrayOf()
             ViewMangaActivity.uuidArray = arrayOf()
             vols.forEachIndexed { i, vol ->
                 val caption = groupNames?.get(i)?:vol.results.list[0].group_path_word
                 Log.d("MyCDH", "caption: $caption, group name: ${groupNames?.get(i)}")
-                obtainMessage(11, caption).sendToTarget()       //addCaption
-                vol.results.list.forEach { chapter ->
-                    var data = arrayOf<String>()
-                    data += chapter.name
-                    data += chapter.uuid
-                    data += caption
-                    data += CMApi.getChapterInfoApiUrl(chapter.comic_path_word, chapter.uuid)?:""
-                    obtainMessage(10, data).sendToTarget()
+                withContext(Dispatchers.Main) {
+                    addCaption(caption) {
+                        addButtons(vol.results.list, caption)
+                    }
                 }
-                sendEmptyMessage(12)                            //addDiv
             }
             complete = true
-        }.start()
-
+        }
     }
-    private fun addDiv(){
+    private suspend fun addDiv() = withContext(Dispatchers.Main) {
         that?.ldwn?.addView(
             that!!.layoutInflater.inflate(R.layout.div_h, that!!.ldwn, false),
             ViewGroup.LayoutParams(
@@ -135,7 +134,7 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
             )
         )
     }
-    private fun addCaption(title: String){
+    private suspend fun addCaption(title: String, body: suspend() -> Unit) = withContext(Dispatchers.Main) {
         val tc = that?.layoutInflater?.inflate(R.layout.line_caption, that!!.ldwn, false)
         tc?.tcptn?.text = title
         that?.ldwn?.addView(
@@ -147,13 +146,16 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
         )
         addDiv()
         isNewTitle = true
+        body()
     }
-    private fun deleteChapter(f: File, v: ChapterToggleButton) {
+    private suspend fun deleteChapter(f: File, v: ChapterToggleButton) = withContext(Dispatchers.IO) {
         f.delete()
-        v.setBackgroundResource(R.drawable.toggle_button)
-        v.isChecked = false
+        withContext(Dispatchers.Main) {
+            v.setBackgroundResource(R.drawable.toggle_button)
+            v.isChecked = false
+        }
     }
-    private fun deleteChapters(zipf: File, index: Int) {
+    private suspend fun deleteChapters(zipf: File, index: Int) = withContext(Dispatchers.IO) {
         if (multiSelect) {
             for (i in tbtnlist) {
                 if (i.isChecked) {
@@ -183,7 +185,7 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
             end
         ).setDuration(duration).start()
     }
-    private fun setComponents() {
+    private suspend fun setComponents() = withContext(Dispatchers.Main) {
         val widthData = toolsBox.calcWidthFromDpRoot(8, 64)
         btnNumPerRow = widthData[0]
         btnw = widthData[1]
@@ -210,23 +212,21 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
                 that!!.pdwn.progress = 0
                 if (downloading || checkedChapter == 0) {
                    mangaDlTools.wait = !mangaDlTools.wait!!
-                } else {
+                } else that?.lifecycleScope?.launch {
                     downloading = true
-                    Thread {
-                        sendEmptyMessage(9)
-                        finishMap = arrayOfNulls(tbtnlist.size)
-                        downloadChapterPages()
-                    }.start()
+                    sendEmptyMessage(9)
+                    finishMap = arrayOfNulls(tbtnlist.size)
+                    downloadChapterPages()
                 }
             }
         }
         that?.cdwn?.setOnLongClickListener {
-            Thread { sendEmptyMessage(4) }.start()
+            sendEmptyMessage(4)
             return@setOnLongClickListener true
         }
-        mangaDlTools.onDownloadedListener = object :MangaDlTools.OnDownloadedListener{
+        mangaDlTools.onDownloadedListener = object :MangaDlTools.OnDownloadedListener {
             override fun handleMessage(index: Int, isSuccess: Boolean, message: String) {
-                that?.activity?.runOnUiThread {
+                that?.lifecycleScope?.launch {
                     if(isSuccess) onZipDownloadFinish(index)
                     else onZipDownloadFailure(index, message)
                 }
@@ -240,7 +240,7 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
                 isSuccess: Boolean,
                 message: String
             ) {
-                that?.activity?.runOnUiThread {
+                that?.lifecycleScope?.launch {
                     if(isSuccess) {
                         tbtnlist[index].text = if(downloaded == 0 && total == 0) tbtnlist[index].chapterName else "$downloaded/$total"
                     } else {
@@ -262,30 +262,38 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
             "确定", null, "取消", { multiSelect = true })
     }
     
-    private fun downloadChapterPages() {
+    private suspend fun downloadChapterPages() = withContext(Dispatchers.IO) {
         tbtnlist.forEach { i ->
             if(i.isChecked) {
+                withContext(Dispatchers.Main) {
+                    i.isEnabled = false
+                }
                 i.url?.let {
-                    mangaDlTools.downloadChapterInVol(
-                        it,
-                        i.chapterName,
-                        i.caption?:"null",
-                        i.index
-                    )
+                    Thread {
+                        that?.lifecycleScope?.launch {
+                            mangaDlTools.downloadChapterInVol(
+                                it,
+                                i.chapterName,
+                                i.caption?:"null",
+                                i.index
+                            )
+                        }
+                    }.start()
                 }
             }
         }
     }
 
-    private fun onZipDownloadFinish(index: Int) {
+    private suspend fun onZipDownloadFinish(index: Int) = withContext(Dispatchers.Main) {
         if(index >= 0 && index < tbtnlist.size) {
             tbtnlist[index].setBackgroundResource(R.drawable.rndbg_checked)
             tbtnlist[index].isChecked = false
+            tbtnlist[index].isEnabled = true
             finishMap[index] = true
             updateProgressBar()
             that?.apply {
                 cdwn.postDelayed({
-                    if (mangaDlTools?.exit != false) return@postDelayed
+                    if (mangaDlTools.exit) return@postDelayed
                     if (dldChapter == checkedChapter) {
                         checkedChapter = 0
                         setProgress2(0, 233)
@@ -299,8 +307,9 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
         }
     }
 
-    private fun onZipDownloadFailure(index: Int, message: String) {
+    private suspend fun onZipDownloadFailure(index: Int, message: String) = withContext(Dispatchers.Main) {
         tbtnlist[index].setBackgroundResource(R.drawable.rndbg_error)
+        tbtnlist[index].isEnabled = true
         Toast.makeText(that?.context, "下载${tbtnlist[index].chapterName}失败: $message", Toast.LENGTH_SHORT).show()
         updateProgressBar()
     }
@@ -314,12 +323,16 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
         //ObjectAnimator.ofFloat(dlsdwn, "alpha", 0.9f, 0.3f).setDuration(233).start()
         ObjectAnimator.ofFloat(that?.dlsdwn, "translationX", 0f, cdwnWidth.toFloat() * 0.9f).setDuration(233).start()
     }
-    private fun addTbtn(data: Array<String>){
-        addTbtn(data[0], data[1], data[2], data[3])
-        urlArray += data[3]
+    private suspend fun addButtons(chapters: Array<ChapterStructure>, caption: String) = withContext(Dispatchers.IO) {
+        chapters.forEach { chapter ->
+            val u = CMApi.getChapterInfoApiUrl(chapter.comic_path_word, chapter.uuid)?:""
+            addButton(chapter.name, chapter.uuid, caption, u)
+            urlArray += u
+        }
+        addDiv()
     }
     @SuppressLint("SetTextI18n")
-    private fun addTbtn(title: String, uuid: String, caption: String, url: String) {
+    private suspend fun addButton(title: String, uuid: String, caption: String, url: String) = withContext(Dispatchers.Main) {
         if ((tbtncnt % btnNumPerRow == 0) || isNewTitle) {
             that?.ltbtn = that?.layoutInflater?.inflate(R.layout.line_horizonal_empty, that!!.ldwn, false)
             that?.ldwn?.addView(that!!.ltbtn)
@@ -338,82 +351,86 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
             //tbv.tbtn.hint = caption
             tbv.tbtn.caption = caption
             tbv.tbtn.layoutParams.width = btnw
-            val zipf = CMApi.getZipFile(that!!.context?.getExternalFilesDir(""), comicName, caption, title)
-            Log.d("MyCD", "Get zipf: $zipf")
-            ViewMangaActivity.fileArray += zipf
-            if (zipf.exists()) {
-                tbv.tbtn.setBackgroundResource(R.drawable.rndbg_checked)
-                tbv.tbtn.isChecked = false
-            }
+
             that?.ltbtn?.ltbtn?.addView(tbv)
             that?.ltbtn?.invalidate()
-            tbv.tbtn.setOnClickListener {
-                if (zipf.exists() && !multiSelect) {
-                    it.tbtn.setBackgroundResource(R.drawable.rndbg_checked)
-                    it.tbtn.isChecked = false
-                    ViewMangaActivity.zipFile = zipf
-                    ViewMangaActivity.dlHandler = this
-                    ViewMangaActivity.position = it.tbtn.index
-                    dl?.show()
-                    val intent = Intent(that?.context, ViewMangaActivity::class.java)
-                    intent.putExtra("urlArray", urlArray).putExtra("callFrom", "zipFirst")
-                    that?.startActivity(intent)
-                } else {
-                    it.tbtn.setBackgroundResource(R.drawable.toggle_button)
-                    if (it.tbtn.isChecked) that?.tdwn?.text = "$dldChapter/${++checkedChapter}"
-                    else that?.tdwn?.text = "$dldChapter/${--checkedChapter}"
-                }
-            }
-            tbv.tbtn.setOnLongClickListener {
-                if (zipf.exists()) {
-                    toolsBox.buildInfo("确认删除${if (multiSelect) "这些" else "本"}章节?",
-                        "该操作将不可撤销",
-                        "确定",
-                        null,
-                        "取消",
-                        {
-                            Thread {
-                                obtainMessage(7, it.tbtn.index, 0, zipf).sendToTarget()
-                            }.start()
-                        })
-                }else{
-                    toolsBox.buildInfo("直接观看", "不下载而进行观看", "确定",
-                        null, "取消", {
-                            ViewMangaActivity.zipFile = null
-                            ViewMangaActivity.dlHandler = this
-                            ViewMangaActivity.position = it.tbtn.index
-                            dl?.show()
 
-                            val intent = Intent(that?.context, ViewMangaActivity::class.java)
-                            intent.putExtra("urlArray", urlArray)
-                            that?.startActivity(intent)
-                        }, null, null
-                    )
+            withContext(Dispatchers.IO) {
+                val zipf = CMApi.getZipFile(that!!.context?.getExternalFilesDir(""), comicName, caption, title)
+                Log.d("MyCD", "Get zipf: $zipf")
+                ViewMangaActivity.fileArray += zipf
+                if (zipf.exists()) withContext(Dispatchers.Main) {
+                    tbv.tbtn.setBackgroundResource(R.drawable.rndbg_checked)
+                    tbv.tbtn.isChecked = false
                 }
-                true
+                tbv.tbtn.setOnClickListener {
+                    if (zipf.exists() && !multiSelect) {
+                        it.tbtn.setBackgroundResource(R.drawable.rndbg_checked)
+                        it.tbtn.isChecked = false
+                        ViewMangaActivity.zipFile = zipf
+                        ViewMangaActivity.dlHandler = this@ComicDlHandler
+                        ViewMangaActivity.position = it.tbtn.index
+                        dl?.show()
+                        val intent = Intent(that?.context, ViewMangaActivity::class.java)
+                        intent.putExtra("urlArray", urlArray).putExtra("callFrom", "zipFirst")
+                        that?.startActivity(intent)
+                    } else {
+                        it.tbtn.setBackgroundResource(R.drawable.toggle_button)
+                        if (it.tbtn.isChecked) that?.tdwn?.text = "$dldChapter/${++checkedChapter}"
+                        else that?.tdwn?.text = "$dldChapter/${--checkedChapter}"
+                    }
+                }
+                tbv.tbtn.setOnLongClickListener {
+                    if (zipf.exists()) {
+                        toolsBox.buildInfo("确认删除${if (multiSelect) "这些" else "本"}章节?",
+                            "该操作将不可撤销",
+                            "确定",
+                            null,
+                            "取消",
+                            {
+                                obtainMessage(7, it.tbtn.index, 0, zipf).sendToTarget()
+                            })
+                    } else {
+                        toolsBox.buildInfo("直接观看", "不下载而进行观看", "确定",
+                            null, "取消", {
+                                ViewMangaActivity.zipFile = null
+                                ViewMangaActivity.dlHandler = this@ComicDlHandler
+                                ViewMangaActivity.position = it.tbtn.index
+                                dl?.show()
+
+                                val intent = Intent(that?.context, ViewMangaActivity::class.java)
+                                intent.putExtra("urlArray", urlArray)
+                                that?.startActivity(intent)
+                            }, null, null
+                        )
+                    }
+                    true
+                }
             }
         }
     }
 
-    private fun analyzeOldStructure() = Thread{
+    private suspend fun analyzeOldStructure() = withContext(Dispatchers.IO) {
         Gson().fromJson(json?.reader(), Array<ComicStructureOld>::class.java)?.let {
             for (group in it) {
                 that?.layoutInflater?.inflate(R.layout.line_caption, that!!.ldwn, false)?.let { tc ->
                     tc.tcptn.text = group.name
-                    that!!.ldwn.addView(
-                        tc,
-                        ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT
+                    withContext(Dispatchers.Main) {
+                        that!!.ldwn.addView(
+                            tc,
+                            ViewGroup.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.WRAP_CONTENT
+                            )
                         )
-                    )
-                    that!!.ldwn.addView(
-                        that!!.layoutInflater.inflate(R.layout.div_h, that!!.ldwn, false),
-                        ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT
+                        that!!.ldwn.addView(
+                            that!!.layoutInflater.inflate(R.layout.div_h, that!!.ldwn, false),
+                            ViewGroup.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.WRAP_CONTENT
+                            )
                         )
-                    )
+                    }
                     isNewTitle = true
                     for (chapter in group.chapters) {
                         val newUrl = CMApi.getChapterInfoApiUrl(
@@ -421,10 +438,11 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
                             chapter.url.substringAfterLast('/')
                         )?:""
                         Log.d("MyCD", "Generate new url: $newUrl")
-                        obtainMessage(10, arrayOf(chapter.name, "", group.name, newUrl)).sendToTarget()
+                        addButton(chapter.name, "", group.name, newUrl)
+                        urlArray += newUrl
                     }
                 }
             }
         }
-    }.start()
+    }
 }

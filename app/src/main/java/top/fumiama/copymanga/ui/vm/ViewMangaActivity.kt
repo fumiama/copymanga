@@ -21,6 +21,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.animation.doOnEnd
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
+import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
@@ -38,9 +39,12 @@ import kotlinx.android.synthetic.main.widget_infodrawer.*
 import kotlinx.android.synthetic.main.widget_titlebar.*
 import kotlinx.android.synthetic.main.widget_titlebar.view.*
 import kotlinx.android.synthetic.main.widget_viewmangainfo.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.template.general.TitleActivityTemplate
-import top.fumiama.copymanga.template.http.AutoDownloadThread
+import top.fumiama.copymanga.template.http.PausableDownloader
 import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.copymanga.tools.http.DownloadTools
 import top.fumiama.copymanga.tools.thread.TimeThread
@@ -128,50 +132,59 @@ class ViewMangaActivity : TitleActivityTemplate() {
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
-        val settingsPref = MainActivity.mainWeakReference?.get()?.let { PreferenceManager.getDefaultSharedPreferences(it) }
-        settingsPref?.getBoolean("settings_cat_vm_sw_always_dark_bg", false)?.let {
-            if (it) {
-                Log.d("MyVM", "force dark")
-                delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_YES
-            } else {
-                delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
-            }
-        }
         postponeEnterTransition()
         setContentView(R.layout.activity_viewmanga)
         super.onCreate(null)
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO) {
+                val settingsPref = MainActivity.mainWeakReference?.get()?.let { PreferenceManager.getDefaultSharedPreferences(it) }
+                settingsPref?.getBoolean("settings_cat_vm_sw_always_dark_bg", false)?.let {
+                    if (it) {
+                        Log.d("MyVM", "force dark")
+                        delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_YES
+                    } else {
+                        delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+                    }
+                }
+                va = WeakReference(this@ViewMangaActivity)
+                //dlZip2View = intent.getStringExtra("callFrom") == "Dl" || p["dlZip2View"] == "true"
+                //zipFirst = intent.getStringExtra("callFrom") == "zipFirst"
+                intent.getStringArrayExtra("urlArray")?.let { urlArray = it }
+                cut = pb["useCut"]
+                r2l = pb["r2l"]
+                verticalLoadMaxCount = settingsPref?.getInt("settings_cat_vm_sb_vertical_max", 20)?.let { if(it > 0) it else 20 }?:20
+                isVertical = pb["vertical"]
+                notUseVP = pb["noVP"] || isVertical
+                //url = intent.getStringExtra("url")
+                withContext(Dispatchers.Main) {
+                    handler = VMHandler(this@ViewMangaActivity, if(urlArray.isNotEmpty()) urlArray[position] else "", resources.getStringArray(R.array.weeks))
+                    withContext(Dispatchers.IO) {
+                        settingsPref?.getInt("settings_cat_vm_sb_quality", 100)?.let { q = if (it > 0) it else 100 }
+                        tt = TimeThread(handler, VMHandler.SET_NET_INFO, 10000)
+                        tt.canDo = true
+                        tt.start()
+                        volTurnPage = settingsPref?.getBoolean("settings_cat_vm_sw_vol_turn", false)?:false
+                        am = getSystemService(Service.AUDIO_SERVICE) as AudioManager
+                        if (!noCellarAlert) noCellarAlert = settingsPref?.getBoolean("settings_cat_net_sw_use_cellar", false) == true
+                        fullyHideInfo = settingsPref?.getBoolean("settings_cat_vm_sw_hide_info", false) == true
 
-        va = WeakReference(this)
-        //dlZip2View = intent.getStringExtra("callFrom") == "Dl" || p["dlZip2View"] == "true"
-        //zipFirst = intent.getStringExtra("callFrom") == "zipFirst"
-        intent.getStringArrayExtra("urlArray")?.let { urlArray = it }
-        cut = pb["useCut"]
-        r2l = pb["r2l"]
-        verticalLoadMaxCount = settingsPref?.getInt("settings_cat_vm_sb_vertical_max", 20)?.let { if(it > 0) it else 20 }?:20
-        isVertical = pb["vertical"]
-        notUseVP = pb["noVP"] || isVertical
-        //url = intent.getStringExtra("url")
-        handler = VMHandler(this, if(urlArray.isNotEmpty()) urlArray[position] else "")
-        settingsPref?.getInt("settings_cat_vm_sb_quality", 100)?.let { q = if (it > 0) it else 100 }
-        tt = TimeThread(handler, VMHandler.SET_NET_INFO)
-        tt.canDo = true
-        tt.start()
-        volTurnPage = settingsPref?.getBoolean("settings_cat_vm_sw_vol_turn", false)?:false
-        am = getSystemService(Service.AUDIO_SERVICE) as AudioManager
-        if (!noCellarAlert) noCellarAlert = settingsPref?.getBoolean("settings_cat_net_sw_use_cellar", false) == true
-        fullyHideInfo = settingsPref?.getBoolean("settings_cat_vm_sw_hide_info", false) == true
-
-        Log.d("MyVM", "Now ZipFile is $zipFile")
-        try {
-            if (zipFile != null && zipFile?.exists() == true) {
-                if (!handler.loadFromFile(zipFile!!)) prepareImgFromWeb()
-            } else prepareImgFromWeb()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            toolsBox.toastError(R.string.load_manga_error)
+                        Log.d("MyVM", "Now ZipFile is $zipFile")
+                        try {
+                            if (zipFile != null && zipFile?.exists() == true) {
+                                if (!handler.loadFromFile(zipFile!!)) prepareImgFromWeb()
+                            } else prepareImgFromWeb()
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            toolsBox.toastError(R.string.load_manga_error)
+                        }
+                        withContext(Dispatchers.Main) {
+                            startPostponedEnterTransition()
+                            ObjectAnimator.ofFloat(vcp, "alpha", 0.1f, 1f).setDuration(1000).start()
+                        }
+                    }
+                }
+            }
         }
-        startPostponedEnterTransition()
-        ObjectAnimator.ofFloat(vcp, "alpha", 0.1f, 1f).setDuration(1000).start()
     }
 
     @Suppress("DEPRECATION")
@@ -293,12 +306,12 @@ class ViewMangaActivity : TitleActivityTemplate() {
         return op.outWidth.toFloat() / op.outHeight.toFloat() > 1
     }
 
-    fun countZipEntries(doWhenFinish : (count: Int) -> Unit) = Thread{
+    suspend fun countZipEntries(doWhenFinish : suspend (count: Int) -> Unit) = withContext(Dispatchers.IO) {
         if (zipFile != null) try {
             Log.d("MyVM", "zip: $zipFile")
             val zip = ZipFile(zipFile)
             count = zip.size()
-            if(cut) zip.entries().toList().sortedBy{it.name.substringBefore('.').toInt()}.forEachIndexed { i, it ->
+            if(cut) zip.entries().toList().sortedBy{ it.name.substringBefore('.').toInt()}.forEachIndexed { i, it ->
                 val useCut = canCut(zip.getInputStream(it))
                 isCut += useCut
                 indexMap += i + 1
@@ -306,13 +319,11 @@ class ViewMangaActivity : TitleActivityTemplate() {
                 Log.d("MyVM", "[$i] 分析: ${it.name}, cut: $useCut")
             }
         } catch (e: Exception) {
-            runOnUiThread { toolsBox.toastError(R.string.count_zip_entries_error) }
+            withContext(Dispatchers.Main) { toolsBox.toastError(R.string.count_zip_entries_error) }
         }
-        runOnUiThread {
-            Log.d("MyVM", "开始加载控件")
-            doWhenFinish(count)
-        }
-    }.start()
+        Log.d("MyVM", "开始加载控件")
+        doWhenFinish(count)
+    }
 
     private fun getPageNumber(): Int {
         return if (r2l && !notUseVP) realCount - vp.currentItem
@@ -336,7 +347,9 @@ class ViewMangaActivity : TitleActivityTemplate() {
                     loadOneImg()
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    toolsBox.toastError(getString(R.string.load_page_number_error).format(currentItem))
+                    lifecycleScope.launch {
+                        toolsBox.toastError(getString(R.string.load_page_number_error).format(currentItem))
+                    }
                 }
             }
         } else {
@@ -382,9 +395,9 @@ class ViewMangaActivity : TitleActivityTemplate() {
 
     private fun cutBitmap(bitmap: Bitmap, isEnd: Boolean) = Bitmap.createBitmap(bitmap, if(!isEnd) 0 else (bitmap.width/2), 0, bitmap.width/2, bitmap.height)
 
-    private fun loadImg(imgView: ScaleImageView, bitmap: Bitmap, useCut: Boolean, isLeft: Boolean, isPlaceholder: Boolean = true) {
+    private suspend fun loadImg(imgView: ScaleImageView, bitmap: Bitmap, useCut: Boolean, isLeft: Boolean, isPlaceholder: Boolean = true) = withContext(Dispatchers.IO) {
         val bitmap2load = if(!isPlaceholder && useCut) cutBitmap(bitmap, isLeft) else bitmap
-        runOnUiThread {
+        withContext(Dispatchers.Main) {
             imgView.setImageBitmap(bitmap2load)
             if(!isPlaceholder && isVertical) {
                 imgView.setHeight2FitImgWidth()
@@ -393,11 +406,11 @@ class ViewMangaActivity : TitleActivityTemplate() {
         }
     }
 
-    private fun loadImgUrlInto(imgView: ScaleImageView, url: String, useCut: Boolean, isLeft: Boolean){
+    private suspend fun loadImgUrlInto(imgView: ScaleImageView, url: String, useCut: Boolean, isLeft: Boolean){
         Log.d("MyVM", "Load from adt: $url")
-        AutoDownloadThread(CMApi.resolution.wrap(CMApi.proxy?.wrap(url)?:url), 1000) {
-            it?.let { loadImg(imgView, BitmapFactory.decodeByteArray(it, 0, it.size), useCut, isLeft, false) }
-        }.start()
+        PausableDownloader(CMApi.resolution.wrap(CMApi.proxy?.wrap(url)?:url), 1000) {
+            it.let { loadImg(imgView, BitmapFactory.decodeByteArray(it, 0, it.size), useCut, isLeft, false) }
+        }.run()
     }
 
     private fun getLoadingBitmap(position: Int): Bitmap {
@@ -414,9 +427,9 @@ class ViewMangaActivity : TitleActivityTemplate() {
         return loading
     }
 
-    fun loadImgOn(imgView: ScaleImageView, position: Int) {
+    suspend fun loadImgOn(imgView: ScaleImageView, position: Int) = withContext(Dispatchers.IO) {
         Log.d("MyVM", "Load img: $position")
-        if (position < 0 || position > realCount) return
+        if (position < 0 || position > realCount) return@withContext
         val index2load = if(cut) abs(indexMap[position]) -1 else position
         val useCut = cut && isCut[index2load]
         val isLeft = cut && indexMap[position] > 0
@@ -427,58 +440,58 @@ class ViewMangaActivity : TitleActivityTemplate() {
             loadImg(imgView, getLoadingBitmap(position), useCut, isLeft, true)
             val sleepTime = loadImgOnWait.getAndIncrement().toLong()*200
             Log.d("MyVM", "loadImgOn sleep: $sleepTime ms")
-            Thread {
-                val re = tasks?.get(index2load)
-                if (sleepTime > 0 && re?.isDone != true) Thread.sleep(sleepTime)
-                if (re != null) {
-                    if(!re.isDone) re.run()
-                    val data = re.get()
-                    if(data != null && data.isNotEmpty()) {
-                        BitmapFactory.decodeByteArray(data, 0, data.size)?.let {
-                            loadImg(imgView, it, useCut, isLeft, false)
-                            runOnUiThread { Log.d("MyVM", "Load position $position from task") }
-                        }?:runOnUiThread { Log.d("MyVM", "null bitmap at $position") }
-                    }
-                    else getImgUrl(index2load)?.let { loadImgUrlInto(imgView, it, useCut, isLeft) }
+            val re = tasks?.get(index2load)
+            if (sleepTime > 0 && re?.isDone != true) Thread.sleep(sleepTime)
+            if (re != null) {
+                if(!re.isDone) re.run()
+                val data = re.get()
+                if(data != null && data.isNotEmpty()) {
+                    BitmapFactory.decodeByteArray(data, 0, data.size)?.let {
+                        loadImg(imgView, it, useCut, isLeft, false)
+                        Log.d("MyVM", "Load position $position from task")
+                    }?:Log.d("MyVM", "null bitmap at $position")
                 }
                 else getImgUrl(index2load)?.let { loadImgUrlInto(imgView, it, useCut, isLeft) }
-                loadImgOnWait.decrementAndGet()
-                tasks?.apply {
-                    if (index2load >= size) return@apply
-                    val p = if (index2load == size-1) index2load-1 else index2load+1
-                    var delta = 1
-                    var isMinus = false
-                    var pos = p
-                    var maxCount = size
-                    while (pos in indices && get(pos)?.isDone != false && tasksRunStatus?.get(pos) != false && maxCount-- > 0) {
-                        runOnUiThread { Log.d("MyVM", "search $pos") }
-                        pos = p + if (isMinus) -delta else delta
-                        if (pos !in indices) {
-                            isMinus = !isMinus
-                            if (!isMinus) delta++
-                            pos = p + if (isMinus) -delta else delta
-                            if (pos !in indices) return@apply
-                        }
+            }
+            else getImgUrl(index2load)?.let { loadImgUrlInto(imgView, it, useCut, isLeft) }
+            loadImgOnWait.decrementAndGet()
+            tasks?.apply {
+                if (index2load >= size) return@apply
+                val p = if (index2load == size-1) index2load-1 else index2load+1
+                var delta = 1
+                var isMinus = false
+                var pos = p
+                var maxCount = size
+                while (pos in indices && get(pos)?.isDone != false && tasksRunStatus?.get(pos) != false && maxCount-- > 0) {
+                    Log.d("MyVM", "search $pos")
+                    pos = p + if (isMinus) -delta else delta
+                    if (pos !in indices) {
                         isMinus = !isMinus
                         if (!isMinus) delta++
+                        pos = p + if (isMinus) -delta else delta
+                        if (pos !in indices) return@apply
                     }
-                    if (pos !in indices || tasksRunStatus?.get(pos) != false) return@apply
-                    runOnUiThread { Log.d("MyVM", "Preload position $pos from task") }
-                    get(pos)?.apply {
-                        if(!isDone) {
-                            tasksRunStatus?.set(pos, true)
-                            run()
-                        }
+                    isMinus = !isMinus
+                    if (!isMinus) delta++
+                }
+                if (pos !in indices || tasksRunStatus?.get(pos) != false) return@apply
+                Log.d("MyVM", "Preload position $pos from task")
+                get(pos)?.apply {
+                    if(!isDone) {
+                        tasksRunStatus?.set(pos, true)
+                        run()
                     }
                 }
-            }.start()
+            }
         }
         imgView.visibility = View.VISIBLE
     }
 
     private fun loadOneImg() {
-        loadImgOn(onei, currentItem)
-        updateSeekBar()
+        lifecycleScope.launch {
+            loadImgOn(onei, currentItem)
+            updateSeekBar()
+        }
     }
 
     private fun initImgList(){
@@ -494,7 +507,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         // handler.dl?.hide()
     }
 
-    private fun getImgBitmap(position: Int): Bitmap? =
+    private suspend fun getImgBitmap(position: Int): Bitmap? = withContext(Dispatchers.IO) {
         if (position >= count || position < 0) null
         else {
             val zip = ZipFile(zipFile)
@@ -511,7 +524,9 @@ class ViewMangaActivity : TitleActivityTemplate() {
                 } catch (e: Exception) {
                     if (i == 1) {
                         e.printStackTrace()
-                        Toast.makeText(this, "加载zip的第${position}项错误", Toast.LENGTH_SHORT).show()
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(this@ViewMangaActivity, "加载zip的第${position}项错误", Toast.LENGTH_SHORT).show()
+                        }
                     }
                     null
                 }
@@ -522,6 +537,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
             }
             bitmap
         }
+    }
 
     private fun setIdPosition(position: Int) {
         infoDrawerDelta = position.toFloat()
@@ -548,8 +564,10 @@ class ViewMangaActivity : TitleActivityTemplate() {
             }*/
         } catch (e: Exception) {
             e.printStackTrace()
-            toolsBox.toastError(R.string.load_chapter_error)
-            finish()
+            lifecycleScope.launch {
+                toolsBox.toastError(R.string.load_chapter_error)
+                finish()
+            }
         }
     }
 
@@ -812,9 +830,11 @@ class ViewMangaActivity : TitleActivityTemplate() {
                 val index2load = if(cut) abs(indexMap[pos]) -1 else pos
                 val useCut = cut && isCut[index2load]
                 val isLeft = cut && indexMap[pos] > 0
-                if (zipFile?.exists() == true) getImgBitmap(index2load)?.let {
-                    //Glide.with(this@ViewMangaActivity).load(if(useCut) cutBitmap(it, isLeft) else it).into(holder.itemView.onei)
-                    holder.itemView.onei.setImageBitmap(if(useCut) cutBitmap(it, isLeft) else it)
+                if (zipFile?.exists() == true) lifecycleScope.launch {
+                    getImgBitmap(index2load)?.let {
+                        //Glide.with(this@ViewMangaActivity).load(if(useCut) cutBitmap(it, isLeft) else it).into(holder.itemView.onei)
+                        holder.itemView.onei.setImageBitmap(if(useCut) cutBitmap(it, isLeft) else it)
+                    }
                 }
                 else getImgUrl(index2load)?.let{
                     if(useCut){

@@ -156,7 +156,7 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             R.id.action_download -> {
-                bookHandler?.sendEmptyMessage(6)
+                bookHandler.get()?.sendEmptyMessage(6)
                 true
             }
             R.id.action_sort -> {
@@ -213,6 +213,7 @@ class MainActivity : AppCompatActivity() {
                 Glide.with(this@MainActivity).load(avatar)
                     .apply(RequestOptions.bitmapTransform(CircleCrop()))
                     .into(navhicon)
+            else navhicon.setImageResource(R.mipmap.ic_launcher)
         }
     }
 
@@ -371,7 +372,7 @@ class MainActivity : AppCompatActivity() {
         startActivity(Intent(this, LoginActivity::class.java))
     }
 
-    companion object{
+    companion object {
         var mainWeakReference: WeakReference<MainActivity>? = null
         var isDrawerClosed = true
         var ime: InputMethodManager? = null

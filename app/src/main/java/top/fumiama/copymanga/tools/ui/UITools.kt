@@ -8,6 +8,8 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.view.View
 import android.widget.Toast
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import top.fumiama.dmzj.copymanga.R
 import java.lang.ref.WeakReference
 import kotlin.math.sqrt
@@ -39,11 +41,11 @@ class UITools(that: Context?, w: WeakReference<Activity>? = null) {
                 }
             } ?: transportStringError
         }
-    fun toastError(s: String, willFinish: Boolean = true) {
+    suspend fun toastError(s: String, willFinish: Boolean = true) = withContext(Dispatchers.Main) {
         Toast.makeText(zis, s, Toast.LENGTH_SHORT).show()
         if (willFinish) weak?.get()?.finish()
     }
-    fun toastError(s: Int, willFinish: Boolean = true) {
+    suspend fun toastError(s: Int, willFinish: Boolean = true) = withContext(Dispatchers.Main) {
         Toast.makeText(zis, s, Toast.LENGTH_SHORT).show()
         if (willFinish) weak?.get()?.finish()
     }
