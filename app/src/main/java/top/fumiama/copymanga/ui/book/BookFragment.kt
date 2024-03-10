@@ -8,30 +8,26 @@ import android.view.View
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.google.gson.Gson
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.card_book.*
 import kotlinx.android.synthetic.main.fragment_book.*
-import kotlinx.android.synthetic.main.line_bookinfo_text.*
 import kotlinx.android.synthetic.main.line_booktandb.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity
-import top.fumiama.copymanga.json.VolumeStructure
+import top.fumiama.copymanga.manga.Book
 import top.fumiama.copymanga.manga.Reader
 import top.fumiama.copymanga.template.general.NoBackRefreshFragment
 import top.fumiama.copymanga.tools.ui.Navigate
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment
 import top.fumiama.dmzj.copymanga.R
-import java.io.File
-import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicReference
 
 class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
     var isOnPause = false
+    var book: Book? = null
     private var mBookHandler: BookHandler? = null
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -40,37 +36,48 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
         fbvp?.setPadding(0, 0, 0, navBarHeight)
 
         if(isFirstInflate) {
-            var path = ""
             arguments?.apply {
                 if (getBoolean("loadJson")) {
                     getString("name")?.let { name ->
-                        activity?.getExternalFilesDir("")?.let {
-                            Gson().fromJson(File(File(it, name), "info.json").readText(), Array<VolumeStructure>::class.java)
-                        }?.apply {
-                            if (isEmpty() || get(0).results.list.isEmpty()) {
-                                findNavController().popBackStack()
-                                return
-                            }
-                            else {
-                                path = get(0).results.list[0].comic_path_word
-                            }
+                        try {
+                            book = Book(name, {
+                                return@Book getString(it)
+                            }, activity?.getExternalFilesDir("")!!)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            Toast.makeText(context, R.string.null_book, Toast.LENGTH_SHORT).show()
+                            findNavController().popBackStack()
+                            return
                         }
                     }
                 } else getString("path").let {
-                    if (it != null) path = it
+                    if (it != null) book = Book(it, { id ->
+                        return@Book getString(id)
+                    }, activity?.getExternalFilesDir("")!!, false)
                     else {
                         findNavController().popBackStack()
                         return
                     }
                 }
             }
-            mBookHandler = BookHandler(WeakReference(this), path)
-            Log.d("MyBF", "read path: $path")
+            mBookHandler = BookHandler(WeakReference(this))
             bookHandler.set(mBookHandler)
+
             lifecycleScope.launch {
-                withContext(Dispatchers.IO) {
-                    sleep(600)
-                    mBookHandler?.startLoad()
+                try {
+                    book?.updateInfo()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    Toast.makeText(context, R.string.null_book, Toast.LENGTH_SHORT).show()
+                    findNavController().popBackStack()
+                    return@launch
+                }
+                Log.d("MyBF", "read path: ${book?.path}")
+                for (i in 1..4) {
+                    mBookHandler?.sendEmptyMessageDelayed(i, (100*i).toLong())
+                }
+                book?.updateVolumes {
+                    mBookHandler?.sendEmptyMessage(10)
                 }
             }
         } else {
@@ -83,7 +90,7 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
         isOnPause = false
         bookHandler.set(mBookHandler)
         activity?.apply {
-            toolbar.title = mBookHandler?.book?.results?.comic?.name
+            toolbar.title = book?.name
         }
         setStartRead()
     }
@@ -95,17 +102,15 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
 
     override fun onDestroy() {
         super.onDestroy()
-        mBookHandler?.destroy()
-        mBookHandler?.ads?.forEach {
-            it.exit = true
-        }
+        mBookHandler?.exit = true
+        book?.exit = true
         bookHandler.set(null)
     }
 
     fun setStartRead() {
         if(mBookHandler?.chapterNames?.isNotEmpty() == true) activity?.apply {
-            mBookHandler?.book?.results?.comic?.let { comic ->
-                getPreferences(MODE_PRIVATE).getInt(comic.name, -1).let { p ->
+            book?.name?.let { name ->
+                getPreferences(MODE_PRIVATE).getInt(name, -1).let { p ->
                     this@BookFragment.lbbstart.apply {
                         var i = 0
                         if(p >= 0) {
@@ -114,7 +119,7 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
                         }
                         setOnClickListener {
                             mBookHandler?.urlArray?.let {
-                                Reader.viewMangaAt(comic.name, i, it)
+                                Reader.viewMangaAt(name, i, it)
                             }
                         }
                     }
@@ -127,9 +132,9 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
     fun setAddToShelf() {
         if(mBookHandler?.chapterNames?.isNotEmpty() != true) return
         lifecycleScope.launch {
-            MainActivity.shelf?.query(mBookHandler?.path!!)?.let { b ->
+            MainActivity.shelf?.query(book?.path!!)?.let { b ->
                 mBookHandler?.collect = b.results?.collect?:-2
-                Log.d("MyBF", "get collect of ${mBookHandler?.path} = ${mBookHandler?.collect}")
+                Log.d("MyBF", "get collect of ${book?.path} = ${mBookHandler?.collect}")
                 tic.text = b.results?.browse?.chapter_name?.let { name ->
                     getString(R.string.text_format_cloud_read_to).format(name)
                 }
@@ -140,7 +145,7 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
                     this@BookFragment.lbbsub.setText(R.string.button_sub_subscribed)
                 }
             }
-            mBookHandler?.book?.results?.comic?.let { comic ->
+            book?.uuid?.let { uuid ->
                 this@BookFragment.lbbsub.setOnClickListener {
                     lifecycleScope.launch clickLaunch@ {
                         if (this@BookFragment.lbbsub.text != getString(R.string.button_sub)) {
@@ -154,7 +159,7 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
                             }
                             return@clickLaunch
                         }
-                        val re = MainActivity.shelf?.add(comic.uuid)
+                        val re = MainActivity.shelf?.add(uuid)
                         Toast.makeText(context, re, Toast.LENGTH_SHORT).show()
                         if (re == "修改成功") {
                             this@BookFragment.lbbsub.setText(R.string.button_sub_subscribed)
@@ -169,13 +174,10 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
         val bundle = Bundle()
         Log.d("MyBF", "nav2: ${arguments?.getString("path")?:"null"}")
         bundle.putString("path", arguments?.getString("path")?:"null")
-        bundle.putString("name", mBookHandler!!.book?.results?.comic?.name)
-        if(mBookHandler!!.vols != null && mBookHandler!!.json != null) {
-            bundle.putString("loadJson", mBookHandler!!.json)
+        bundle.putString("name", book!!.name!!)
+        if(book?.volumes != null && book?.json != null) {
+            bundle.putString("loadJson", book!!.json)
         }
-        bundle.putStringArray("group", mBookHandler!!.gpws)
-        bundle.putStringArray("groupNames", mBookHandler!!.keys)
-        bundle.putIntArray("count", mBookHandler!!.cnts)
         findNavController().let {
             Navigate.safeNavigateTo(it, R.id.action_nav_book_to_nav_group, bundle)
         }

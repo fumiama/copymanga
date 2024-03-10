@@ -25,10 +25,10 @@ class PropertiesTools(private val f: File):Properties() {
 
     private fun createNew(f: File) {
         f.createNewFile()
-        val o = f.outputStream()
-        this.storeToXML(o, "store")
+        f.outputStream().use { o ->
+            this.storeToXML(o, "store")
+        }
         Log.d("MyPT", "Generate new prop.")
-        o.close()
     }
 
     private fun loadFromXml(`in`: InputStream?): PropertiesTools {
@@ -44,20 +44,20 @@ class PropertiesTools(private val f: File):Properties() {
     operator fun get(key: String): String{
         return if(cache.containsKey(key)) cache[key]?:"null"
         else {
-            val i = f.inputStream()
-            val re = this.loadFromXml(i).getProperty(key)?:"null"
-            Log.d("MyPT", "Read $key = $re")
-            i.close()
-            cache[key] = re
-            re
+            f.inputStream().use { i ->
+                val re = this.loadFromXml(i).getProperty(key)?:"null"
+                Log.d("MyPT", "Read $key = $re")
+                cache[key] = re
+                re
+            }
         }
     }
 
     operator fun set(key: String, value: String) {
         cache[key] = value
-        val o = f.outputStream()
-        this.setProp(key, value).storeToXML(o, "store")
+        f.outputStream().use { o ->
+            this.setProp(key, value).storeToXML(o, "store")
+        }
         Log.d("MyPT", "Set $key = $value")
-        o.close()
     }
 }

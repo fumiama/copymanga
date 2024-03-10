@@ -287,16 +287,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun saveFile(uri: Uri) {
-        //val f = File(getExternalFilesDir(""), "headPic")
-        val fd = contentResolver.openFileDescriptor(uri, "r")
-        fd?.fileDescriptor?.let {
-            val fi = FileInputStream(it)
-            val fo = headPic.outputStream()
-            fi.copyTo(fo)
-            fi.close()
-            fo.close()
+        contentResolver.openFileDescriptor(uri, "r")?.use {
+            it.fileDescriptor?.let { fd ->
+                FileInputStream(fd).use { fi ->
+                    headPic.outputStream().use { fo ->
+                        fi.copyTo(fo)
+                    }
+                }
+            }
         }
-        fd?.close()
     }
 
     private fun checkHeadPicture() {
@@ -306,9 +305,9 @@ class MainActivity : AppCompatActivity() {
 
     private var cropLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            val fi = headPic.inputStream()
-            navhbg.setImageBitmap(BitmapFactory.decodeStream(fi))
-            fi.close()
+            headPic.inputStream().use { fi ->
+                navhbg.setImageBitmap(BitmapFactory.decodeStream(fi))
+            }
         } else Toast.makeText(this, R.string.err_crop_img, Toast.LENGTH_SHORT).show()
     }
 

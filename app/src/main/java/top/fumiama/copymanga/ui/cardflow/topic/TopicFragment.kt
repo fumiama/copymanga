@@ -26,18 +26,16 @@ class TopicFragment : InfoCardLoader(R.layout.fragment_topic, R.id.action_nav_to
             PausableDownloader(getString(R.string.topicApiUrl).format(CMApi.myHostApiUrl, arguments?.getString("path"))) { data ->
                 withContext(Dispatchers.IO) {
                     if(ad?.exit == true) return@withContext
-                    data.apply {
-                        val r = inputStream().reader()
+                    data.inputStream().use { i ->
+                        val r = i.reader()
                         Gson().fromJson(r, TopicStructure::class.java)?.apply {
                             if(ad?.exit == true) return@withContext
-                            activity?.let {
-                                withContext(Dispatchers.Main) withMain@ {
-                                    if(ad?.exit == true) return@withMain
-                                    it.toolbar.title = results.title
-                                    ftttime.text = results.datetime_created
-                                    fttintro.text = results.intro
-                                    type = results.type
-                                }
+                            withContext(Dispatchers.Main) withMain@ {
+                                if(ad?.exit == true) return@withMain
+                                activity?.toolbar?.title = results.title
+                                ftttime.text = results.datetime_created
+                                fttintro.text = results.intro
+                                type = results.type
                             }
                         }
                     }

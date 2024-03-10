@@ -73,7 +73,7 @@ class Member(private val pref: SharedPreferences, private val getString: (Int) -
         } catch (e: Exception) {
             val l = LoginInfoStructure()
             l.code = 450
-            l.message = "${getString(R.string.login_get_avatar_failed)}: ${e.localizedMessage}"
+            l.message = "${getString(R.string.login_get_avatar_failed)}: $e"
             l
         }
     }

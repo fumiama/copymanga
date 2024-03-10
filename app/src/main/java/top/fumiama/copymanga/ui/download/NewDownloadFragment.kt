@@ -122,7 +122,7 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
                         Navigate.safeNavigateTo(findNavController(), R.id.action_nav_new_download_to_nav_download)
                         return@setOnClickListener
                     }
-                    callDownloadFragment(name)
+                    callBookFragment(name)
                 }
                 v.setOnLongClickListener {
                     if (name == oldDlCardName && path == oldDlCardName) {
@@ -132,7 +132,7 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
                     AlertDialog.Builder(context)
                         .setIcon(R.drawable.ic_launcher_foreground)
                         .setTitle(R.string.new_download_card_option_hint)
-                        .setItems(arrayOf("删除数据", "前往详情")) { d, p ->
+                        .setItems(arrayOf("删除数据文件夹", "直接前往下载页")) { d, p ->
                             d.cancel()
                             when (p) {
                                 0 -> {
@@ -150,12 +150,7 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
                                         }.setNegativeButton(android.R.string.cancel) { _, _ -> }
                                         .show()
                                 }
-                                1 -> {
-                                    val bundle = Bundle()
-                                    bundle.putBoolean("loadJson", true)
-                                    bundle.putString("name", name)
-                                    Navigate.safeNavigateTo(findNavController(), R.id.action_nav_new_download_to_nav_book, bundle)
-                                }
+                                1 -> callDownloadFragment(name)
                             }
                         }
                         .show()
@@ -166,7 +161,14 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
         }
     }
 
-    private fun callDownloadFragment(name: String){
+    private fun callBookFragment(name: String) {
+        val bundle = Bundle()
+        bundle.putBoolean("loadJson", true)
+        bundle.putString("name", name)
+        Navigate.safeNavigateTo(findNavController(), R.id.action_nav_new_download_to_nav_book, bundle)
+    }
+
+    private fun callDownloadFragment(name: String) {
         val bundle = Bundle()
         Log.d("MyNDF", "Call dl and is new.")
         bundle.putString("loadJson", File(File(extDir, name), "info.json").readText())

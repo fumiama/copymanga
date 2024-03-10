@@ -301,7 +301,9 @@ class ViewMangaActivity : TitleActivityTemplate() {
     private fun canCut(inputStream: InputStream): Boolean{
         val op = BitmapFactory.Options()
         op.inJustDecodeBounds = true
-        BitmapFactory.decodeStream(inputStream, null, op)
+        inputStream.use {
+            BitmapFactory.decodeStream(it, null, op)
+        }
         Log.d("MyVM", "w: ${op.outWidth}, h: ${op.outHeight}")
         return op.outWidth.toFloat() / op.outHeight.toFloat() > 1
     }
@@ -437,13 +439,18 @@ class ViewMangaActivity : TitleActivityTemplate() {
             loadImg(imgView, it, useCut, isLeft, false)
         }
         else {
-            loadImg(imgView, getLoadingBitmap(position), useCut, isLeft, true)
             val sleepTime = loadImgOnWait.getAndIncrement().toLong()*200
             Log.d("MyVM", "loadImgOn sleep: $sleepTime ms")
             val re = tasks?.get(index2load)
-            if (sleepTime > 0 && re?.isDone != true) Thread.sleep(sleepTime)
+            if (sleepTime > 0 && re?.isDone != true) {
+                loadImg(imgView, getLoadingBitmap(position), useCut, isLeft, true)
+                Thread.sleep(sleepTime)
+            }
             if (re != null) {
-                if(!re.isDone) re.run()
+                if(!re.isDone) {
+                    loadImg(imgView, getLoadingBitmap(position), useCut, isLeft, true)
+                    re.run()
+                }
                 val data = re.get()
                 if(data != null && data.isNotEmpty()) {
                     BitmapFactory.decodeByteArray(data, 0, data.size)?.let {
@@ -451,9 +458,15 @@ class ViewMangaActivity : TitleActivityTemplate() {
                         Log.d("MyVM", "Load position $position from task")
                     }?:Log.d("MyVM", "null bitmap at $position")
                 }
-                else getImgUrl(index2load)?.let { loadImgUrlInto(imgView, it, useCut, isLeft) }
+                else getImgUrl(index2load)?.let {
+                    loadImg(imgView, getLoadingBitmap(position), useCut, isLeft, true)
+                    loadImgUrlInto(imgView, it, useCut, isLeft)
+                }
             }
-            else getImgUrl(index2load)?.let { loadImgUrlInto(imgView, it, useCut, isLeft) }
+            else getImgUrl(index2load)?.let {
+                loadImg(imgView, getLoadingBitmap(position), useCut, isLeft, true)
+                loadImgUrlInto(imgView, it, useCut, isLeft)
+            }
             loadImgOnWait.decrementAndGet()
             tasks?.apply {
                 if (index2load >= size) return@apply
@@ -484,7 +497,9 @@ class ViewMangaActivity : TitleActivityTemplate() {
                 }
             }
         }
-        imgView.visibility = View.VISIBLE
+        withContext(Dispatchers.Main) {
+            if(imgView.visibility != View.VISIBLE) imgView.visibility = View.VISIBLE
+        }
     }
 
     private fun loadOneImg() {
@@ -515,11 +530,16 @@ class ViewMangaActivity : TitleActivityTemplate() {
             for (i in 0..1) {
                 val ext = if((i == 0 && tryWebpFirst) || (i == 1 && !tryWebpFirst)) "webp" else "jpg"
                 bitmap = try {
-                    if (q == 100) BitmapFactory.decodeStream(zip.getInputStream(zip.getEntry("${position}.$ext")))
-                    else {
-                        val out = ByteArrayOutputStream()
-                        BitmapFactory.decodeStream(zip.getInputStream(zip.getEntry("${position}.$ext")))?.compress(Bitmap.CompressFormat.JPEG, q, out)
-                        BitmapFactory.decodeStream(ByteArrayInputStream(out.toByteArray()))
+                    zip.getInputStream(zip.getEntry("${position}.$ext"))?.use { zipInputStream ->
+                        if (q == 100) BitmapFactory.decodeStream(zipInputStream)
+                        else {
+                            ByteArrayOutputStream().use { out ->
+                                BitmapFactory.decodeStream(zipInputStream)?.compress(Bitmap.CompressFormat.JPEG, q, out)
+                                ByteArrayInputStream(out.toByteArray()).use { i ->
+                                    BitmapFactory.decodeStream(i)
+                                }
+                            }
+                        }
                     }
                 } catch (e: Exception) {
                     if (i == 1) {

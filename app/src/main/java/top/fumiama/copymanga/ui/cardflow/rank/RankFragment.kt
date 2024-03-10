@@ -1,9 +1,13 @@
 package top.fumiama.copymanga.ui.cardflow.rank
 
 import android.os.Bundle
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.tabs.TabLayout
 import kotlinx.android.synthetic.main.fragment_rank.*
 import kotlinx.android.synthetic.main.line_rank.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.template.ui.InfoCardLoader
 import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.copymanga.tools.ui.UITools
@@ -17,6 +21,7 @@ class RankFragment : InfoCardLoader(R.layout.fragment_rank, R.id.action_nav_rank
     private var sortValue = 0
     private val audienceWay = listOf("", "male", "female")
     private var audience = 0 // 0 all 1 male 2 female
+    private var isLoading = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,6 +44,11 @@ class RankFragment : InfoCardLoader(R.layout.fragment_rank, R.id.action_nav_rank
         ad?.exit = true
     }
 
+    override fun onLoadFinish() {
+        super.onLoadFinish()
+        isLoading = false
+    }
+
     override fun getApiUrl() =
         getString(R.string.rankApiUrl).format(
                 CMApi.myHostApiUrl,
@@ -53,48 +63,45 @@ class RankFragment : InfoCardLoader(R.layout.fragment_rank, R.id.action_nav_rank
             override fun onTabReselected(tab: TabLayout.Tab?) {}
 
             override fun onTabSelected(tab: TabLayout.Tab?) {
-                setSortValue(tab?.position?:0)
+                sortValue = tab?.position?:0
+                if(!isLoading) delayedRefresh()
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab?) {}
         })
     }
 
-    private fun setSortValue(value: Int) {
-        sortValue = value
-        Thread{
-            sleep(400)
-            if(ad?.exit != true) activity?.runOnUiThread {
-                reset()
-                addPage()
+    private fun delayedRefresh() {
+        lifecycleScope.launch {
+            isLoading = true
+            withContext(Dispatchers.IO) {
+                sleep(400)
+                withContext(Dispatchers.Main) {
+                    reset()
+                    addPage()
+                }
             }
-        }.start()
+        }
     }
 
     fun showSexInfo(toolsBox: UITools) {
         if (ad?.exit != false) return
         toolsBox.buildInfo("切换类型", "选择一种想筛选的漫画类型",
             "男频", "全部", "女频", {
-                audience = 1
-                reset()
-                Thread {
-                    sleep(600)
-                    addPage()
-                }.start()
+                if(!isLoading) {
+                    audience = 1
+                    delayedRefresh()
+                }
             }, {
-                audience = 0
-                reset()
-                Thread {
-                    sleep(600)
-                    addPage()
-                }.start()
+                if(!isLoading) {
+                    audience = 0
+                    delayedRefresh()
+                }
             }, {
-                audience = 2
-                reset()
-                Thread {
-                    sleep(600)
-                    addPage()
-                }.start()
+                if(!isLoading) {
+                    audience = 2
+                    delayedRefresh()
+                }
             })
     }
 

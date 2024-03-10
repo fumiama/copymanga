@@ -45,7 +45,9 @@ class SortFragment : StatusCardFlow(0, R.id.action_nav_sort_to_nav_book, R.layou
             PausableDownloader(getString(R.string.filterApiUrl).format(CMApi.myHostApiUrl)) {
                 if(ad?.exit == true) return@PausableDownloader
                 it.let {
-                    filter = Gson().fromJson(it.inputStream().reader(), FilterStructure::class.java)
+                    it.inputStream().use { i ->
+                        filter = Gson().fromJson(i.reader(), FilterStructure::class.java)
+                    }
                     if(ad?.exit == true) return@PausableDownloader
                     withContext(Dispatchers.Main) {
                         if(ad?.exit != true) setClasses()

@@ -14,6 +14,7 @@ import kotlinx.android.synthetic.main.widget_infodrawer.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.json.Chapter2Return
 import top.fumiama.copymanga.json.ChapterWithContent
 import top.fumiama.copymanga.json.ComicStructure
@@ -191,8 +192,8 @@ class VMHandler(activity: ViewMangaActivity, private val chapterUrl: String, pri
         }
     }
 
-    private suspend fun fakeLoad() {
-        PausableDownloader(chapterUrl) { _ -> }.run()
+    private suspend fun fakeLoad() = withContext(Dispatchers.IO) {
+        if(MainActivity.member?.hasLogin == true) PausableDownloader(chapterUrl) { _ -> }.run()
     }
 
     private suspend fun prepareManga() = withContext(Dispatchers.Main) {

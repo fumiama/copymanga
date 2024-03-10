@@ -71,13 +71,13 @@ open class AutoDownloadHandler(
             cacheFile?.let {
                 if (it.exists()) {
                     var pass = true
-                    val fi = it.inputStream()
-                    try {
-                        pass = setGsonItem(Gson().fromJson(fi.reader(), jsonClass))
-                    } catch (e: Exception) {
-                        e.printStackTrace()
+                    it.inputStream().use { fi->
+                        try {
+                            pass = setGsonItem(Gson().fromJson(fi.reader(), jsonClass))
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
                     }
-                    fi.close()
                     if (pass) return@withContext
                 }
             }

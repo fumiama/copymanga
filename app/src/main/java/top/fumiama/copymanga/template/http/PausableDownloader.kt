@@ -9,16 +9,17 @@ import top.fumiama.dmzj.copymanga.R
 import java.lang.Thread.sleep
 import kotlin.random.Random
 
-class PausableDownloader(private val url: String, private val waitMilliseconds: Long = 0, private val whenFinish: suspend (result: ByteArray)->Unit) {
+class PausableDownloader(private val url: String, private val waitMilliseconds: Long = 0, private val whenFinish: (suspend (result: ByteArray)->Unit)? = null) {
     var exit = false
     suspend fun run() = withContext(Dispatchers.IO) {
         var c = 0
         while (!exit && c++ < 3) {
             try {
-                whenFinish(DownloadTools.getHttpContent(url,
+                val data = (DownloadTools.getHttpContent(url,
                     mainWeakReference?.get()?.getString(R.string.referer)!!,
                     mainWeakReference?.get()?.getString(R.string.pc_ua)!!
                 ))
+                whenFinish?.let { it(data) }
                 break
             } catch (e: Exception) {
                 e.printStackTrace()
