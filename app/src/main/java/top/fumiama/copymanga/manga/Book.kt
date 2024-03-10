@@ -5,10 +5,13 @@ import com.google.gson.Gson
 import kotlinx.android.synthetic.main.card_book.*
 import kotlinx.android.synthetic.main.line_booktandb.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.json.BookInfoStructure
 import top.fumiama.copymanga.json.ThemeStructure
 import top.fumiama.copymanga.json.VolumeStructure
+import top.fumiama.copymanga.template.http.PausableDownloader
 import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.copymanga.tools.http.DownloadTools
 import top.fumiama.dmzj.copymanga.R
@@ -107,7 +110,9 @@ class Book(val path: String, private val getString: (Int) -> String, private val
             mGroupPathWords.forEachIndexed { i, g ->
                 Volume(path, g, getString) {
                     return@Volume exit
-                }.updateChapters(mCounts[i])?.let { volumes += it }
+                }.updateChapters(mCounts[i])?.let {
+                    volumes += it
+                }
             }
         }
         if (!exit && volumes.size == mGroupPathWords.size) {
@@ -127,9 +132,11 @@ class Book(val path: String, private val getString: (Int) -> String, private val
             File(mangaFolder, "info.json").writeText(mJsonString)
             File(mangaFolder, "grps.json").writeText(Gson().toJson(mKeys))
             (cover?.let { CMApi.proxy?.wrap(it) } ?:cover)?.let {
-                DownloadTools.getHttpContent(it, null, mUserAgent)
-            }?.let { data ->
-                File(mangaFolder, "head.jpg").writeBytes(data)
+                Thread {
+                    DownloadTools.getHttpContent(it, -1)?.let { data ->
+                        File(mangaFolder, "head.jpg").writeBytes(data)
+                    }
+                }.start()
             }
         }
     }

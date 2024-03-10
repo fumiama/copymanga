@@ -73,11 +73,18 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
                     return@launch
                 }
                 Log.d("MyBF", "read path: ${book?.path}")
-                for (i in 1..4) {
-                    mBookHandler?.sendEmptyMessageDelayed(i, (100*i).toLong())
+                for (i in 1..3) {
+                    mBookHandler?.sendEmptyMessage(i)
                 }
-                book?.updateVolumes {
-                    mBookHandler?.sendEmptyMessage(10)
+                try {
+                    book?.updateVolumes {
+                        mBookHandler?.sendEmptyMessage(10)
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    Toast.makeText(context, R.string.null_volume, Toast.LENGTH_SHORT).show()
+                    findNavController().popBackStack()
+                    return@launch
                 }
             }
         } else {

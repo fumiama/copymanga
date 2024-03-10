@@ -8,6 +8,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
@@ -94,13 +95,13 @@ open class AutoDownloadHandler(
                 }
                 fi.close()
                 if(!pass) {
-                    sleep(2000)
+                    delay(2000)
                     continue
                 }
                 break
             } catch (e: Exception) {
                 e.printStackTrace()
-                sleep(2000)
+                delay(2000)
             }
         }
     }

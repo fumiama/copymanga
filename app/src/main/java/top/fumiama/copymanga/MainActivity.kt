@@ -44,6 +44,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.nav_header_main.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.manga.Shelf
@@ -130,7 +131,7 @@ class MainActivity : AppCompatActivity() {
             Log.d("MyMA", "start menu waiting")
             lifecycleScope.launch {
                 withContext(Dispatchers.IO) {
-                    sleep(1000)
+                    delay(1000)
                     withContext(Dispatchers.Main) {
                         isMenuWaiting = false
                         Log.d("MyMA", "finish menu waiting")

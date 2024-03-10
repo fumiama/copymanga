@@ -24,6 +24,7 @@ import kotlinx.android.synthetic.main.card_book.view.*
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.line_1bookline.view.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.json.ComicStructure
@@ -36,6 +37,7 @@ import top.fumiama.copymanga.tools.ui.UITools
 import top.fumiama.dmzj.copymanga.R
 import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
+import java.util.concurrent.atomic.AtomicInteger
 
 class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadHandler(
     that.get()?.getString(R.string.mainPageApiUrl)!!.format(CMApi.myHostApiUrl),
@@ -225,7 +227,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
                 inflateRank()
                 for(i in indexLines.indices) {
                     obtainMessage(8, i, 0).sendToTarget()
-                    sleep(512)
+                    delay(512)
                 }
                 obtainMessage(-1, false).sendToTarget()                 //closeLoad
             }
@@ -271,7 +273,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
                     //fhib = null
                     indexLines = arrayOf()
                     this@HomeHandler.sendEmptyMessage(6)    //removeAllViews
-                    sleep(300)
+                    delay(300)
                     this@HomeHandler.sendEmptyMessage(0)    //setLayouts
                 }
             }
@@ -319,13 +321,21 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
         }
     }
 
+    private var cardLoadingWaits = AtomicInteger()
+
     private suspend fun setCards(cv: CardView, pw: String, name: String, img: String, isFinal: Boolean, isTopic: Boolean) = withContext(Dispatchers.Main) {
         cv.tic.text = name
         homeF?.let {
             if(img.startsWith("http")) {
-                Glide.with(it).load(GlideUrl(CMApi.proxy?.wrap(img)?:img, CMApi.myGlideHeaders))
-                    .addListener(GlideHideLottieViewListener(WeakReference(cv.laic)))
-                    .timeout(20000).into(cv.imic)
+                Log.d("MyHH", "load card image: $img")
+                val waitMillis = cardLoadingWaits.getAndIncrement().toLong()*200
+                val g = Glide.with(it).load(GlideUrl(CMApi.proxy?.wrap(img)?:img, CMApi.myGlideHeaders))
+                    .addListener(GlideHideLottieViewListener(WeakReference(cv.laic)) {
+                        cardLoadingWaits.decrementAndGet()
+                    })
+                if (waitMillis > 0) cv.imic.postDelayed({
+                    g.into(cv.imic)
+                }, waitMillis) else g.into(cv.imic)
             }
         }
         if (isFinal) cv.sgnic.visibility = View.VISIBLE

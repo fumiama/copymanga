@@ -8,6 +8,7 @@ import com.google.gson.Gson
 import kotlinx.android.synthetic.main.anchor_popular.view.*
 import kotlinx.android.synthetic.main.line_sort.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.json.FilterStructure
@@ -69,7 +70,7 @@ class SortFragment : StatusCardFlow(0, R.id.action_nav_sort_to_nav_book, R.layou
     private fun suspendReset() {
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
-                sleep(400)
+                delay(400)
                 withContext(Dispatchers.Main) {
                     reset()
                     addPage()

@@ -245,14 +245,14 @@ class ViewMangaActivity : TitleActivityTemplate() {
     }
 
     @ExperimentalStdlibApi
-    private fun doPrepareWebImg() {
+    private fun doPrepareWebImg() = Thread {
         getImgUrlArray()?.apply {
             if(cut) {
                 Log.d("MyVM", "is cut, load all pages...")
                 handler.sendEmptyMessage(VMHandler.DIALOG_SHOW)     //showDl
                 isCut = BooleanArray(size)
                 val analyzedCnt = BooleanArray(size)
-                forEachIndexed{ i, it ->
+                forEachIndexed { i, it ->
                     if(it != null) {
                         Thread{
                             DownloadTools.getHttpContent(CMApi.resolution.wrap(CMApi.proxy?.wrap(it)?:it), 1024)?.inputStream()?.let {
@@ -276,7 +276,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
             runOnUiThread { prepareItems() }
             if (notUseVP) prepareDownloadTasks()
         }
-    }
+    }.start()
 
     @OptIn(ExperimentalStdlibApi::class)
     fun initManga() {

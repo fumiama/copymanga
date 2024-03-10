@@ -8,6 +8,7 @@ import androidx.navigation.fragment.findNavController
 import kotlinx.android.synthetic.main.anchor_popular.view.*
 import kotlinx.android.synthetic.main.line_shelf.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity
@@ -122,7 +123,7 @@ class ShelfFragment : InfoCardLoader(R.layout.fragment_shelf, R.id.action_nav_su
     private fun resetDelayed() {
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
-                sleep(400)
+                delay(400)
                 withContext(Dispatchers.Main) {
                     reset()
                     addPage()

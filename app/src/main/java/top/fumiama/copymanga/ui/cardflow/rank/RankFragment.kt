@@ -6,6 +6,7 @@ import com.google.android.material.tabs.TabLayout
 import kotlinx.android.synthetic.main.fragment_rank.*
 import kotlinx.android.synthetic.main.line_rank.view.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.template.ui.InfoCardLoader
@@ -75,7 +76,7 @@ class RankFragment : InfoCardLoader(R.layout.fragment_rank, R.id.action_nav_rank
         lifecycleScope.launch {
             isLoading = true
             withContext(Dispatchers.IO) {
-                sleep(400)
+                delay(400)
                 withContext(Dispatchers.Main) {
                     reset()
                     addPage()

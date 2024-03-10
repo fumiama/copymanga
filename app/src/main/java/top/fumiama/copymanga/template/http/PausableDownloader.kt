@@ -2,6 +2,7 @@ package top.fumiama.copymanga.template.http
 
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.tools.http.DownloadTools
@@ -23,7 +24,7 @@ class PausableDownloader(private val url: String, private val waitMilliseconds: 
                 break
             } catch (e: Exception) {
                 e.printStackTrace()
-                if (waitMilliseconds > 0) sleep(200+Random.nextLong(waitMilliseconds))
+                if (waitMilliseconds > 0) delay(200+Random.nextLong(waitMilliseconds))
             }
         }
         Log.d("MyPD", "found exit = $exit")

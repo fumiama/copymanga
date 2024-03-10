@@ -7,22 +7,30 @@ import android.util.Log
 import android.view.View
 import android.view.Window
 import androidx.annotation.Keep
+import androidx.lifecycle.lifecycleScope
 import androidx.preference.EditTextPreference
 import androidx.preference.EditTextPreferenceDialogFragmentCompat
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.tools.ui.UITools
 import top.fumiama.dmzj.copymanga.R
 import java.lang.Thread.sleep
 
 class SettingsFragment: PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        Thread {
-            sleep(300)
-            activity?.runOnUiThread {
-                setPreferencesFromResource(R.xml.pref_setting, rootKey)
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO) {
+                delay(300)
+                withContext(Dispatchers.Main) {
+                    setPreferencesFromResource(R.xml.pref_setting, rootKey)
+                }
             }
-        }.start()
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

@@ -27,6 +27,7 @@ import kotlinx.android.synthetic.main.line_caption.view.*
 import kotlinx.android.synthetic.main.line_chapter.view.*
 import kotlinx.android.synthetic.main.page_nested_list.view.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
@@ -83,7 +84,7 @@ class BookHandler(private val th: WeakReference<BookFragment>): Handler(Looper.m
                 if (book?.cover != null)
                     GlideUrl(CMApi.proxy?.wrap(book?.cover!!)?:book?.cover!!, CMApi.myGlideHeaders)
                 else book?.cachedCover
-            ).timeout(10000).addListener(GlideHideLottieViewListener(WeakReference(laic)))
+            ).addListener(GlideHideLottieViewListener(WeakReference(laic)))
             load.into(imic)
             context?.let { it1 -> GlideBlurTransformation(it1) }
                 ?.let { it2 -> RequestOptions.bitmapTransform(it2) }
@@ -199,7 +200,7 @@ class BookHandler(private val th: WeakReference<BookFragment>): Handler(Looper.m
                         val f = CMApi.getZipFile(context?.getExternalFilesDir(""), comicName, keys[p], it.name)
                         //Log.d("MyBH", "i = $i, last=$last, add chapter ${it.name}, line is null: ${line == null}")
                         that?.isOnPause?.let { isOnPause ->
-                            while (isOnPause && !exit) sleep(500)
+                            while (isOnPause && !exit) delay(500)
                             if (exit) return@withContext
                         }?:return@withContext
                         if(line == null) {
@@ -260,7 +261,7 @@ class BookHandler(private val th: WeakReference<BookFragment>): Handler(Looper.m
                         chapterNames += it.name
                         ViewMangaActivity.uuidArray += it.uuid
                         that?.isOnPause?.let { isOnPause ->
-                            while (isOnPause && !exit) sleep(500)
+                            while (isOnPause && !exit) delay(500)
                             if (exit) return@withContext
                         }?:return@withContext
                         i++

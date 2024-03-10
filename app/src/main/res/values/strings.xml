@@ -41,6 +41,7 @@
     <string name="load_home_error">加载主页控件出错</string>
     <string name="text_null">N/A</string>
     <string name="null_book">获取图书信息失败</string>
+    <string name="null_volume">获取图书分卷失败</string>
     <string name="web_error">网络错误</string>
     <string name="download_cover_failed">保存封面失败</string>
     <string name="download_cover_timeout">保存封面超时</string>

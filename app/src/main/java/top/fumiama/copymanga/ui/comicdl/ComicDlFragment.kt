@@ -9,6 +9,7 @@ import androidx.navigation.fragment.findNavController
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.fragment_dlcomic.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.json.VolumeStructure
@@ -30,7 +31,7 @@ class ComicDlFragment: NoBackRefreshFragment(R.layout.fragment_dlcomic) {
                     arguments?.getBoolean("callFromOldDL", false) == true -> initOldComicData()
                     arguments?.containsKey("loadJson") == true -> context?.getExternalFilesDir("")?.let { home ->
                         arguments?.getString("name")?.let {
-                            sleep(600)
+                            delay(600)
                             Log.d("MyCDF", "loadJson by arguments")
                             start2load(
                                 loadFromJson(arguments?.getString("loadJson")!!),

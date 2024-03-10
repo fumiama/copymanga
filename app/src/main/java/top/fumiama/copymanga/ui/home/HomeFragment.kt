@@ -24,6 +24,7 @@ import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.line_word.view.*
 import kotlinx.android.synthetic.main.viewpage_horizonal.view.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity
@@ -163,10 +164,10 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
             lifecycleScope.launch{
                 withContext(Dispatchers.IO) {
                     homeHandler.obtainMessage(-1, true).sendToTarget()
-                    while(!MainActivity.isDrawerClosed) sleep(233)
+                    while(!MainActivity.isDrawerClosed) delay(233)
                     //homeHandler.sendEmptyMessage(6)    //removeAllViews
                     homeHandler.fhib = null
-                    sleep(600)
+                    delay(600)
                     homeHandler.startLoad()
                 }
             }
@@ -196,7 +197,7 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                     //Log.d("MyHomeFVP", "Load img: $it")
                     Glide.with(this@HomeFragment).load(
                         GlideUrl(CMApi.proxy?.wrap(it)?:it, CMApi.myGlideHeaders)
-                    ).addListener(GlideHideLottieViewListener(WeakReference(holder.itemView.lai))).timeout(10000).into(holder.itemView.vpi)
+                    ).addListener(GlideHideLottieViewListener(WeakReference(holder.itemView.lai))).into(holder.itemView.vpi)
                 }
                 holder.itemView.vpt.text = thisBanner?.brief
                 holder.itemView.vpc.setOnClickListener {
