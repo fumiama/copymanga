@@ -55,7 +55,7 @@ class LoginActivity : AppCompatActivity() {
                     finish()
                     return@launch
                 }
-                Toast.makeText(this@LoginActivity, l?.message, Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@LoginActivity, l?.message, Toast.LENGTH_LONG).show()
             }
         }
     }

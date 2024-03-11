@@ -82,12 +82,8 @@
     <string name="shelfOperateApiUrl">https://%1$s/api/v3/member/collect/comic</string>
 
     <string name="imgProxyApiUrl">https://copymanga.azurewebsites.net/api/img?code=%1$s&amp;url=%2$s</string>
-    <string name="imgProxyApiRegex" tools:ignore="TypographyDashes">^https://[0-9a-z-]+\.mangafuna\.xyz/</string>
     <string name="imgProxyKeyID">settings_cat_net_et_img_proxy_code</string>
-    <!--
-    <string name="apiProxyApiUrl">https://copymanga.azurewebsites.net/api/api?url=%1$s</string>
-    <string name="apiProxyApiPrefix">https://api.mangacopy.com/api/</string>
-    -->
+    <string name="apiProxyApiUrl">https://copymanga.azurewebsites.net/api/api?code=%1$s&amp;url=%2$s</string>
     <string name="imgResolutionKeyID">settings_cat_net_sb_image_resolution</string>
 
     <string name="complete">已完结</string>
@@ -147,8 +143,8 @@
     <string name="settings_cat_net_sm_use_api_proxy">作者自建的API代理，可缓解国内图书详情加载问题，但不保证100%解决，也不保证一直可用</string>
     <string name="settings_cat_net_sw_use_img_proxy">使用图床代理（重启生效）</string>
     <string name="settings_cat_net_sm_use_img_proxy">作者自建的图床代理，可缓解国内图片无法加载问题，但不保证100%解决，也不保证一直可用</string>
-    <string name="settings_cat_net_et_title_img_proxy">图床代理密钥（重启生效）</string>
-    <string name="settings_cat_net_et_summary_img_proxy">为避免滥用，代理密钥需加群（559748702）获得，且随时可能会刷新</string>
+    <string name="settings_cat_net_et_title_img_proxy">代理密钥（重启生效）</string>
+    <string name="settings_cat_net_et_summary_img_proxy">为避免滥用，该密钥需加群（559748702）获得，且随时可能会刷新</string>
 
     <string name="settings_cat_vm">漫画浏览</string>
     <string name="settings_cat_vm_sw_always_dark_bg">深色阅读背景</string>

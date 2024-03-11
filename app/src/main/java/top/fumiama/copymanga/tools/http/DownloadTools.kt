@@ -38,7 +38,7 @@ object DownloadTools {
                 }
                 setRequestProperty("platform", "3")
             }
-            Log.d("Mydl", "getConnection: ${connection.requestProperties.map { "${it.key}: ${it.value}" }.joinToString("\n")}")
+            Log.d("Mydl", "getConnection: $url\n${connection.requestProperties.map { "${it.key}: ${it.value}" }.joinToString("\n")}")
             connection
         }
 

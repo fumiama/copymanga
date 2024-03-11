@@ -9,11 +9,26 @@ import top.fumiama.dmzj.copymanga.R
 import java.io.File
 
 object CMApi {
-    var proxy = if (Proxy.useImageProxy) Proxy(
-        R.string.imgProxyApiUrl,
-        R.string.imgProxyApiRegex,
-        R.string.imgProxyKeyID
-    ) else null
+    var imageProxy: Proxy? = null
+        get() {
+            if (field != null) return field
+            if (Proxy.useImageProxy) field = Proxy(
+                R.string.imgProxyApiUrl,
+                Regex("^https://[0-9a-z-]+\\.mangafuna\\.xyz/"),
+                R.string.imgProxyKeyID
+            )
+            return field
+        }
+    var apiProxy: Proxy? = null
+        get() {
+            if (field != null) return field
+            if (Proxy.useApiProxy) field = Proxy(
+                R.string.apiProxyApiUrl,
+                Regex("^https://api\\.(copymanga|mangacopy)\\.\\w+/api/"),
+                R.string.imgProxyKeyID
+            )
+            return field
+        }
     var resolution = Resolution(Regex("c\\d+x\\."))
     var myGlideHeaders: LazyHeaders? = null
         get() {
@@ -68,8 +83,4 @@ object CMApi {
     fun getChapterInfoApiUrl(arg1: String?, arg2: String?) =
         MainActivity.mainWeakReference?.get()?.getString(R.string.chapterInfoApiUrl)
             ?.format(myHostApiUrl, arg1, arg2)
-
-    fun getGroupInfoApiUrl(arg1: String?, arg2: String?, arg3: Int? = 0) =
-        MainActivity.mainWeakReference?.get()?.getString(R.string.groupInfoApiUrl)
-            ?.format(myHostApiUrl, arg1, arg2, arg3)
 }

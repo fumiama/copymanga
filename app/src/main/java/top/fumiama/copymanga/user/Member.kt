@@ -37,12 +37,12 @@ class Member(private val pref: SharedPreferences, private val getString: (Int) -
             }
             val l = LoginInfoStructure()
             l.code = 400
-            l.message =  getString(R.string.login_get_conn_failed)
+            l.message = getString(R.string.login_get_conn_failed)
             return@withContext l
         } catch (e: Exception) {
             val l = LoginInfoStructure()
             l.code = 400
-            l.message = e.localizedMessage
+            l.message = e.toString()
             return@withContext l
         }
     }
@@ -63,7 +63,10 @@ class Member(private val pref: SharedPreferences, private val getString: (Int) -
         }
         return@withContext try {
             val l = Gson().fromJson(DownloadTools.getHttpContent(
-                getString(R.string.memberInfoApiUrl).format(CMApi.myHostApiUrl)).decodeToString(),
+                getString(R.string.memberInfoApiUrl).format(CMApi.myHostApiUrl).let {
+                    CMApi.apiProxy?.wrap(it)?:it
+                }
+            ).decodeToString(),
                 LoginInfoStructure::class.java)
             if(l.code == 200) pref.edit()?.apply {
                 putString("avatar", l.results.avatar)
@@ -91,6 +94,8 @@ class Member(private val pref: SharedPreferences, private val getString: (Int) -
 
     private fun getLoginConnection(username: String, pwd: String, salt: Int) =
         getString(R.string.loginApiUrl).format(CMApi.myHostApiUrl).let {
+            CMApi.apiProxy?.wrap(it)?:it
+        }.let {
             DownloadTools.getApiConnection(it, "POST").apply {
                 pref.apply {
                     doOutput = true

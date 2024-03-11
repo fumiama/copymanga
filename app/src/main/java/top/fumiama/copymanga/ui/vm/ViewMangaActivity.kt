@@ -12,6 +12,7 @@ import android.graphics.drawable.Drawable
 import android.media.AudioManager
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.util.TypedValue
 import android.view.*
@@ -217,7 +218,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         return if(flag) true else super.onKeyDown(keyCode, event)
     }
 
-    private fun alertCellar() {
+    private suspend fun alertCellar() = withContext(Dispatchers.Main) {
         toolsBox.buildInfo(
             "注意", "要使用使用流量观看吗？", "确定", "本次阅读不再提醒", "取消",
             { handler.startLoad() }, { noCellarAlert = true; handler.startLoad() }, { finish() }
@@ -238,7 +239,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         getImgUrlArray()?.let {
             tasks = Array(it.size) { i ->
                 val u = it[i]?:return@Array null
-                return@Array DownloadTools.prepare(CMApi.resolution.wrap(CMApi.proxy?.wrap(u)?:u))
+                return@Array DownloadTools.prepare(CMApi.resolution.wrap(CMApi.imageProxy?.wrap(u)?:u))
             }
             tasksRunStatus = Array(it.size) { return@Array false }
         }
@@ -255,7 +256,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
                 forEachIndexed { i, it ->
                     if(it != null) {
                         Thread{
-                            DownloadTools.getHttpContent(CMApi.resolution.wrap(CMApi.proxy?.wrap(it)?:it), 1024)?.inputStream()?.let {
+                            DownloadTools.getHttpContent(CMApi.resolution.wrap(CMApi.imageProxy?.wrap(it)?:it), 1024)?.inputStream()?.let {
                                 isCut[i] = canCut(it)
                                 analyzedCnt[i] = true
                             }
@@ -293,7 +294,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         if (!isVertical) restorePN()
     }
 
-    private fun prepareImgFromWeb() {
+    private suspend fun prepareImgFromWeb() {
         if(!noCellarAlert && toolsBox.netInfo == getString(R.string.TRANSPORT_CELLULAR)) alertCellar()
         else handler.startLoad()
     }
@@ -410,7 +411,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
 
     private suspend fun loadImgUrlInto(imgView: ScaleImageView, url: String, useCut: Boolean, isLeft: Boolean){
         Log.d("MyVM", "Load from adt: $url")
-        PausableDownloader(CMApi.resolution.wrap(CMApi.proxy?.wrap(url)?:url), 1000) {
+        PausableDownloader(CMApi.resolution.wrap(CMApi.imageProxy?.wrap(url)?:url), 1000, false) {
             it.let { loadImg(imgView, BitmapFactory.decodeByteArray(it, 0, it.size), useCut, isLeft, false) }
         }.run()
     }
@@ -861,7 +862,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
                         val thisOneI = holder.itemView.onei
                         Glide.with(this@ViewMangaActivity.applicationContext)
                             .asBitmap()
-                            .load(GlideUrl(CMApi.resolution.wrap(CMApi.proxy?.wrap(it)?:it), CMApi.myGlideHeaders))
+                            .load(GlideUrl(CMApi.resolution.wrap(CMApi.imageProxy?.wrap(it)?:it), CMApi.myGlideHeaders))
                             .placeholder(BitmapDrawable(resources, getLoadingBitmap(pos)))
                             .into(object : CustomTarget<Bitmap>() {
                                 override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
@@ -870,7 +871,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
                                 override fun onLoadCleared(placeholder: Drawable?) { }
                             })
                     } else Glide.with(this@ViewMangaActivity.applicationContext)
-                        .load(GlideUrl(CMApi.resolution.wrap(CMApi.proxy?.wrap(it)?:it), CMApi.myGlideHeaders))
+                        .load(GlideUrl(CMApi.resolution.wrap(CMApi.imageProxy?.wrap(it)?:it), CMApi.myGlideHeaders))
                         .placeholder(BitmapDrawable(resources, getLoadingBitmap(pos)))
                         .into(holder.itemView.onei)
                 }

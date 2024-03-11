@@ -5,20 +5,19 @@ import com.google.gson.Gson
 import kotlinx.android.synthetic.main.card_book.*
 import kotlinx.android.synthetic.main.line_booktandb.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.json.BookInfoStructure
 import top.fumiama.copymanga.json.ThemeStructure
 import top.fumiama.copymanga.json.VolumeStructure
-import top.fumiama.copymanga.template.http.PausableDownloader
 import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.copymanga.tools.http.DownloadTools
 import top.fumiama.dmzj.copymanga.R
 import java.io.File
 
 class Book(val path: String, private val getString: (Int) -> String, private val exDir: File, private val loadCache: Boolean = false, private val mPassName: String? = null) {
-    private val mBookApiUrl = getString(R.string.bookInfoApiUrl).format(CMApi.myHostApiUrl, path)
+    private val mBookApiUrl = getString(R.string.bookInfoApiUrl).format(CMApi.myHostApiUrl, path).let {
+        CMApi.apiProxy?.wrap(it)?:it
+    }
     private val mUserAgent = getString(R.string.pc_ua)
     private var mBook: BookInfoStructure? = null
     private var mGroupPathWords = arrayOf<String>()
@@ -131,7 +130,7 @@ class Book(val path: String, private val getString: (Int) -> String, private val
             mJsonString = Gson().toJson(volumes)
             File(mangaFolder, "info.json").writeText(mJsonString)
             File(mangaFolder, "grps.json").writeText(Gson().toJson(mKeys))
-            (cover?.let { CMApi.proxy?.wrap(it) } ?:cover)?.let {
+            (cover?.let { CMApi.imageProxy?.wrap(it) } ?:cover)?.let {
                 Thread {
                     DownloadTools.getHttpContent(it, -1)?.let { data ->
                         File(mangaFolder, "head.jpg").writeBytes(data)

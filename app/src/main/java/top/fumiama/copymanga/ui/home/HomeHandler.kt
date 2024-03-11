@@ -35,15 +35,13 @@ import top.fumiama.copymanga.tools.ui.GlideHideLottieViewListener
 import top.fumiama.copymanga.tools.ui.Navigate
 import top.fumiama.copymanga.tools.ui.UITools
 import top.fumiama.dmzj.copymanga.R
-import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicInteger
 
 class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadHandler(
     that.get()?.getString(R.string.mainPageApiUrl)!!.format(CMApi.myHostApiUrl),
     IndexStructure::class.java,
-    that.get(),
-    9
+    that.get()
 ) {
     private val homeF get() = that.get()
     var index: IndexStructure? = null
@@ -87,7 +85,6 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
                     homeF?.fhl?.addView(indexLines[msg.arg1])
                 }
             }
-            //9 -> checkIndex()
         }
     }
 
@@ -104,10 +101,14 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
         index?.results?.banners = banners
         return pass
     }
-    override fun onError() {
+    override suspend fun onError() {
         super.onError()
         if(exit) return
-        Toast.makeText(homeF?.context, R.string.web_error, Toast.LENGTH_SHORT).show()
+        sendEmptyMessage(2)         //setSwipe
+        obtainMessage(-1, false).sendToTarget()                 //closeLoad
+        withContext(Dispatchers.Main) {
+            Toast.makeText(homeF?.context, R.string.web_error, Toast.LENGTH_SHORT).show()
+        }
     }
     override suspend fun doWhenFinishDownload() = withContext(Dispatchers.IO) {
         super.doWhenFinishDownload()
@@ -329,7 +330,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
             if(img.startsWith("http")) {
                 Log.d("MyHH", "load card image: $img")
                 val waitMillis = cardLoadingWaits.getAndIncrement().toLong()*200
-                val g = Glide.with(it).load(GlideUrl(CMApi.proxy?.wrap(img)?:img, CMApi.myGlideHeaders))
+                val g = Glide.with(it).load(GlideUrl(CMApi.imageProxy?.wrap(img)?:img, CMApi.myGlideHeaders))
                     .addListener(GlideHideLottieViewListener(WeakReference(cv.laic)) {
                         cardLoadingWaits.decrementAndGet()
                     })

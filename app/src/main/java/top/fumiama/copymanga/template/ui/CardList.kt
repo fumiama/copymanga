@@ -114,7 +114,7 @@ class CardList(
                     that?.context?.let { context ->
                         val waitMillis = cardLoadingWaits.getAndIncrement().toLong()*200
                         val g = Glide.with(context).load(
-                            GlideUrl(CMApi.proxy?.wrap(head)?:head, CMApi.myGlideHeaders)
+                            GlideUrl(CMApi.imageProxy?.wrap(head)?:head, CMApi.myGlideHeaders)
                         ).addListener(GlideHideLottieViewListener(WeakReference(it.laic)) {
                             if (exitCardList) return@GlideHideLottieViewListener
                             cardLoadingWaits.decrementAndGet()

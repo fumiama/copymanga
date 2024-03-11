@@ -39,7 +39,6 @@ import top.fumiama.copymanga.tools.ui.GlideHideLottieViewListener
 import top.fumiama.copymanga.tools.ui.Navigate
 import top.fumiama.copymanga.ui.vm.ViewMangaActivity
 import top.fumiama.dmzj.copymanga.R
-import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 
 class BookHandler(private val th: WeakReference<BookFragment>): Handler(Looper.myLooper()!!) {
@@ -82,7 +81,7 @@ class BookHandler(private val th: WeakReference<BookFragment>): Handler(Looper.m
         that?.apply {
             val load = Glide.with(this).load(
                 if (book?.cover != null)
-                    GlideUrl(CMApi.proxy?.wrap(book?.cover!!)?:book?.cover!!, CMApi.myGlideHeaders)
+                    GlideUrl(CMApi.imageProxy?.wrap(book?.cover!!)?:book?.cover!!, CMApi.myGlideHeaders)
                 else book?.cachedCover
             ).addListener(GlideHideLottieViewListener(WeakReference(laic)))
             load.into(imic)

@@ -97,7 +97,7 @@ class DownloadPool(folder: String) {
                         var s = false
                         while (!s && tryTimes-- > 0) {
                             val u = imgUrls[index]
-                            s = (DownloadTools.getHttpContent(CMApi.resolution.wrap(CMApi.proxy?.wrap(u)?:u), -1))?.let {
+                            s = (DownloadTools.getHttpContent(CMApi.resolution.wrap(CMApi.imageProxy?.wrap(u)?:u), -1))?.let {
                                 zip.putNextEntry(ZipEntry("$index.${if(imgUrls[index].contains(".webp")) "webp" else "jpg"}"))
                                 zip.write(it)
                                 zip.closeEntry()

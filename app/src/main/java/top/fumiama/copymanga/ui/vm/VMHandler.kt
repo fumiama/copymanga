@@ -145,13 +145,11 @@ class VMHandler(activity: ViewMangaActivity, private val chapterUrl: String, pri
         manga = m
         return true
     }
-    override fun onError() {
+    override suspend fun onError() {
         super.onError()
         if(exit) return
-        wv.get()?.apply {
-            lifecycleScope.launch {
-                toolsBox.toastError(R.string.download_chapter_info_failed)
-            }
+        withContext(Dispatchers.Main) {
+            wv.get()?.toolsBox?.toastError(R.string.download_chapter_info_failed)
         }
     }
 
@@ -193,7 +191,9 @@ class VMHandler(activity: ViewMangaActivity, private val chapterUrl: String, pri
     }
 
     private suspend fun fakeLoad() = withContext(Dispatchers.IO) {
-        if(MainActivity.member?.hasLogin == true) PausableDownloader(chapterUrl) { _ -> }.run()
+        if(MainActivity.member?.hasLogin == true) launch {
+            PausableDownloader(chapterUrl) { _ -> }.run()
+        }
     }
 
     private suspend fun prepareManga() = withContext(Dispatchers.Main) {

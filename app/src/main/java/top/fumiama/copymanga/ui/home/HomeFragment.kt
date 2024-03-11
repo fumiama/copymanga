@@ -37,7 +37,6 @@ import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.copymanga.tools.ui.GlideHideLottieViewListener
 import top.fumiama.copymanga.tools.ui.Navigate
 import top.fumiama.dmzj.copymanga.R
-import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 
 class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
@@ -196,7 +195,7 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                 thisBanner?.cover?.let {
                     //Log.d("MyHomeFVP", "Load img: $it")
                     Glide.with(this@HomeFragment).load(
-                        GlideUrl(CMApi.proxy?.wrap(it)?:it, CMApi.myGlideHeaders)
+                        GlideUrl(CMApi.imageProxy?.wrap(it)?:it, CMApi.myGlideHeaders)
                     ).addListener(GlideHideLottieViewListener(WeakReference(holder.itemView.lai))).into(holder.itemView.vpi)
                 }
                 holder.itemView.vpt.text = thisBanner?.brief
@@ -255,7 +254,7 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                     holder.itemView.tb.text = popular.toString()
                     context?.let {
                         Glide.with(it)
-                            .load(GlideUrl(CMApi.proxy?.wrap(cover)?:cover, CMApi.myGlideHeaders))
+                            .load(GlideUrl(CMApi.imageProxy?.wrap(cover)?:cover, CMApi.myGlideHeaders))
                             .addListener(GlideHideLottieViewListener(WeakReference(holder.itemView.laic)))
                             .into(holder.itemView.imic)
                     }
