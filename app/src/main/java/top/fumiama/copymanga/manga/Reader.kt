@@ -11,7 +11,7 @@ import top.fumiama.copymanga.ui.vm.ViewMangaActivity
 import java.io.File
 
 object Reader {
-    fun viewMangaAt(name: String, pos: Int, urlArray: Array<String>, fromFirstPage: Boolean = false) {
+    fun start2viewManga(name: String, pos: Int, urlArray: Array<String>, fromFirstPage: Boolean = false) {
         Log.d("MyR", "viewMangaAt name $name, pos $pos")
         mainWeakReference?.get()?.apply {
             getPreferences(Context.MODE_PRIVATE)?.edit {
@@ -39,7 +39,7 @@ object Reader {
             }
         }
     }
-    fun getComicPathWordInFile(file: File): String {
+    fun getComicPathWordInFolder(file: File): String {
         if(!file.exists()) {
             return "N/A:!file.exists()"
         }

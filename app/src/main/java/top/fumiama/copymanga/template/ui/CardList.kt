@@ -108,7 +108,7 @@ class CardList(
         val file = File(that?.context?.getExternalFilesDir(""), card.name)
         if(exitCardList) return@withIO
         cardFrame.let {
-            withContext(Dispatchers.Main) { it.tic.text = name }
+            it.tic.apply { post { text = name } }
             if(!file.exists()) {
                 if(head != null) {
                     that?.context?.let { context ->
@@ -119,33 +119,35 @@ class CardList(
                             if (exitCardList) return@GlideHideLottieViewListener
                             cardLoadingWaits.decrementAndGet()
                         })
-                        withContext(Dispatchers.Main) {
-                            if (waitMillis > 0) it.imic.postDelayed({
-                                if (exitCardList) return@postDelayed
-                                g.into(it.imic)
-                            }, waitMillis) else g.into(it.imic)
+                        if (waitMillis > 0) it.imic.postDelayed({
+                            if (exitCardList) return@postDelayed
+                            g.into(it.imic)
+                        }, waitMillis) else it.imic.post { g.into(it.imic) }
+                    }
+                } else {
+                    it.laic.apply {
+                        post {
+                            pauseAnimation()
+                            visibility = View.GONE
                         }
                     }
-                } else withContext(Dispatchers.Main) {
-                    it.laic.pauseAnimation()
-                    it.laic.visibility = View.GONE
-                    it.imic.setImageResource(R.drawable.img_defmask)
+                    it.imic.apply { post { setImageResource(R.drawable.img_defmask) } }
                 }
             } else {
                 val img = File(file, "head.jpg")
-                withContext(Dispatchers.Main) {
-                    it.laic.pauseAnimation()
-                    it.laic.visibility = View.GONE
+                it.laic.apply {
+                    post {
+                        pauseAnimation()
+                        visibility = View.GONE
+                    }
                 }
                 if(img.exists()) {
-                    withContext(Dispatchers.Main) {
-                        it.imic.setImageURI(Uri.fromFile(img))
+                    it.imic.apply {
+                        post {
+                            setImageURI(Uri.fromFile(img))
+                        }
                     }
-                } else {
-                    withContext(Dispatchers.Main) {
-                        it.imic.setImageResource(R.drawable.img_defmask)
-                    }
-                }
+                } else it.imic.apply { post { setImageResource(R.drawable.img_defmask) } }
             }
             withContext(Dispatchers.Main) {
                 if(card.isFinish) it.sgnic.visibility = View.VISIBLE

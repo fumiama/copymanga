@@ -24,7 +24,7 @@ class PagesManager(private val w: WeakReference<ViewMangaActivity>) {
     @ExperimentalStdlibApi
     fun toPage(goNext:Boolean) {
         v?.let { v ->
-            if (v.clicked) {
+            if (v.clicked == 1) {
                 v.hideDrawer()
                 return
             }
@@ -48,7 +48,7 @@ class PagesManager(private val w: WeakReference<ViewMangaActivity>) {
                 //if(v.zipFirst) intent.putExtra("callFrom", "zipFirst")
                 v.tt.canDo = false
                 //ViewMangaActivity.dlhandler = null
-                comicName?.let { Reader.viewMangaAt(it, chapterPosition, v.urlArray, goNext) }
+                comicName?.let { Reader.start2viewManga(it, chapterPosition, v.urlArray, goNext) }
                 v.finish()
                 return
             }
@@ -59,6 +59,11 @@ class PagesManager(private val w: WeakReference<ViewMangaActivity>) {
         }
     }
     fun toggleDrawer() {
-        if (v?.clicked == false) v?.showDrawer() else v?.hideDrawer()
+        v?.apply {
+            when(clicked) {
+                0 -> showDrawer()
+                1 -> hideDrawer()
+            }
+        }
     }
 }

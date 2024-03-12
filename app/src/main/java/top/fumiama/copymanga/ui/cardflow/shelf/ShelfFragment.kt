@@ -3,19 +3,15 @@ package top.fumiama.copymanga.ui.cardflow.shelf
 import android.animation.ObjectAnimator
 import android.os.Bundle
 import android.view.View
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import kotlinx.android.synthetic.main.anchor_popular.view.*
 import kotlinx.android.synthetic.main.line_shelf.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.template.ui.InfoCardLoader
 import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.dmzj.copymanga.R
-import java.lang.Thread.sleep
 
 @ExperimentalStdlibApi
 class ShelfFragment : InfoCardLoader(R.layout.fragment_shelf, R.id.action_nav_sub_to_nav_book, isShelfBook = true) {
@@ -56,7 +52,7 @@ class ShelfFragment : InfoCardLoader(R.layout.fragment_shelf, R.id.action_nav_su
             val same = sortValue in 0..1
             sortValue = rotate(it.apim, same, 0)
             if (!same) fade()
-            resetDelayed()
+            delayedRefresh(400)
         }
     }
 
@@ -67,7 +63,7 @@ class ShelfFragment : InfoCardLoader(R.layout.fragment_shelf, R.id.action_nav_su
             val same = sortValue in 2..3
             sortValue = rotate(it.apim, same, 2)
             if (!same) fade()
-            resetDelayed()
+            delayedRefresh(400)
         }
     }
 
@@ -78,7 +74,7 @@ class ShelfFragment : InfoCardLoader(R.layout.fragment_shelf, R.id.action_nav_su
             val same = sortValue>=4
             sortValue = rotate(it.apim, same, 4)
             if (!same) fade()
-            resetDelayed()
+            delayedRefresh(400)
         }
     }
 
@@ -116,18 +112,6 @@ class ShelfFragment : InfoCardLoader(R.layout.fragment_shelf, R.id.action_nav_su
                 line_shelf_updated.alpha = 0.5f
                 line_shelf_modifier.alpha = 0.5f
                 line_shelf_browse.alpha = 1f
-            }
-        }
-    }
-
-    private fun resetDelayed() {
-        lifecycleScope.launch {
-            withContext(Dispatchers.IO) {
-                delay(400)
-                withContext(Dispatchers.Main) {
-                    reset()
-                    addPage()
-                }
             }
         }
     }

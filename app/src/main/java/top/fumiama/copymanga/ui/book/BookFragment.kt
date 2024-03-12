@@ -68,6 +68,7 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
                     book?.updateInfo()
                 } catch (e: Exception) {
                     e.printStackTrace()
+                    if(mBookHandler?.exit != false) return@launch
                     Toast.makeText(context, R.string.null_book, Toast.LENGTH_SHORT).show()
                     findNavController().popBackStack()
                     return@launch
@@ -82,6 +83,7 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
+                    if(mBookHandler?.exit != false) return@launch
                     Toast.makeText(context, R.string.null_volume, Toast.LENGTH_SHORT).show()
                     findNavController().popBackStack()
                     return@launch
@@ -126,7 +128,7 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
                         }
                         setOnClickListener {
                             mBookHandler?.urlArray?.let {
-                                Reader.viewMangaAt(name, i, it)
+                                Reader.start2viewManga(name, i, it)
                             }
                         }
                     }

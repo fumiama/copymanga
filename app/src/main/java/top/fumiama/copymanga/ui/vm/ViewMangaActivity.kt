@@ -66,7 +66,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
     var count = 0
     private lateinit var handler: VMHandler
     lateinit var tt: TimeThread
-    var clicked = false
+    var clicked = 0
     private var isInSeek = false
     private var isInScroll = true
     //private var progressLog: PropertiesTools? = null
@@ -884,28 +884,38 @@ class ViewMangaActivity : TitleActivityTemplate() {
     }
 
     fun showDrawer() {
-        infseek.visibility = View.VISIBLE
-        isearch.visibility = View.VISIBLE
-        ObjectAnimator.ofFloat(
-            oneinfo,
-            "alpha",
-            oneinfo.alpha,
-            1F
-        ).setDuration(233).start()
-        clicked = true
+        clicked = 2 // loading
+        infseek.post {
+            infseek.visibility = View.VISIBLE
+            isearch.post {
+                isearch.visibility = View.VISIBLE
+                infseek.invalidate()
+                isearch.invalidate()
+                ObjectAnimator.ofFloat(
+                    oneinfo,
+                    "alpha",
+                    oneinfo.alpha,
+                    1F
+                ).setDuration(300).start()
+                clicked = 1 // true
+            }
+        }
     }
 
     fun hideDrawer() {
+        clicked = 2 // loading
         ObjectAnimator.ofFloat(
             oneinfo,
             "alpha",
             oneinfo.alpha,
             0F
-        ).setDuration(233).start()
-        clicked = false
+        ).setDuration(300).start()
         infseek.postDelayed({
             infseek.visibility = View.GONE
             isearch.visibility = View.GONE
+            infseek.invalidate()
+            isearch.invalidate()
+            clicked = 0 // false
         }, 300)
         handler.sendEmptyMessage(if (fullyHideInfo) VMHandler.HIDE_INFO_CARD_FULL else VMHandler.HIDE_INFO_CARD)
     }

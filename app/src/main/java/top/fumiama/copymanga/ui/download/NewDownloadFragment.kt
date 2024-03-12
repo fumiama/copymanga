@@ -8,8 +8,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
-import kotlinx.android.synthetic.main.line_lazybooklines.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity
@@ -19,10 +19,8 @@ import top.fumiama.copymanga.template.ui.CardList
 import top.fumiama.copymanga.tools.file.FileUtils
 import top.fumiama.copymanga.tools.ui.Navigate
 import top.fumiama.copymanga.tools.ui.UITools
-import top.fumiama.copymanga.ui.comicdl.ComicDlFragment
 import top.fumiama.dmzj.copymanga.R
 import java.io.File
-import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 
 @OptIn(ExperimentalStdlibApi::class)
@@ -57,59 +55,89 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
         exit = true
     }
 
-    override fun addPage() {
+    override suspend fun addPage(): Unit = withContext(Dispatchers.IO) {
         super.addPage()
         if(isRefresh){
             page = 0
             isRefresh = false
         }
-        lifecycleScope.launch {
-            withContext(Dispatchers.IO) {
-                if(!isEnd) {
-                    if(sortedBookList == null || isContentChanged) {
-                        Log.d("MyNDF", "Sorting books...")
-                        sortedBookList = extDir?.listFiles()?.sortedBy {
-                            return@sortedBy Reader.getComicPathWordInFile(it)
-                        }
-                        if (isReverse) {
-                            Log.d("MyNDF", "reversed...")
-                            sortedBookList = sortedBookList?.asReversed()
-                        }
-                        if (!showAll) {
-                            sortedBookList = sortedBookList?.filter {
-                                return@filter FileUtils.sizeOf(it) / 1048576 > 0
+        if (isEnd) {
+            onLoadFinish()
+            return@withContext
+        }
+        setProgress(20)
+        if(sortedBookList == null || isContentChanged) {
+            Log.d("MyNDF", "Sorting books...")
+            sortedBookList = extDir?.listFiles()?.toList()
+            var size = sortedBookList?.size?:0
+            if (size > 0) {
+                if (isReverse) {
+                    Log.d("MyNDF", "reversed...")
+                    sortedBookList = sortedBookList?.asReversed()
+                }
+                setProgress(40)
+                if (!showAll) {
+                    val cache = hashMapOf<String, Boolean>()
+                    sortedBookList = sortedBookList?.filter {
+                        setProgress(40+20*cache.size/size)
+                        it.absolutePath.let { path ->
+                            if (cache.containsKey(path)) cache[path]!!
+                            else {
+                                val b = (it.listFiles { f ->
+                                    return@listFiles f.isDirectory && f.listFiles()?.isNotEmpty() ?: false
+                                }?.size ?: 0) > 0
+                                cache[path] = b
+                                b
                             }
-                        }
-                        isContentChanged = false
-                    }
-                    Log.d("MyNDF", "Start drawing cards")
-                    cardList?.addCard(oldDlCardName, path = oldDlCardName)
-                    var cnt = 1
-                    sortedBookList?.let {
-                        for(i in it.listIterator(page)) {
-                            if(cardList?.exitCardList != false) return@withContext
-                            page++ // page is actually count
-                            val chosenJson = File(i, "info.bin")
-                            val newJson = File(i, "info.json")
-                            val bookSize = (FileUtils.sizeOf(i)/1048576).toInt()
-                            when {
-                                chosenJson.exists() -> continue // unsupported old folder
-                                newJson.exists() -> {
-                                    if(cardList?.exitCardList != false) return@withContext
-                                    cardList?.addCard(i.name, "\n${bookSize}MB")
-                                    cnt++
-                                }
-                            }
-                            if (cnt >= 21) break
-                        }
-                        if(page >= it.size) {
-                            isEnd = true
                         }
                     }
                 }
-                onLoadFinish()
+                setProgress(60)
+                size = sortedBookList?.size?:0
+                val cache = hashMapOf<String, String>()
+                sortedBookList = sortedBookList?.sortedBy {
+                    setProgress(60+20*cache.size/size)
+                    return@sortedBy it.absolutePath.let { path ->
+                        if (cache.containsKey(path)) cache[path]!!
+                        else {
+                            val s = Reader.getComicPathWordInFolder(it).lowercase()
+                            cache[path] = s
+                            s
+                        }
+                    }
+                }
+                setProgress(80)
+            }
+            isContentChanged = false
+        }
+        Log.d("MyNDF", "Start drawing cards")
+        cardList?.addCard(oldDlCardName, path = oldDlCardName)
+        var cnt = 1
+        val size = sortedBookList?.size?:0
+        sortedBookList?.let {
+            for(i in it.listIterator(page)) {
+                if(cardList?.exitCardList != false) return@withContext
+                page++ // page is actually count
+                val chosenJson = File(i, "info.bin")
+                val newJson = File(i, "info.json")
+                val bookSize = (FileUtils.sizeOf(i)/1048576).toInt()
+                when {
+                    chosenJson.exists() -> continue // unsupported old folder
+                    newJson.exists() -> {
+                        if(cardList?.exitCardList != false) return@withContext
+                        cardList?.addCard(i.name, "\n${bookSize}MB")
+                        cnt++
+                    }
+                }
+                setProgress(80+20*(cnt-1)/size)
+                if (cnt >= 21) break
+            }
+            if(page >= it.size) {
+                isEnd = true
             }
         }
+        setProgress(99)
+        onLoadFinish()
     }
 
     override fun initCardList(weakReference: WeakReference<Fragment>) {
@@ -184,20 +212,15 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
             "确定", null, "取消", {
                 isReverse = !isReverse
                 isContentChanged = true
-                reset()
-                Thread {
-                    sleep(600)
-                    addPage()
-                }.start()
+                lifecycleScope.launch {
+                    withContext(Dispatchers.IO) {
+                        reset()
+                        delay(600)
+                        addPage()
+                    }
+                }
             }
         )
-    }
-
-    override fun onLoadFinish() {
-        super.onLoadFinish()
-        activity?.runOnUiThread {
-            mypl.visibility = View.GONE
-        }
     }
 
     companion object {

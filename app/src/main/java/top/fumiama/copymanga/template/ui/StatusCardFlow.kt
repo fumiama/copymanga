@@ -3,6 +3,8 @@ package top.fumiama.copymanga.template.ui
 import android.animation.ObjectAnimator
 import android.view.View
 import kotlinx.android.synthetic.main.anchor_popular.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.dmzj.copymanga.R
 
@@ -25,40 +27,32 @@ open class StatusCardFlow(private val api: Int, nav: Int, inflateRes: Int,
 
     override fun setListeners() {
         super.setListeners()
-        lineUpdate?.let { setUpdate(it) }
-        lineHot?.let { setHot(it) }
-        lineUpdate?.alpha = 1f
-        lineHot?.alpha = 0.5f
+        lineUpdate?.apply { post {
+            setUpdate(this)
+            alpha = 1f
+        } }
+        lineHot?.apply { post {
+            setHot(this)
+            alpha = 0.5f
+        } }
     }
 
-    open fun setUpdate(that: View) {
+    private fun setUpdate(that: View) {
         that.apply {
             apt.setText(R.string.menu_update_time)
             setOnClickListener {
                 sortValue = triggerLine(false)
-                Thread{
-                    Thread.sleep(400)
-                    activity?.runOnUiThread {
-                        reset()
-                        addPage()
-                    }
-                }.start()
+                delayedRefresh(400)
             }
         }
     }
 
-    open fun setHot(that: View) {
+    private fun setHot(that: View) {
         that.apply {
             apt.setText(R.string.menu_hot)
             setOnClickListener {
                 sortValue = triggerLine(true)
-                Thread {
-                    Thread.sleep(400)
-                    activity?.runOnUiThread {
-                        reset()
-                        addPage()
-                    }
-                }.start()
+                delayedRefresh(400)
             }
         }
     }

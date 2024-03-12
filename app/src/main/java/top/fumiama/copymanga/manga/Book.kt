@@ -54,12 +54,8 @@ class Book(val path: String, private val getString: (Int) -> String, private val
     val json get() = mJsonString
 
     constructor(name: String, getString: (Int) -> String, exDir: File): this(
-        Gson().fromJson(File(File(exDir, name), "info.json").readText(), Array<VolumeStructure>::class.java).let{
-            if (it.isEmpty() || it[0].results.list.isEmpty()) {
-                throw IllegalArgumentException("$name/info.json无效")
-            }
-            it[0].results.list[0].comic_path_word
-        }, getString, exDir, true, name
+        Reader.getComicPathWordInFolder(File(exDir, name)),
+        getString, exDir, true, name
     )
 
     /**
@@ -119,6 +115,7 @@ class Book(val path: String, private val getString: (Int) -> String, private val
                 saveVolumes(volumes)
                 mVolumes = volumes
             }
+            goSaveHead(isDownload)
             whenFinish()
         }
     }
@@ -130,10 +127,18 @@ class Book(val path: String, private val getString: (Int) -> String, private val
             mJsonString = Gson().toJson(volumes)
             File(mangaFolder, "info.json").writeText(mJsonString)
             File(mangaFolder, "grps.json").writeText(Gson().toJson(mKeys))
-            (cover?.let { CMApi.imageProxy?.wrap(it) } ?:cover)?.let {
+        }
+    }
+
+    private fun goSaveHead(force: Boolean) {
+        name?.let { name ->
+            val mangaFolder = File(exDir, name)
+            if(!mangaFolder.exists()) mangaFolder.mkdirs()
+            val f = File(mangaFolder, "head.jpg")
+            if(force || !f.exists()) (cover?.let { CMApi.imageProxy?.wrap(it) } ?:cover)?.let {
                 Thread {
                     DownloadTools.getHttpContent(it, -1)?.let { data ->
-                        File(mangaFolder, "head.jpg").writeBytes(data)
+                        f.writeBytes(data)
                     }
                 }.start()
             }

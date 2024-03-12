@@ -8,7 +8,6 @@ import com.google.gson.Gson
 import kotlinx.android.synthetic.main.anchor_popular.view.*
 import kotlinx.android.synthetic.main.line_sort.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.json.FilterStructure
@@ -17,7 +16,6 @@ import top.fumiama.copymanga.template.http.PausableDownloader
 import top.fumiama.copymanga.template.ui.StatusCardFlow
 import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.dmzj.copymanga.R
-import java.lang.Thread.sleep
 
 @ExperimentalStdlibApi
 class SortFragment : StatusCardFlow(0, R.id.action_nav_sort_to_nav_book, R.layout.fragment_sort) {
@@ -30,8 +28,8 @@ class SortFragment : StatusCardFlow(0, R.id.action_nav_sort_to_nav_book, R.layou
                 CMApi.myHostApiUrl,
                 page * 21,
                 sortWay[sortValue],
-                if(theme >= 0) (filter?.results?.theme?.get(theme)?.path_word ?: "") else "",
-                if(region >= 0) (filter?.results?.top?.get(region)?.path_word ?: "") else "",
+                if(theme >= 0 && theme < (filter?.results?.theme?.size ?: 0)) (filter?.results?.theme?.get(theme)?.path_word ?: "") else "",
+                if(region >= 0 && region < (filter?.results?.top?.size ?: 0)) (filter?.results?.top?.get(region)?.path_word ?: "") else "",
             )
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -60,26 +58,18 @@ class SortFragment : StatusCardFlow(0, R.id.action_nav_sort_to_nav_book, R.layou
 
     private fun setClasses() {
         filter?.results?.top?.let { items ->
-            setMenu(items, line_sort_region)
+            setMenu(items, line_sort_region) {
+                region = it
+            }
         }
         filter?.results?.theme?.let { items ->
-            setMenu(items, line_sort_class)
-        }
-    }
-
-    private fun suspendReset() {
-        lifecycleScope.launch {
-            withContext(Dispatchers.IO) {
-                delay(400)
-                withContext(Dispatchers.Main) {
-                    reset()
-                    addPage()
-                }
+            setMenu(items, line_sort_class) {
+                theme = it
             }
         }
     }
 
-    private fun setMenu(items: Array<out ThemeStructure>, line: View) {
+    private fun setMenu(items: Array<out ThemeStructure>, line: View, setIndex: (Int) -> Unit) {
         if(ad?.exit == true) return
         line.apt.text = "全部"
         line.setOnClickListener {
@@ -90,9 +80,9 @@ class SortFragment : StatusCardFlow(0, R.id.action_nav_sort_to_nav_book, R.layou
                         label = "全部"
                         labelColor = it.apt.currentTextColor
                         callback = {
-                            region = -1
+                            setIndex(-1)
                             it.apt.text = "全部"
-                            suspendReset()
+                            delayedRefresh(400)
                         }
                     }
                     for(i in items.indices) item {
@@ -100,8 +90,8 @@ class SortFragment : StatusCardFlow(0, R.id.action_nav_sort_to_nav_book, R.layou
                         labelColor = it.apt.currentTextColor
                         callback = { //optional
                             it.apt.text = label
-                            region = i
-                            suspendReset()
+                            setIndex(i)
+                            delayedRefresh(400)
                         }
                     }
                 }

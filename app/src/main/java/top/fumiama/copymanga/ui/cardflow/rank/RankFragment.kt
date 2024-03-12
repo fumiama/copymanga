@@ -1,19 +1,15 @@
 package top.fumiama.copymanga.ui.cardflow.rank
 
 import android.os.Bundle
-import androidx.lifecycle.lifecycleScope
 import com.google.android.material.tabs.TabLayout
 import kotlinx.android.synthetic.main.fragment_rank.*
 import kotlinx.android.synthetic.main.line_rank.view.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.template.ui.InfoCardLoader
 import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.copymanga.tools.ui.UITools
 import top.fumiama.dmzj.copymanga.R
-import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 
 @ExperimentalStdlibApi
@@ -45,7 +41,7 @@ class RankFragment : InfoCardLoader(R.layout.fragment_rank, R.id.action_nav_rank
         ad?.exit = true
     }
 
-    override fun onLoadFinish() {
+    override suspend fun onLoadFinish() {
         super.onLoadFinish()
         isLoading = false
     }
@@ -65,24 +61,14 @@ class RankFragment : InfoCardLoader(R.layout.fragment_rank, R.id.action_nav_rank
 
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 sortValue = tab?.position?:0
-                if(!isLoading) delayedRefresh()
+                if(!isLoading) {
+                    isLoading = true
+                    delayedRefresh(400)
+                }
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab?) {}
         })
-    }
-
-    private fun delayedRefresh() {
-        lifecycleScope.launch {
-            isLoading = true
-            withContext(Dispatchers.IO) {
-                delay(400)
-                withContext(Dispatchers.Main) {
-                    reset()
-                    addPage()
-                }
-            }
-        }
     }
 
     fun showSexInfo(toolsBox: UITools) {
@@ -91,17 +77,20 @@ class RankFragment : InfoCardLoader(R.layout.fragment_rank, R.id.action_nav_rank
             "男频", "全部", "女频", {
                 if(!isLoading) {
                     audience = 1
-                    delayedRefresh()
+                    isLoading = true
+                    delayedRefresh(400)
                 }
             }, {
                 if(!isLoading) {
                     audience = 0
-                    delayedRefresh()
+                    isLoading = true
+                    delayedRefresh(400)
                 }
             }, {
                 if(!isLoading) {
                     audience = 2
-                    delayedRefresh()
+                    isLoading = true
+                    delayedRefresh(400)
                 }
             })
     }

@@ -210,7 +210,7 @@ class BookHandler(private val th: WeakReference<BookFragment>): Handler(Looper.m
                                     if (f.exists()) lci.setBackgroundResource(R.drawable.ic_success)
                                     Log.d("MyBH", "add last single chapter ${it.name}")
                                     val index = i
-                                    setOnClickListener { Reader.viewMangaAt(comicName, index, urlArray) }
+                                    setOnClickListener { Reader.start2viewManga(comicName, index, urlArray) }
                                 }
                                 line?.let { l -> addVolumesView(fbl, l) }
                             } else {
@@ -219,14 +219,14 @@ class BookHandler(private val th: WeakReference<BookFragment>): Handler(Looper.m
                                     lct.text = it.name
                                     if (f.exists()) lci.setBackgroundResource(R.drawable.ic_success)
                                     val index = i
-                                    setOnClickListener { Reader.viewMangaAt(comicName, index, urlArray) }
+                                    setOnClickListener { Reader.start2viewManga(comicName, index, urlArray) }
                                 }
                             }
                         } else line?.l2cr?.apply {
                             lct.text = it.name
                             if (f.exists()) lci.setBackgroundResource(R.drawable.ic_success)
                             val index = i
-                            setOnClickListener { Reader.viewMangaAt(comicName, index, urlArray) }
+                            setOnClickListener { Reader.start2viewManga(comicName, index, urlArray) }
                             line?.let { l -> addVolumesView(fbl, l) }
                             line = null
                         }
