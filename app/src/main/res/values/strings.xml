@@ -2,7 +2,7 @@
 <!DOCTYPE resources [
     <!ENTITY hosturl "api.copymanga.tv">
     ]>
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <string name="app_name">拷贝漫画</string>
 
     <string name="action_settings">设定</string>
@@ -129,6 +129,10 @@
 
     <string name="author">作者</string>
     <string name="caption">标签</string>
+
+    <string name="settings_cat_general">通用</string>
+    <string name="settings_cat_general_sb_title_startup_menu">启动时显示</string>
+    <string name="settings_cat_general_sb_summary_startup_menu">默认主页</string>
 
     <string name="settings_cat_net">网络</string>
     <string name="settings_cat_net_sb_title_image_resolution">图片分辨率</string>

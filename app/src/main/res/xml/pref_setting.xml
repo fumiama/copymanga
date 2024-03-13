@@ -3,6 +3,20 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <PreferenceCategory
         app:iconSpaceReserved="false"
+        app:title="@string/settings_cat_general">
+        <ListPreference
+            android:max="6"
+            app:iconSpaceReserved="false"
+            app:key="settings_cat_general_sb_startup_menu"
+            app:selectable="true"
+            app:summary="@string/settings_cat_general_sb_summary_startup_menu"
+            app:title="@string/settings_cat_general_sb_title_startup_menu"
+            app:entries="@array/menus"
+            app:entryValues="@array/menu_ids"
+            android:defaultValue="0"/>
+    </PreferenceCategory>
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
         app:title="@string/settings_cat_net">
         <ListPreference
             android:max="1500"

@@ -137,18 +137,21 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
         }
     }
 
+    private suspend fun queryCollect() {
+        MainActivity.shelf?.query(book?.path!!)?.let { b ->
+            mBookHandler?.collect = b.results?.collect?:-2
+            Log.d("MyBF", "get collect of ${book?.path} = ${mBookHandler?.collect}")
+            tic.text = b.results?.browse?.chapter_name?.let { name ->
+                getString(R.string.text_format_cloud_read_to).format(name)
+            }
+        }
+    }
+
     @SuppressLint("SetTextI18n")
     fun setAddToShelf() {
         if(mBookHandler?.chapterNames?.isNotEmpty() != true) return
         lifecycleScope.launch {
-            MainActivity.shelf?.query(book?.path!!)?.let { b ->
-                mBookHandler?.collect = b.results?.collect?:-2
-                Log.d("MyBF", "get collect of ${book?.path} = ${mBookHandler?.collect}")
-                tic.text = b.results?.browse?.chapter_name?.let { name ->
-                    getString(R.string.text_format_cloud_read_to).format(name)
-                }
-            }
-
+            queryCollect()
             mBookHandler?.collect?.let { collect ->
                 if (collect > 0) {
                     this@BookFragment.lbbsub.setText(R.string.button_sub_subscribed)
@@ -171,6 +174,7 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
                         val re = MainActivity.shelf?.add(uuid)
                         Toast.makeText(context, re, Toast.LENGTH_SHORT).show()
                         if (re == "修改成功") {
+                            queryCollect()
                             this@BookFragment.lbbsub.setText(R.string.button_sub_subscribed)
                         }
                     }

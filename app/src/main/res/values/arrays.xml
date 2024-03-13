@@ -20,4 +20,22 @@
         <item>1200</item>
         <item>800</item>
     </string-array>
+    <string-array name="menus">
+        <item>@string/menu_home</item>
+        <item>@string/menu_sort</item>
+        <item>@string/menu_rank</item>
+        <item>@string/menu_sub</item>
+        <item>@string/menu_history</item>
+        <item>@string/menu_download</item>
+        <item>@string/action_settings</item>
+    </string-array>
+    <string-array name="menu_ids">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+    </string-array>
 </resources>

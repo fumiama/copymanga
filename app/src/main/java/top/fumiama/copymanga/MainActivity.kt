@@ -34,6 +34,7 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import androidx.preference.PreferenceManager
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.input.input
 import com.bumptech.glide.Glide
@@ -60,7 +61,6 @@ import top.fumiama.dmzj.copymanga.BuildConfig
 import top.fumiama.dmzj.copymanga.R
 import java.io.File
 import java.io.FileInputStream
-import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 
 class MainActivity : AppCompatActivity() {
@@ -98,6 +98,22 @@ class MainActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController!!, appBarConfiguration)
         nav_view.setupWithNavController(navController!!)
+        PreferenceManager.getDefaultSharedPreferences(this)?.apply {
+            if (contains("settings_cat_general_sb_startup_menu")) getString("settings_cat_general_sb_startup_menu", "0")?.toInt()?.let {
+                if (it > 0) {
+                    Log.d("MyMain", "nav 2 dest $it")
+                    navController!!.navigate(listOf(
+                        R.id.nav_home,
+                        R.id.nav_sort,
+                        R.id.nav_rank,
+                        R.id.nav_sub,
+                        R.id.nav_history,
+                        R.id.nav_new_download,
+                        R.id.nav_settings
+                    )[it])
+                }
+            }
+        }
 
         headPic = File(getExternalFilesDir(""), "headPic")
         drawer_layout.addDrawerListener(object : DrawerLayout.DrawerListener {
@@ -109,14 +125,18 @@ class MainActivity : AppCompatActivity() {
             override fun onDrawerOpened(drawerView: View) {
                 Log.d("MyMain", "onDrawerOpened")
                 isDrawerClosed = false
-                DownloadFragment.currentDir = getExternalFilesDir("")
-                refreshUserInfo()
+                lifecycleScope.launch {
+                    withContext(Dispatchers.IO) {
+                        DownloadFragment.currentDir = getExternalFilesDir("")
+                        refreshUserInfo()
+                    }
+                }
             }
 
             override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
             override fun onDrawerStateChanged(newState: Int) {}
         })
-        checkUpdate(false)
+        goCheckUpdate(false)
 
         ime = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
 
@@ -204,17 +224,21 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun refreshUserInfo() {
+    suspend fun refreshUserInfo() = withContext(Dispatchers.IO) {
         getPreferences(MODE_PRIVATE)?.apply {
             val name = getString("nickname", getString("username", ""))
             val avatar = getString("avatar", "")
-            if(name != "") navttitle.text = name
-            else navttitle.setText(R.string.noLogin)
-            if(avatar != "")
-                Glide.with(this@MainActivity).load(avatar)
-                    .apply(RequestOptions.bitmapTransform(CircleCrop()))
-                    .into(navhicon)
-            else navhicon.setImageResource(R.mipmap.ic_launcher)
+            navttitle.apply { post {
+                if(name != "") text = name
+                else setText(R.string.noLogin)
+            } }
+            navhicon.apply ic@ { post {
+                if(avatar != "")
+                    Glide.with(this@MainActivity).load(avatar)
+                        .apply(RequestOptions.bitmapTransform(CircleCrop()))
+                        .into(this@ic)
+                else setImageResource(R.mipmap.ic_launcher)
+            } }
         }
     }
 
@@ -331,7 +355,7 @@ class MainActivity : AppCompatActivity() {
             .getIntent(this))
     }
 
-    private fun checkUpdate(ignoreSkip: Boolean) {
+    private fun goCheckUpdate(ignoreSkip: Boolean) {
         lifecycleScope.launch {
             Update.checkUpdate(this@MainActivity, toolsBox, ignoreSkip)
         }
@@ -344,7 +368,7 @@ class MainActivity : AppCompatActivity() {
         dl.setIcon(R.mipmap.ic_launcher)
         dl.setPositiveButton(android.R.string.ok) { _, _ -> }
         dl.setNeutralButton(R.string.check_update) {_, _ ->
-            checkUpdate(true)
+            goCheckUpdate(true)
         }
         dl.show()
     }
