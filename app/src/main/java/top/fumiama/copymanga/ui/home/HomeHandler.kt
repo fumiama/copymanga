@@ -1,6 +1,7 @@
 package top.fumiama.copymanga.ui.home
 
 import android.animation.ObjectAnimator
+import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Message
@@ -45,11 +46,11 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
 ) {
     private val homeF get() = that.get()
     var index: IndexStructure? = null
-    var fhib: View? = null
+    var fhib: Banner? = null
         get() {
             Log.d("MyHH", "Get fhib.")
             if (field == null) {
-                field = homeF?.layoutInflater?.inflate(R.layout.viewpage_banner, homeF?.fhl, false)
+                field = homeF?.layoutInflater?.inflate(R.layout.viewpage_banner, homeF?.fhl, false) as Banner
                 homeF?.homeHandler?.sendEmptyMessage(3)
             }
             return field
@@ -63,7 +64,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
             //0 -> setLayouts()
             1 -> inflateCardLines()
             2 -> homeF?.swiperefresh?.let { setSwipe(it) }
-            3 -> setBanner(fhib as Banner)
+            3 -> setBanner(fhib!!)
             5 -> setBannerInfo(msg.obj as Banner)
             6 -> {
                 homeF?.fhl?.let {
@@ -76,15 +77,6 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
                 }
             }
             7 -> inflateBanner()
-            8 -> {
-                try {
-                    homeF?.fhl?.addView(indexLines[msg.arg1])
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    (indexLines[msg.arg1].parent as LinearLayout).removeAllViews()
-                    homeF?.fhl?.addView(indexLines[msg.arg1])
-                }
-            }
         }
     }
 
@@ -226,11 +218,22 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
                 inflateNew()
                 inflateFinish()
                 inflateRank()
-                for(i in indexLines.indices) {
-                    obtainMessage(8, i, 0).sendToTarget()
-                    delay(512)
-                }
-                obtainMessage(-1, false).sendToTarget()                 //closeLoad
+                homeF?.fhl?.apply { post {
+                    for (i in indexLines.indices) {
+                        try {
+                            addView(indexLines[i])
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            (indexLines[i].parent as LinearLayout).apply {
+                                post {
+                                    removeAllViews()
+                                    homeF?.fhl?.addView(indexLines[i])
+                                }
+                            }
+                        }
+                    }
+                    obtainMessage(-1, false).sendToTarget()                 //closeLoad
+                } }
             }
         }
     }
@@ -264,14 +267,17 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
         v.invalidate()
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun setSwipe(sw: SwipeRefreshLayout) {
         homeF?.fhov?.swipeRefreshLayout = sw
         sw.setOnRefreshListener {
             Log.d("MyHFH", "Refresh items.")
             homeF?.lifecycleScope?.launch {
                 withContext(Dispatchers.IO) {
+                    fhib?.isAutoPlay = false
+                    fhib?.adapter?.notifyDataSetChanged()
                     index = null
-                    //fhib = null
+                    fhib = null
                     indexLines = arrayOf()
                     this@HomeHandler.sendEmptyMessage(6)    //removeAllViews
                     delay(300)
@@ -293,13 +299,15 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
                 2 -> R.layout.line_2bookline
                 3 -> R.layout.line_3bookline
                 else -> return@withContext -1
-        }, homeF!!.fhl, false)?.apply {
+        }, null, false)?.apply {
             withContext(Dispatchers.Main) {
                 scanCards(this@apply, comics, finish, isTopic)
-                rttitle.text = title
-                ir.setImageResource(iconResId)
-                setLineHeight(this@apply, c)
-                if(onClick != null) setOnClickListener { onClick() }
+                post {
+                    rttitle.text = title
+                    ir.setImageResource(iconResId)
+                    setLineHeight(this@apply, c)
+                    if(onClick != null) setOnClickListener { onClick() }
+                }
             }
             indexLines += this
         }
@@ -324,8 +332,8 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
 
     private var cardLoadingWaits = AtomicInteger()
 
-    private suspend fun setCards(cv: CardView, pw: String, name: String, img: String, isFinal: Boolean, isTopic: Boolean) = withContext(Dispatchers.Main) {
-        cv.tic.text = name
+    private fun setCards(cv: CardView, pw: String, name: String, img: String, isFinal: Boolean, isTopic: Boolean) {
+        cv.tic.apply { post { text = name } }
         homeF?.let {
             if(img.startsWith("http")) {
                 Log.d("MyHH", "load card image: $img")
@@ -336,15 +344,17 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
                     })
                 if (waitMillis > 0) cv.imic.postDelayed({
                     g.into(cv.imic)
-                }, waitMillis) else g.into(cv.imic)
+                }, waitMillis) else cv.imic.post { g.into(cv.imic) }
             }
         }
-        if (isFinal) cv.sgnic.visibility = View.VISIBLE
-        cv.setOnClickListener {
-            val bundle = Bundle()
-            bundle.putString("path", pw)
-            homeF?.findNavController()?.let { nav ->
-                Navigate.safeNavigateTo(nav, if(isTopic) R.id.action_nav_home_to_nav_topic else R.id.action_nav_home_to_nav_book, bundle)
+        if (isFinal) cv.sgnic.apply { post { visibility = View.VISIBLE } }
+        cv.post {
+            cv.setOnClickListener {
+                val bundle = Bundle()
+                bundle.putString("path", pw)
+                homeF?.findNavController()?.let { nav ->
+                    Navigate.safeNavigateTo(nav, if(isTopic) R.id.action_nav_home_to_nav_topic else R.id.action_nav_home_to_nav_book, bundle)
+                }
             }
         }
     }

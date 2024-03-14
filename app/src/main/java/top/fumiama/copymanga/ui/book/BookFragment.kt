@@ -12,7 +12,10 @@ import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.card_book.*
 import kotlinx.android.synthetic.main.fragment_book.*
 import kotlinx.android.synthetic.main.line_booktandb.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.manga.Book
 import top.fumiama.copymanga.manga.Reader
@@ -36,34 +39,8 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
         fbvp?.setPadding(0, 0, 0, navBarHeight)
 
         if(isFirstInflate) {
-            arguments?.apply {
-                if (getBoolean("loadJson")) {
-                    getString("name")?.let { name ->
-                        try {
-                            book = Book(name, {
-                                return@Book getString(it)
-                            }, activity?.getExternalFilesDir("")!!)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            Toast.makeText(context, R.string.null_book, Toast.LENGTH_SHORT).show()
-                            findNavController().popBackStack()
-                            return
-                        }
-                    }
-                } else getString("path").let {
-                    if (it != null) book = Book(it, { id ->
-                        return@Book getString(id)
-                    }, activity?.getExternalFilesDir("")!!, false)
-                    else {
-                        findNavController().popBackStack()
-                        return
-                    }
-                }
-            }
-            mBookHandler = BookHandler(WeakReference(this))
-            bookHandler.set(mBookHandler)
-
             lifecycleScope.launch {
+                prepareHandler()
                 try {
                     book?.updateInfo()
                 } catch (e: Exception) {
@@ -75,10 +52,11 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
                 }
                 Log.d("MyBF", "read path: ${book?.path}")
                 for (i in 1..3) {
-                    mBookHandler?.sendEmptyMessage(i)
+                    mBookHandler?.sendEmptyMessageDelayed(i, (i*100).toLong())
                 }
                 try {
                     book?.updateVolumes {
+                        delay(300)
                         mBookHandler?.sendEmptyMessage(10)
                     }
                 } catch (e: Exception) {
@@ -134,6 +112,41 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
                     }
                 }
             }
+        }
+    }
+
+    private suspend fun prepareHandler() = withContext(Dispatchers.IO) {
+        arguments?.apply {
+            if (getBoolean("loadJson")) {
+                getString("name")?.let { name ->
+                    try {
+                        book = Book(name, {
+                            return@Book getString(it)
+                        }, activity?.getExternalFilesDir("")!!)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(context, R.string.null_book, Toast.LENGTH_SHORT).show()
+                            findNavController().popBackStack()
+                        }
+                        return@withContext
+                    }
+                }
+            } else getString("path").let {
+                if (it != null) book = Book(it, { id ->
+                    return@Book getString(id)
+                }, activity?.getExternalFilesDir("")!!, false)
+                else {
+                    withContext(Dispatchers.Main) {
+                        findNavController().popBackStack()
+                    }
+                    return@withContext
+                }
+            }
+        }
+        withContext(Dispatchers.Main) {
+            mBookHandler = BookHandler(WeakReference(this@BookFragment))
+            bookHandler.set(mBookHandler)
         }
     }
 

@@ -57,7 +57,7 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
 
     override suspend fun addPage(): Unit = withContext(Dispatchers.IO) {
         super.addPage()
-        if(isRefresh){
+        if(isRefresh) {
             page = 0
             isRefresh = false
         }
@@ -111,8 +111,11 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
             isContentChanged = false
         }
         Log.d("MyNDF", "Start drawing cards")
-        cardList?.addCard(oldDlCardName, path = oldDlCardName)
-        var cnt = 1
+        var cnt = 0
+        if(page == 0) {
+            cardList?.addCard(oldDlCardName, path = oldDlCardName)
+            cnt = 1
+        }
         val size = sortedBookList?.size?:0
         sortedBookList?.let {
             for(i in it.listIterator(page)) {
@@ -120,12 +123,16 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
                 page++ // page is actually count
                 val chosenJson = File(i, "info.bin")
                 val newJson = File(i, "info.json")
-                val bookSize = (FileUtils.sizeOf(i)/1048576).toInt()
+                val bookSize = FileUtils.sizeOf(i).let { sz ->
+                    (sz/1048576).toInt().let { m ->
+                        if (m > 0) "\n${m}MB" else "\n${(sz/1024).toInt()}KB"
+                    }
+                }
                 when {
                     chosenJson.exists() -> continue // unsupported old folder
                     newJson.exists() -> {
                         if(cardList?.exitCardList != false) return@withContext
-                        cardList?.addCard(i.name, "\n${bookSize}MB")
+                        cardList?.addCard(i.name, bookSize)
                         cnt++
                     }
                 }

@@ -133,56 +133,52 @@ class ViewMangaActivity : TitleActivityTemplate() {
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
+        val settingsPref = MainActivity.mainWeakReference?.get()?.let { PreferenceManager.getDefaultSharedPreferences(it) }
+        settingsPref?.getBoolean("settings_cat_vm_sw_always_dark_bg", false)?.let {
+            if (it) {
+                Log.d("MyVM", "force dark")
+                delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_YES
+            } else {
+                delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+            }
+        }
         postponeEnterTransition()
         setContentView(R.layout.activity_viewmanga)
         super.onCreate(null)
+        va = WeakReference(this@ViewMangaActivity)
+        //dlZip2View = intent.getStringExtra("callFrom") == "Dl" || p["dlZip2View"] == "true"
+        //zipFirst = intent.getStringExtra("callFrom") == "zipFirst"
+        intent.getStringArrayExtra("urlArray")?.let { urlArray = it }
+        cut = pb["useCut"]
+        r2l = pb["r2l"]
+        verticalLoadMaxCount = settingsPref?.getInt("settings_cat_vm_sb_vertical_max", 20)?.let { if(it > 0) it else 20 }?:20
+        isVertical = pb["vertical"]
+        notUseVP = pb["noVP"] || isVertical
+        //url = intent.getStringExtra("url")
+        handler = VMHandler(this@ViewMangaActivity, if(urlArray.isNotEmpty()) urlArray[position] else "", resources.getStringArray(R.array.weeks))
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
-                val settingsPref = MainActivity.mainWeakReference?.get()?.let { PreferenceManager.getDefaultSharedPreferences(it) }
-                settingsPref?.getBoolean("settings_cat_vm_sw_always_dark_bg", false)?.let {
-                    if (it) {
-                        Log.d("MyVM", "force dark")
-                        delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_YES
-                    } else {
-                        delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
-                    }
-                }
-                va = WeakReference(this@ViewMangaActivity)
-                //dlZip2View = intent.getStringExtra("callFrom") == "Dl" || p["dlZip2View"] == "true"
-                //zipFirst = intent.getStringExtra("callFrom") == "zipFirst"
-                intent.getStringArrayExtra("urlArray")?.let { urlArray = it }
-                cut = pb["useCut"]
-                r2l = pb["r2l"]
-                verticalLoadMaxCount = settingsPref?.getInt("settings_cat_vm_sb_vertical_max", 20)?.let { if(it > 0) it else 20 }?:20
-                isVertical = pb["vertical"]
-                notUseVP = pb["noVP"] || isVertical
-                //url = intent.getStringExtra("url")
-                withContext(Dispatchers.Main) {
-                    handler = VMHandler(this@ViewMangaActivity, if(urlArray.isNotEmpty()) urlArray[position] else "", resources.getStringArray(R.array.weeks))
-                    withContext(Dispatchers.IO) {
-                        settingsPref?.getInt("settings_cat_vm_sb_quality", 100)?.let { q = if (it > 0) it else 100 }
-                        tt = TimeThread(handler, VMHandler.SET_NET_INFO, 10000)
-                        tt.canDo = true
-                        tt.start()
-                        volTurnPage = settingsPref?.getBoolean("settings_cat_vm_sw_vol_turn", false)?:false
-                        am = getSystemService(Service.AUDIO_SERVICE) as AudioManager
-                        if (!noCellarAlert) noCellarAlert = settingsPref?.getBoolean("settings_cat_net_sw_use_cellar", false) == true
-                        fullyHideInfo = settingsPref?.getBoolean("settings_cat_vm_sw_hide_info", false) == true
+                settingsPref?.getInt("settings_cat_vm_sb_quality", 100)?.let { q = if (it > 0) it else 100 }
+                tt = TimeThread(handler, VMHandler.SET_NET_INFO, 10000)
+                tt.canDo = true
+                tt.start()
+                volTurnPage = settingsPref?.getBoolean("settings_cat_vm_sw_vol_turn", false)?:false
+                am = getSystemService(Service.AUDIO_SERVICE) as AudioManager
+                if (!noCellarAlert) noCellarAlert = settingsPref?.getBoolean("settings_cat_net_sw_use_cellar", false) == true
+                fullyHideInfo = settingsPref?.getBoolean("settings_cat_vm_sw_hide_info", false) == true
 
-                        Log.d("MyVM", "Now ZipFile is $zipFile")
-                        try {
-                            if (zipFile != null && zipFile?.exists() == true) {
-                                if (!handler.loadFromFile(zipFile!!)) prepareImgFromWeb()
-                            } else prepareImgFromWeb()
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            toolsBox.toastError(R.string.load_manga_error)
-                        }
-                        withContext(Dispatchers.Main) {
-                            startPostponedEnterTransition()
-                            ObjectAnimator.ofFloat(vcp, "alpha", 0.1f, 1f).setDuration(1000).start()
-                        }
-                    }
+                Log.d("MyVM", "Now ZipFile is $zipFile")
+                try {
+                    if (zipFile != null && zipFile?.exists() == true) {
+                        if (!handler.loadFromFile(zipFile!!)) prepareImgFromWeb()
+                    } else prepareImgFromWeb()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    toolsBox.toastError(R.string.load_manga_error)
+                }
+                withContext(Dispatchers.Main) {
+                    startPostponedEnterTransition()
+                    ObjectAnimator.ofFloat(vcp, "alpha", 0.1f, 1f).setDuration(1000).start()
                 }
             }
         }

@@ -1,9 +1,8 @@
 package top.fumiama.copymanga.ui.cardflow.history
 
 import android.os.Bundle
-import android.view.View
+import android.widget.Toast
 import androidx.navigation.fragment.findNavController
-import kotlinx.android.synthetic.main.line_lazybooklines.*
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.template.ui.InfoCardLoader
 import top.fumiama.copymanga.tools.api.CMApi
@@ -15,7 +14,10 @@ class HistoryFragment : InfoCardLoader(R.layout.fragment_history, R.id.action_na
         getString(R.string.historyApiUrl).format(CMApi.myHostApiUrl, page * 21)
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        if (MainActivity.member?.hasLogin != true) findNavController().popBackStack()
+        if (MainActivity.member?.hasLogin != true) {
+            Toast.makeText(context, R.string.noLogin, Toast.LENGTH_SHORT).show()
+            findNavController().popBackStack()
+        }
         super.onCreate(savedInstanceState)
     }
 }

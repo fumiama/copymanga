@@ -23,7 +23,9 @@ class TopicFragment : InfoCardLoader(R.layout.fragment_topic, R.id.action_nav_to
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         lifecycleScope.launch {
+            setProgress(5)
             PausableDownloader(getString(R.string.topicApiUrl).format(CMApi.myHostApiUrl, arguments?.getString("path"))) { data ->
+                setProgress(10)
                 withContext(Dispatchers.IO) {
                     if(ad?.exit == true) return@withContext
                     data.inputStream().use { i ->
@@ -31,6 +33,7 @@ class TopicFragment : InfoCardLoader(R.layout.fragment_topic, R.id.action_nav_to
                         Gson().fromJson(r, TopicStructure::class.java)?.apply {
                             if(ad?.exit == true) return@withContext
                             withContext(Dispatchers.Main) withMain@ {
+                                setProgress(15)
                                 if(ad?.exit == true) return@withMain
                                 activity?.toolbar?.title = results.title
                                 ftttime.text = results.datetime_created

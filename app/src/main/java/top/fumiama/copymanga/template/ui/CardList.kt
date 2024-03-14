@@ -5,6 +5,7 @@ import android.net.Uri
 import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
+import com.airbnb.lottie.LottieAnimationView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
 import kotlinx.android.synthetic.main.card_book.view.*
@@ -26,89 +27,103 @@ class CardList(
     private val cardPerRow: Int
 ) {
     private val that get() = fragment.get()
-    private var rows:Array<View?> = arrayOfNulls(20)
-    private var index = 0
-    private var count = 0
+    private var mRows: Array<View?> = arrayOfNulls(20)
+    private var mIndex = 0
+    private var mCount = 0
     private var cardLoadingWaits = AtomicInteger()
     var initClickListeners: InitClickListeners? = null
     var exitCardList = false
 
     fun reset() {
-        rows = arrayOfNulls(20)
-        index = 0
-        count = 0
+        mRows = arrayOfNulls(20)
+        mIndex = 0
+        mCount = 0
         cardLoadingWaits.set(0)
         exitCardList = false
     }
 
-    private suspend fun manageRow() {
-        if(!exitCardList && count++ % cardPerRow == 0) inflateRow()
-        Log.d("MyCL", "index: $index, cardPR: $cardPerRow")
+    private suspend fun manageRow(whenFinish: suspend (index: Int) -> Unit) = withContext(Dispatchers.IO) {
+        if (exitCardList) return@withContext
+        if(mCount++ % cardPerRow == 0) {
+            inflateRow(++mIndex-1, whenFinish)
+        } else whenFinish(mIndex-1)
     }
 
-    private suspend fun inflateRow() = withContext(Dispatchers.IO) {
+    private suspend fun inflateRow(index: Int, whenFinish: suspend (index: Int)->Unit) = withContext(Dispatchers.IO) {
+        Log.d("MyCL", "inflateRow: $index, cardPR: $cardPerRow")
         that?.apply {
             layoutInflater.inflate(R.layout.line_horizonal_empty, mydll, false)?.let {
                 if(exitCardList) return@withContext
                 it.layoutParams.height = cardHeight + 16
-                withContext(Dispatchers.Main) withMainContext@ {
-                    if(exitCardList) return@withMainContext
-                    mydll?.addView(it)
-                }
-                recycleOneRow(it)
-                index++
+                mydll?.apply { post { addView(it) } }
+                recycleOneRow(it, index)
+                whenFinish(index)
             }
         }
     }
-    private suspend fun recycleOneRow(v:View?) = withContext(Dispatchers.IO) {
-        val relativeIndex = index % 20
-        if(rows[relativeIndex] == null) rows[relativeIndex] = v
+    private suspend fun recycleOneRow(v:View?, i: Int) = withContext(Dispatchers.IO) {
+        val relativeIndex = i % 20
+        if(mRows[relativeIndex] == null) mRows[relativeIndex] = v
         else {
-            val victim = rows[relativeIndex]
+            val victim = mRows[relativeIndex]
             that?.apply {
-                withContext(Dispatchers.Main) withMainContext@ {
-                    if(exitCardList) return@withMainContext
-                    mydll?.removeView(victim)
-                    mys?.scrollY = mys?.scrollY?.minus(cardHeight + 16)?:0
-                }
+                if(exitCardList) return@withContext
+                mydll?.apply { post { removeView(victim) } }
+                mys?.apply { post { scrollY -= cardHeight + 16 } }
             }
-            rows[relativeIndex] = v
+            mRows[relativeIndex] = v
+        }
+    }
+
+    private fun postPauseLottie(v: LottieAnimationView) {
+        v.apply {
+            post {
+                pauseAnimation()
+                visibility = View.GONE
+            }
         }
     }
 
     @ExperimentalStdlibApi
-    suspend fun addCard(name: String, append: String? = null, head: String? = null, path: String? = null, chapterUUID: String? = null, pn: Int? = null, isFinish: Boolean = false, isNew: Boolean = false) =
-        withContext(Dispatchers.IO) {
-        if (exitCardList) return@withContext
-        manageRow()
-        that?.apply {
-            layoutInflater.inflate(R.layout.card_book, mydll?.ltbtn, false)?.let {
-                val card = it.cic
-                card.name = name
-                card.append = append
-                card.headImageUrl = head
-                card.path = path
-                card.index = index - 1
-                card.chapterUUID = chapterUUID
-                card.pageNumber = pn
-                card.isFinish = isFinish
-                card.isNew = isNew
-                addCard(it)
+    suspend fun addCard(
+        name: String, append: String? = null, head: String? = null,
+        path: String? = null, chapterUUID: String? = null, pn: Int? = null,
+        isFinish: Boolean = false, isNew: Boolean = false
+    ) {
+        if (exitCardList) return
+        manageRow { i ->
+            withContext(Dispatchers.IO) {
+                that?.apply {
+                    layoutInflater.inflate(R.layout.card_book, mydll?.ltbtn, false)?.let {
+                        val card = it.cic
+                        card.name = name
+                        card.append = append
+                        card.headImageUrl = head
+                        card.path = path
+                        card.index = i
+                        card.chapterUUID = chapterUUID
+                        card.pageNumber = pn
+                        card.isFinish = isFinish
+                        card.isNew = isNew
+                        addCard(it)
+                    }
+                }
             }
         }
     }
 
     @SuppressLint("SetTextI18n")
     @ExperimentalStdlibApi
-    private suspend fun addCard(cardFrame: View) = withContext(Dispatchers.IO) withIO@ {
+    private suspend fun addCard(cardFrame: View) = withContext(Dispatchers.IO) {
         val card = cardFrame.cic
-        if (card.index < 0) return@withIO
-        val name = card.name + (card.append?:"")
+        if (card.index < 0) throw Exception("minus card index")
+        Log.d("MyCL", "addCard: into index ${card.index}")
+        val appendedName = card.name + (card.append?:"")
         val head = card.headImageUrl
         val file = File(that?.context?.getExternalFilesDir(""), card.name)
-        if(exitCardList) return@withIO
+        if(exitCardList) return@withContext
         cardFrame.let {
-            it.tic.apply { post { text = name } }
+            it.tic.apply { post { text = appendedName } }
             if(!file.exists()) {
                 if(head != null) {
                     that?.context?.let { context ->
@@ -125,22 +140,12 @@ class CardList(
                         }, waitMillis) else it.imic.post { g.into(it.imic) }
                     }
                 } else {
-                    it.laic.apply {
-                        post {
-                            pauseAnimation()
-                            visibility = View.GONE
-                        }
-                    }
+                    postPauseLottie(it.laic)
                     it.imic.apply { post { setImageResource(R.drawable.img_defmask) } }
                 }
             } else {
                 val img = File(file, "head.jpg")
-                it.laic.apply {
-                    post {
-                        pauseAnimation()
-                        visibility = View.GONE
-                    }
-                }
+                postPauseLottie(it.laic)
                 if(img.exists()) {
                     it.imic.apply {
                         post {
@@ -149,13 +154,19 @@ class CardList(
                     }
                 } else it.imic.apply { post { setImageResource(R.drawable.img_defmask) } }
             }
-            withContext(Dispatchers.Main) {
-                if(card.isFinish) it.sgnic.visibility = View.VISIBLE
-                if(card.isNew) it.sgnnew.visibility = View.VISIBLE
-                initClickListeners?.prepareListeners(card, card.name, card.path, card.chapterUUID, card.pageNumber)
-                rows[card.index % 20]?.ltbtn?.addView(it)
-                it.layoutParams?.height = cardHeight
-                it.layoutParams?.width  = cardWidth
+            card.apply {
+                if(isFinish) it.sgnic.visibility = View.VISIBLE
+                if(isNew) it.sgnnew.visibility = View.VISIBLE
+                initClickListeners?.prepareListeners(this, name, path, chapterUUID, pageNumber)
+                mRows[index % 20]?.ltbtn?.apply {
+                    withContext(Dispatchers.Main) {
+                        if(!exitCardList) {
+                            addView(it)
+                            it.layoutParams?.height = cardHeight
+                            it.layoutParams?.width  = cardWidth
+                        }
+                    }
+                }
             }
         }
     }

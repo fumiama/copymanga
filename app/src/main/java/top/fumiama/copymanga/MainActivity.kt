@@ -127,7 +127,6 @@ class MainActivity : AppCompatActivity() {
                 isDrawerClosed = false
                 lifecycleScope.launch {
                     withContext(Dispatchers.IO) {
-                        DownloadFragment.currentDir = getExternalFilesDir("")
                         refreshUserInfo()
                     }
                 }

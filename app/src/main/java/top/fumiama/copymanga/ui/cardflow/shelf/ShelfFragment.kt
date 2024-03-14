@@ -3,11 +3,10 @@ package top.fumiama.copymanga.ui.cardflow.shelf
 import android.animation.ObjectAnimator
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.navigation.fragment.findNavController
 import kotlinx.android.synthetic.main.anchor_popular.view.*
 import kotlinx.android.synthetic.main.line_shelf.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.template.ui.InfoCardLoader
 import top.fumiama.copymanga.tools.api.CMApi
@@ -33,7 +32,10 @@ class ShelfFragment : InfoCardLoader(R.layout.fragment_shelf, R.id.action_nav_su
         )
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        if (MainActivity.member?.hasLogin != true) findNavController().popBackStack()
+        if (MainActivity.member?.hasLogin != true) {
+            Toast.makeText(context, R.string.noLogin, Toast.LENGTH_SHORT).show()
+            findNavController().popBackStack()
+        }
         super.onCreate(savedInstanceState)
     }
 

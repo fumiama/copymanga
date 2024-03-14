@@ -41,6 +41,7 @@ class SortFragment : StatusCardFlow(0, R.id.action_nav_sort_to_nav_book, R.layou
     override fun setListeners() {
         super.setListeners()
         lifecycleScope.launch {
+            setProgress(5)
             PausableDownloader(getString(R.string.filterApiUrl).format(CMApi.myHostApiUrl)) {
                 if(ad?.exit == true) return@PausableDownloader
                 it.let {
@@ -57,11 +58,13 @@ class SortFragment : StatusCardFlow(0, R.id.action_nav_sort_to_nav_book, R.layou
     }
 
     private fun setClasses() {
+        setProgress(10)
         filter?.results?.top?.let { items ->
             setMenu(items, line_sort_region) {
                 region = it
             }
         }
+        setProgress(15)
         filter?.results?.theme?.let { items ->
             setMenu(items, line_sort_class) {
                 theme = it

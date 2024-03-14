@@ -7,14 +7,17 @@ import android.util.Log
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.fragment_download.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.template.general.NoBackRefreshFragment
 import top.fumiama.copymanga.tools.file.FileUtils
 import top.fumiama.copymanga.tools.ui.Navigate
-import top.fumiama.copymanga.ui.comicdl.ComicDlFragment
 import top.fumiama.copymanga.ui.vm.ViewMangaActivity
 import top.fumiama.dmzj.copymanga.R
 import java.io.File
@@ -27,21 +30,27 @@ class DownloadFragment: NoBackRefreshFragment(R.layout.fragment_download) {
             arguments?.getString("title")?.let {
                 mainWeakReference?.get()?.toolbar?.title = it
             }
-            scanFile(currentDir)
+            lifecycleScope.launch {
+                scanFile(arguments?.getString("file")?.let { File(it) }?:context?.getExternalFilesDir("")?:run {
+                    findNavController().popBackStack()
+                    return@launch
+                })
+            }
         }
     }
 
-    private fun scanFile(cd: File?) {
+    private suspend fun scanFile(cd: File): Unit = withContext(Dispatchers.IO) {
         val isRoot = cd == context?.getExternalFilesDir("")
         val jsonFile = File(cd, "info.bin")
-        if(isRoot || !jsonFile.exists()) cd?.list()?.sortedArrayWith { o1, o2 ->
+        if(isRoot || !jsonFile.exists()) cd.listFiles()?.filter { f -> return@filter f.isDirectory }?.map { f -> return@map f.name }?.sortedWith { o1, o2 ->
             if(o1.endsWith(".zip") && o2.endsWith(".zip")) (10000*getFloat(o1) - 10000*getFloat(o2) + 0.5).toInt()
             else o1[0] - o2[0]
         }?.let {
             mylv?.apply {
-                setPadding(0, 0, 0, navBarHeight)
-                context.let { c ->
-                    adapter = ArrayAdapter(c, android.R.layout.simple_list_item_1, it)
+                val ad = ArrayAdapter(context, android.R.layout.simple_list_item_1, it)
+                post {
+                    setPadding(0, 0, 0, navBarHeight)
+                    adapter = ad
                     setOnItemClickListener { _, _, position, _ ->
                         val chosenFile = File(cd, it[position])
                         val chosenJson = File(chosenFile, "info.bin")
@@ -51,8 +60,7 @@ class DownloadFragment: NoBackRefreshFragment(R.layout.fragment_download) {
                             chosenJson.exists() -> callDownloadFragment(chosenJson)
                             newJson.exists() -> callDownloadFragment(newJson, true)
                             chosenFile.isDirectory -> {
-                                currentDir = chosenFile
-                                callSelf(it[position])
+                                callSelf(it[position], chosenFile)
                             }
                             chosenFile.name.endsWith(".zip") -> {
                                 Toast.makeText(context, "加载中...", Toast.LENGTH_SHORT).show()
@@ -67,11 +75,18 @@ class DownloadFragment: NoBackRefreshFragment(R.layout.fragment_download) {
                     }
                     setOnItemLongClickListener { _, _, position, _ ->
                         val chosenFile = File(cd, it[position])
+                        Log.d("MyDF", "y: ${getChildAt(0).scrollY}")
                         AlertDialog.Builder(context)
                             .setIcon(R.drawable.ic_launcher_foreground).setMessage("删除?")
                             .setTitle("提示").setPositiveButton(android.R.string.ok) { _, _ ->
-                                if (chosenFile.exists()) FileUtils.recursiveRemove(chosenFile)
-                                scanFile(cd)
+                                lifecycleScope.launch {
+                                    withContext(Dispatchers.IO) {
+                                        if (chosenFile.exists()) {
+                                            FileUtils.recursiveRemove(chosenFile)
+                                            scanFile(cd)
+                                        }
+                                    }
+                                }
                             }.setNegativeButton(android.R.string.cancel) { _, _ -> }
                             .show()
                         true
@@ -95,9 +110,10 @@ class DownloadFragment: NoBackRefreshFragment(R.layout.fragment_download) {
         Navigate.safeNavigateTo(findNavController(), R.id.action_nav_download_to_nav_group, bundle)
     }
 
-    private fun callSelf(title: String){
+    private fun callSelf(title: String, file: File){
         val bundle = Bundle()
         bundle.putString("title", title)
+        bundle.putString("file", file.absolutePath)
         Log.d("MyDF", "Call self to $title")
         Log.d("MyDF", "root view: $rootView")
         Log.d("MyDF", "action_nav_download_self")
@@ -115,9 +131,5 @@ class DownloadFragment: NoBackRefreshFragment(R.layout.fragment_download) {
         }
         //Log.d("MyDLL2", newString.toString().toFloat().toString())
         return if(newString.isEmpty()) 0f else newString.toString().toFloat()
-    }
-
-    companion object{
-        var currentDir: File? = null
     }
 }

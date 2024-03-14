@@ -90,9 +90,9 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                 })
                 setTextHint(android.R.string.search_go)
 
+                var lastSearch = ""
                 setOnQueryTextListener(object : SearchLayout.OnQueryTextListener {
                     var lastChangeTime = 0L
-                    var lastSearch: String = ""
                     override fun onQueryTextChange(newText: CharSequence): Boolean {
                         if (newText.contentEquals("__notice_focus_change__") || newText.contentEquals(lastSearch)) return true
                         postDelayed({
@@ -121,6 +121,7 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                         return true
                     }
                 })
+
                 setOnMicClickListener(object : SearchLayout.OnMicClickListener {
                     val types = arrayOf("", "name", "author", "local")
                     var i = 0
@@ -137,17 +138,25 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                     }
                 })
 
+                var isInFocusWaiting = false
                 setOnFocusChangeListener(object : SearchLayout.OnFocusChangeListener {
                     override fun onFocusChange(hasFocus: Boolean) {
                         Log.d("MyHF", "fhs onFocusChange: $hasFocus")
-                        navigationIconSupport = if (hasFocus) {
-                            setTextQuery("__notice_focus_change__", true)
-                            SearchLayout.NavigationIconSupport.ARROW
-                        }
-                        else {
-                            micView.postDelayed({ micView?.visibility = View.VISIBLE }, 233)
-                            SearchLayout.NavigationIconSupport.SEARCH
-                        }
+                        if (isInFocusWaiting) return
+                        isInFocusWaiting = true
+                        postDelayed({
+                            navigationIconSupport = if (hasFocus) {
+                                setTextQuery("__notice_focus_change__", true)
+                                SearchLayout.NavigationIconSupport.ARROW
+                            }
+                            else {
+                                if (lastSearch.isNotEmpty()) {
+                                    micView?.visibility = View.VISIBLE
+                                }
+                                SearchLayout.NavigationIconSupport.SEARCH
+                            }
+                            isInFocusWaiting = false
+                        }, 300)
                     }
                 })
 
@@ -165,8 +174,8 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                     homeHandler.obtainMessage(-1, true).sendToTarget()
                     while(!MainActivity.isDrawerClosed) delay(233)
                     //homeHandler.sendEmptyMessage(6)    //removeAllViews
-                    homeHandler.fhib = null
-                    delay(600)
+                    //homeHandler.fhib = null
+                    delay(300)
                     homeHandler.startLoad()
                 }
             }
@@ -228,42 +237,53 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
             override fun onBindViewHolder(holder: ListViewHolder, position: Int) {
                 Log.d("MyMain", "Bind open at $position")
                 if (position == itemCount-1) {
-                    holder.itemView.tn.setText(R.string.button_more)
-                    holder.itemView.ta.text = "搜索 \"$query\""
-                    holder.itemView.tb.text = "共 $count 条结果"
-                    holder.itemView.lwi.visibility = View.INVISIBLE
-                    holder.itemView.lwc.setOnClickListener {
-                        if (query?.isNotEmpty() != true) return@setOnClickListener
-                        val bundle = Bundle()
-                        bundle.putCharSequence("query", query)
-                        bundle.putString("type", type)
-                        Navigate.safeNavigateTo(findNavController(), R.id.action_nav_home_to_nav_search, bundle)
-                    }
+                    holder.itemView.apply { post {
+                        tn.setText(R.string.button_more)
+                        ta.text = "搜索 \"$query\""
+                        tb.text = "共 $count 条结果"
+                        context?.let {
+                            Glide.with(it).load(R.drawable.img_defmask)
+                                .addListener(GlideHideLottieViewListener(WeakReference(laic)))
+                                .into(imic)
+                        }
+                        cic.isClickable = false
+                        lwc.setOnClickListener {
+                            if (query?.isNotEmpty() != true) return@setOnClickListener
+                            val bundle = Bundle()
+                            bundle.putCharSequence("query", query)
+                            bundle.putString("type", type)
+                            Navigate.safeNavigateTo(findNavController(), R.id.action_nav_home_to_nav_search, bundle)
+                        }
+                        lwc.layoutParams.height = fhs.width / 4
+                    } }
                     return
                 }
                 results?.results?.list?.get(position)?.apply {
-                    holder.itemView.lwi.visibility = View.VISIBLE
-                    holder.itemView.tn.text = name
-                    holder.itemView.ta.text = author.let {
-                        var t = ""
-                        it.forEach { ts ->
-                            t += ts.name + " "
+                    holder.itemView.apply { post {
+                        lwi.visibility = View.VISIBLE
+                        tn.text = name
+                        ta.text = author.let {
+                            var t = ""
+                            it.forEach { ts ->
+                                t += ts.name + " "
+                            }
+                            return@let t
                         }
-                        return@let t
-                    }
-                    holder.itemView.tb.text = popular.toString()
-                    context?.let {
-                        Glide.with(it)
-                            .load(GlideUrl(CMApi.imageProxy?.wrap(cover)?:cover, CMApi.myGlideHeaders))
-                            .addListener(GlideHideLottieViewListener(WeakReference(holder.itemView.laic)))
-                            .into(holder.itemView.imic)
-                    }
-                    holder.itemView.lwc.setOnClickListener {
-                        val bundle = Bundle()
-                        bundle.putString("path", path_word)
-                        Navigate.safeNavigateTo(findNavController(), R.id.action_nav_home_to_nav_book, bundle)
-                    }
-                    holder.itemView.lwc.layoutParams.height = fhs.width / 4
+                        tb.text = popular.toString()
+                        cic.isClickable = false
+                        context?.let {
+                            Glide.with(it)
+                                .load(GlideUrl(CMApi.imageProxy?.wrap(cover)?:cover, CMApi.myGlideHeaders))
+                                .addListener(GlideHideLottieViewListener(WeakReference(laic)))
+                                .into(imic)
+                        }
+                        lwc.setOnClickListener {
+                            val bundle = Bundle()
+                            bundle.putString("path", path_word)
+                            Navigate.safeNavigateTo(findNavController(), R.id.action_nav_home_to_nav_book, bundle)
+                        }
+                        lwc.layoutParams.height = fhs.width / 4
+                    } }
                 }
             }
 
