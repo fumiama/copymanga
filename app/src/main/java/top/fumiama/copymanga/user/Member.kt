@@ -3,7 +3,6 @@ package top.fumiama.copymanga.user
 import android.content.SharedPreferences
 import android.util.Base64
 import com.google.gson.Gson
-import com.google.gson.stream.JsonReader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.json.LoginInfoStructure
@@ -16,35 +15,38 @@ import java.nio.charset.Charset
 class Member(private val pref: SharedPreferences, private val getString: (Int) -> String) {
     val hasLogin: Boolean get() = pref.getString("token", "")?.isNotEmpty()?:false
     suspend fun login(username: String, pwd: String, salt: Int): LoginInfoStructure = withContext(Dispatchers.IO) {
-        try {
-            getLoginConnection(username, pwd, salt).apply {
-                Gson().fromJson<LoginInfoStructure>(
-                    JsonReader(inputStream.reader()), LoginInfoStructure::class.java
-                )?.let { data ->
-                    disconnect()
-                    if(data.code == 200) {
-                        pref.edit()?.apply {
-                            putString("token", data.results?.token)
-                            putString("user_id", data.results?.user_id)
-                            putString("username", data.results?.username)
-                            putString("nickname", data.results?.nickname)
-                            apply()
-                            return@withContext info()
+        var err = ""
+        getLoginConnection(username, pwd, salt).apply {
+            inputStream.use {
+                it?.readBytes()?.let { data ->
+                    data.inputStream().use { dataIn ->
+                        try {
+                            Gson().fromJson<LoginInfoStructure>(
+                                dataIn.reader(), LoginInfoStructure::class.java
+                            )?.let { info ->
+                                if(info.code == 200) {
+                                    pref.edit()?.apply {
+                                        putString("token", info.results?.token)
+                                        putString("user_id", info.results?.user_id)
+                                        putString("username", info.results?.username)
+                                        putString("nickname", info.results?.nickname)
+                                        apply()
+                                        return@withContext info()
+                                    }
+                                }
+                                return@withContext info
+                            }?: run { err = getString(R.string.login_parse_json_error) }
+                        } catch (e: Exception) {
+                            err = data.decodeToString()
                         }
                     }
-                    return@withContext data
-                }
+                }?: run { err = getString(R.string.login_get_conn_failed) }
             }
-            val l = LoginInfoStructure()
-            l.code = 400
-            l.message = getString(R.string.login_get_conn_failed)
-            return@withContext l
-        } catch (e: Exception) {
-            val l = LoginInfoStructure()
-            l.code = 400
-            l.message = e.toString()
-            return@withContext l
         }
+        val l = LoginInfoStructure()
+        l.code = 400
+        l.message = err
+        return@withContext l
     }
 
 
@@ -61,18 +63,25 @@ class Member(private val pref: SharedPreferences, private val getString: (Int) -
             l.message = getString(R.string.noLogin)
             return@withContext l
         }
-        return@withContext try {
-            val l = Gson().fromJson(DownloadTools.getHttpContent(
+        try {
+            val data = DownloadTools.getHttpContent(
                 getString(R.string.memberInfoApiUrl).format(CMApi.myHostApiUrl).let {
                     CMApi.apiProxy?.wrap(it)?:it
                 }
-            ).decodeToString(),
-                LoginInfoStructure::class.java)
-            if(l.code == 200) pref.edit()?.apply {
-                putString("avatar", l.results.avatar)
-                apply()
+            ).decodeToString()
+            try {
+                val l = Gson().fromJson(data, LoginInfoStructure::class.java)
+                if(l.code == 200) pref.edit()?.apply {
+                    putString("avatar", l.results.avatar)
+                    apply()
+                }
+                l
+            } catch (e : Exception) {
+                val l = LoginInfoStructure()
+                l.code = 450
+                l.message = "${getString(R.string.login_get_avatar_failed)}: $data"
+                l
             }
-            l
         } catch (e: Exception) {
             val l = LoginInfoStructure()
             l.code = 450

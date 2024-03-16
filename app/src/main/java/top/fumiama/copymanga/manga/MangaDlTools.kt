@@ -24,13 +24,13 @@ class MangaDlTools {
         PausableDownloader(url.toString(), 1000) { data ->
             try {
                 Gson().fromJson(data.decodeToString(), Chapter2Return::class.java)?.let {
-                    getChapterInfo(it, index, chapterName, group)
+                    downloadChapter(it, index, chapterName, group)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
                 onDownloadedListener?.handleMessage(index, false, e.localizedMessage?:"Gson parsing error")
             }
-        }.run()
+        }.run().let { if (!it) onDownloadedListener?.handleMessage(index, false, "获取章节信息错误") }
     }
 
     @Synchronized private fun prepareDownloadListener() {
@@ -57,8 +57,8 @@ class MangaDlTools {
         indexMap[f] = index
     }
 
-    private fun getChapterInfo(chapter2Return: Chapter2Return, index: Int, chapterName: CharSequence, group: CharSequence) {
-        if(index >= 0){
+    private fun downloadChapter(chapter2Return: Chapter2Return, index: Int, chapterName: CharSequence, group: CharSequence) {
+        if(index >= 0) {
             val f = "$chapterName.zip"
             setPool(chapter2Return.results.comic.name, group)
             setIndexMap(f, index)

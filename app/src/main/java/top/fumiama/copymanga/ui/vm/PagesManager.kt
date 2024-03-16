@@ -2,8 +2,6 @@ package top.fumiama.copymanga.ui.vm
 
 import android.widget.Toast
 import top.fumiama.copymanga.manga.Reader
-import top.fumiama.copymanga.ui.vm.ViewMangaActivity.Companion.comicName
-import top.fumiama.copymanga.ui.vm.ViewMangaActivity.Companion.position
 import top.fumiama.dmzj.copymanga.R
 import java.lang.ref.WeakReference
 
@@ -38,7 +36,7 @@ class PagesManager(private val w: WeakReference<ViewMangaActivity>) {
                 }
                 return
             }
-            val chapterPosition = position + if(goNext) 1 else -1
+            val chapterPosition = v.position + if(goNext) 1 else -1
             if (v.urlArray.isEmpty()) return
             if(chapterPosition < 0 || chapterPosition >= v.urlArray.size) {
                 Toast.makeText(v.applicationContext, R.string.end_of_chapter, Toast.LENGTH_SHORT).show()
@@ -48,7 +46,7 @@ class PagesManager(private val w: WeakReference<ViewMangaActivity>) {
                 //if(v.zipFirst) intent.putExtra("callFrom", "zipFirst")
                 v.tt.canDo = false
                 //ViewMangaActivity.dlhandler = null
-                comicName?.let { Reader.start2viewManga(it, chapterPosition, v.urlArray, goNext) }
+                v.comicName?.let { Reader.start2viewManga(it, chapterPosition, v.urlArray, v.uuidArray, goNext) }
                 v.finish()
                 return
             }

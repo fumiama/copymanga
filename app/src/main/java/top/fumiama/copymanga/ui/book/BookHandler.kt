@@ -49,6 +49,7 @@ class BookHandler(private val th: WeakReference<BookFragment>): Handler(Looper.m
     var chapterNames = arrayOf<String>()
     var collect: Int = -1
     var urlArray = arrayOf<String>()
+    var uuidArray = arrayOf<String>()
     var exit = false
 
     override fun handleMessage(msg: Message) {
@@ -210,7 +211,7 @@ class BookHandler(private val th: WeakReference<BookFragment>): Handler(Looper.m
                                     if (f.exists()) lci.setBackgroundResource(R.drawable.ic_success)
                                     Log.d("MyBH", "add last single chapter ${it.name}")
                                     val index = i
-                                    setOnClickListener { Reader.start2viewManga(comicName, index, urlArray) }
+                                    setOnClickListener { Reader.start2viewManga(comicName, index, urlArray, uuidArray) }
                                 }
                                 line?.let { l -> addVolumesView(fbl, l) }
                             } else {
@@ -219,14 +220,14 @@ class BookHandler(private val th: WeakReference<BookFragment>): Handler(Looper.m
                                     lct.text = it.name
                                     if (f.exists()) lci.setBackgroundResource(R.drawable.ic_success)
                                     val index = i
-                                    setOnClickListener { Reader.start2viewManga(comicName, index, urlArray) }
+                                    setOnClickListener { Reader.start2viewManga(comicName, index, urlArray, uuidArray) }
                                 }
                             }
                         } else line?.l2cr?.apply {
                             lct.text = it.name
                             if (f.exists()) lci.setBackgroundResource(R.drawable.ic_success)
                             val index = i
-                            setOnClickListener { Reader.start2viewManga(comicName, index, urlArray) }
+                            setOnClickListener { Reader.start2viewManga(comicName, index, urlArray, uuidArray) }
                             line?.let { l -> addVolumesView(fbl, l) }
                             line = null
                         }
@@ -242,9 +243,9 @@ class BookHandler(private val th: WeakReference<BookFragment>): Handler(Looper.m
         that?.apply {
             book?.apply {
                 val comicName = name?:return@withContext
-                ViewMangaActivity.fileArray = arrayOf()
+                Reader.fileArray = arrayOf()
                 urlArray = arrayOf()
-                ViewMangaActivity.uuidArray = arrayOf()
+                uuidArray = arrayOf()
                 var i = 0
                 var last = -1
                 volumes.forEachIndexed { groupIndex, v ->
@@ -256,9 +257,9 @@ class BookHandler(private val th: WeakReference<BookFragment>): Handler(Looper.m
                             it.uuid
                         )?:""
                         val f = CMApi.getZipFile(context?.getExternalFilesDir(""), comicName, keys[groupIndex], it.name)
-                        ViewMangaActivity.fileArray += f
+                        Reader.fileArray += f
                         chapterNames += it.name
-                        ViewMangaActivity.uuidArray += it.uuid
+                        uuidArray += it.uuid
                         that?.isOnPause?.let { isOnPause ->
                             while (isOnPause && !exit) delay(500)
                             if (exit) return@withContext

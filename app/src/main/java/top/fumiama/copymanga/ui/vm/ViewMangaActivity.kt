@@ -12,10 +12,14 @@ import android.graphics.drawable.Drawable
 import android.media.AudioManager
 import android.os.Bundle
 import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.util.TypedValue
-import android.view.*
+import android.view.KeyEvent
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.view.WindowInsets
+import android.view.WindowInsetsController
 import android.widget.SeekBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
@@ -115,6 +119,11 @@ class ViewMangaActivity : TitleActivityTemplate() {
     val realCount get() = if(cut) indexMap.size else count
 
     var urlArray = arrayOf<String>()
+    var uuidArray = arrayOf<String>()
+    var position = 0
+    var comicName: String? = null
+    private var zipFile: File? = null
+    var pn = 0
 
     private val loadImgOnWait = AtomicInteger()
 
@@ -149,6 +158,11 @@ class ViewMangaActivity : TitleActivityTemplate() {
         //dlZip2View = intent.getStringExtra("callFrom") == "Dl" || p["dlZip2View"] == "true"
         //zipFirst = intent.getStringExtra("callFrom") == "zipFirst"
         intent.getStringArrayExtra("urlArray")?.let { urlArray = it }
+        intent.getStringArrayExtra("uuidArray")?.let { uuidArray = it }
+        position = intent.getIntExtra("position", 0)
+        comicName = intent.getStringExtra("comicName")
+        zipFile = intent.getStringExtra("zipFile")?.let { File(it) }
+        pn = intent.getIntExtra("pn", 0)
         cut = pb["useCut"]
         r2l = pb["r2l"]
         verticalLoadMaxCount = settingsPref?.getInt("settings_cat_vm_sb_vertical_max", 20)?.let { if(it > 0) it else 20 }?:20
@@ -221,7 +235,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         )
     }
 
-    fun restorePN() {
+    suspend fun restorePN() = withContext(Dispatchers.Main) {
         if (isPnValid) {
             isInScroll = false
             pageNum = pn
@@ -242,41 +256,51 @@ class ViewMangaActivity : TitleActivityTemplate() {
     }
 
     @ExperimentalStdlibApi
-    private fun doPrepareWebImg() = Thread {
+    private suspend fun doPrepareWebImg() = withContext(Dispatchers.IO) {
         getImgUrlArray()?.apply {
             if(cut) {
                 Log.d("MyVM", "is cut, load all pages...")
-                handler.sendEmptyMessage(VMHandler.DIALOG_SHOW)     //showDl
+                handler.sendEmptyMessage(VMHandler.DIALOG_SHOW)     // showDl
                 isCut = BooleanArray(size)
-                val analyzedCnt = BooleanArray(size)
                 forEachIndexed { i, it ->
-                    if(it != null) {
-                        Thread{
-                            DownloadTools.getHttpContent(CMApi.resolution.wrap(CMApi.imageProxy?.wrap(it)?:it), 1024)?.inputStream()?.let {
-                                isCut[i] = canCut(it)
-                                analyzedCnt[i] = true
+                    handler.obtainMessage(VMHandler.SET_DL_TEXT, "$i/$size").sendToTarget()
+                    if(it != null) try {
+                        DownloadTools.getHttpContent(CMApi.resolution.wrap(CMApi.imageProxy?.wrap(it)?:it), 1024)?.inputStream()?.let {
+                            isCut[i] = canCut(it)
+                        }?:run {
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(this@ViewMangaActivity, R.string.touch_img_error, Toast.LENGTH_SHORT)
+                                    .show()
+                                finish()
                             }
-                        }.start()
-                        Thread.sleep(22)
+                            return@withContext
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(this@ViewMangaActivity, R.string.analyze_img_size_error, Toast.LENGTH_SHORT)
+                                .show()
+                            finish()
+                        }
+                        return@withContext
                     }
                 }
-                while (analyzedCnt.count { it } != size) Thread.sleep(233)
                 isCut.forEachIndexed { index, b ->
                     Log.d("MyVM", "[$index] cut: $b")
                     indexMap += index+1
                     if(b) indexMap += -(index+1)
                 }
-                handler.sendEmptyMessage(15)     //hideDl
+                handler.sendEmptyMessage(15)     // hideDl
                 Log.d("MyVM", "load all pages finished")
             }
             count = size
-            runOnUiThread { prepareItems() }
+            prepareItems()
             if (notUseVP) prepareDownloadTasks()
         }
-    }.start()
+    }
 
     @OptIn(ExperimentalStdlibApi::class)
-    fun initManga() {
+    suspend fun initManga() = withContext(Dispatchers.IO) {
         val uuid = handler.manga?.results?.chapter?.uuid
         Log.d("MyVM", "initManga, chapter uuid: $uuid")
         if (uuid != null && uuid != "") {
@@ -333,14 +357,13 @@ class ViewMangaActivity : TitleActivityTemplate() {
         Log.d("MyVM", "setPageNumber($num)")
         if (r2l && !notUseVP) vp.currentItem = realCount - num
         else if (notUseVP) {
-            if(isVertical){
+            if(isVertical) {
                 currentItem = num - 1
                 val offset = currentItem % verticalLoadMaxCount
                 Log.d("MyVM", "Current: $currentItem, Height: ${psivl.height}, scrollY: ${psivs.scrollY}")
                 if (!isInScroll || isInSeek) psivs.scrollY = psivl.height * offset / size
-                updateSeekBar()
-            }
-            else {
+                lifecycleScope.launch { updateSeekBar() }
+            } else {
                 currentItem = num - 1
                 try {
                     loadOneImg()
@@ -353,23 +376,24 @@ class ViewMangaActivity : TitleActivityTemplate() {
             }
         } else {
             Log.d("MyVM", "Set vp current: ${num-1}")
-            var delta = num - 1 - vp.currentItem
-            if(delta >= 1) Thread{
-                while (delta-- > 0){
-                    Thread.sleep(23)
-                    runOnUiThread {
-                        vp.currentItem++
+            //var delta = num - 1 - vp.currentItem
+            vp.currentItem = num - 1
+            /*lifecycleScope.launch {
+                withContext(Dispatchers.IO) {
+                    if(delta >= 1) while (delta-- > 0){
+                        delay(20)
+                        withContext(Dispatchers.Main) {
+                            vp.currentItem++
+                        }
+                    }
+                    else if(delta <= -1) while (delta++ < 0){
+                        delay(20)
+                        withContext(Dispatchers.Main) {
+                            vp.currentItem--
+                        }
                     }
                 }
-            }.start()
-            else if(delta <= -1) Thread{
-                while (delta++ < 0){
-                    Thread.sleep(23)
-                    runOnUiThread {
-                        vp.currentItem--
-                    }
-                }
-            }.start()
+            }*/
         }
     }
 
@@ -565,7 +589,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
 
     @ExperimentalStdlibApi
     @SuppressLint("SetTextI18n")
-    private fun prepareItems() {
+    private suspend fun prepareItems(): Unit = withContext(Dispatchers.Main) {
         try {
             prepareVP()
             prepareInfoBar()
@@ -588,7 +612,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         }
     }
 
-    private fun setProgress() {
+    private suspend fun setProgress() = withContext(Dispatchers.IO) {
         handler.manga?.results?.chapter?.uuid?.let {
             getPreferences(MODE_PRIVATE).edit {
                 //it["chapterId"] = hm.chapterId.toString()
@@ -653,18 +677,18 @@ class ViewMangaActivity : TitleActivityTemplate() {
             vp.adapter = ViewData(vp).RecyclerViewAdapter()
             vp.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
                 override fun onPageSelected(position: Int) {
-                    updateSeekBar()
                     super.onPageSelected(position)
+                    lifecycleScope.launch { updateSeekBar() }
                 }
             })
             if (r2l && !isPnValid) vp.currentItem = realCount - 1
         }
     }
 
-    fun updateSeekBar(p: Int = 0) {
+    suspend fun updateSeekBar(p: Int = 0) = withContext(Dispatchers.Main) {
         if (p > 0) {
             updateSeekText(p)
-            return
+            return@withContext
         }
         if (!isInSeek) hideDrawer()
         updateSeekText()
@@ -677,7 +701,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         oneinfo.alpha = 0F
         infseek.visibility = View.GONE
         isearch.visibility = View.GONE
-        inftitle.ttitle.text = handler.manga?.results?.chapter?.name
+        inftitle.ttitle.text = "$comicName ${handler.manga?.results?.chapter?.name}"
         inftxtprogress.text = "$pageNum/$realCount"
         infseek.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             var p = 0
@@ -726,7 +750,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
                 } else isInSeek = false
             }
             private fun after() {
-                if(manualCount++ < 3) p = pageNum else updateSeekBar(p)
+                if(manualCount++ < 3) p = pageNum else lifecycleScope.launch { updateSeekBar(p) }
             }
         })
         isearch.setImageResource(R.drawable.ic_author)
@@ -786,7 +810,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         if(isVertical && (pageNum-1) % verticalLoadMaxCount == 0) {
             Log.d("MyVM", "Do scroll back, isVertical: $isVertical, pageNum: $pageNum")
             if (isInSeek) {
-                updateSeekBar(pageNum-1)
+                (pageNum-1).let { lifecycleScope.launch { updateSeekBar(it) } }
                 return
             }
             handler.obtainMessage(
@@ -805,7 +829,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         pageNum++
         if(isVertical && (pageNum-1) % verticalLoadMaxCount == 0) {
             if (isInSeek) {
-                updateSeekBar(pageNum+1)
+                (pageNum+1).let { lifecycleScope.launch { updateSeekBar(it) } }
                 return
             }
             handler.sendEmptyMessage(VMHandler.LOAD_SCROLL_MODE)
@@ -917,14 +941,8 @@ class ViewMangaActivity : TitleActivityTemplate() {
     }
 
     companion object {
-        var comicName: String? = null
-        var uuidArray = arrayOf<String>()
-        var fileArray = arrayOf<File>()
-        var position = 0
-        var zipFile: File? = null
         var dlHandler: Handler? = null
         var va: WeakReference<ViewMangaActivity>? = null
-        var pn = 0
         var noCellarAlert = false
     }
 }

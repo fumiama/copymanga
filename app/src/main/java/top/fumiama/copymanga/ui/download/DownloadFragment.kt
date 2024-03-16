@@ -1,7 +1,6 @@
 package top.fumiama.copymanga.ui.download
 
 import android.app.AlertDialog
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -15,10 +14,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
+import top.fumiama.copymanga.manga.Reader
 import top.fumiama.copymanga.template.general.NoBackRefreshFragment
 import top.fumiama.copymanga.tools.file.FileUtils
 import top.fumiama.copymanga.tools.ui.Navigate
-import top.fumiama.copymanga.ui.vm.ViewMangaActivity
 import top.fumiama.dmzj.copymanga.R
 import java.io.File
 import java.util.regex.Pattern
@@ -64,12 +63,10 @@ class DownloadFragment: NoBackRefreshFragment(R.layout.fragment_download) {
                             }
                             chosenFile.name.endsWith(".zip") -> {
                                 Toast.makeText(context, "加载中...", Toast.LENGTH_SHORT).show()
-                                ViewMangaActivity.zipFile = chosenFile
-                                ViewMangaActivity.comicName = it[position]
-                                ViewMangaActivity.position = position
-                                ViewMangaActivity.fileArray = it.map { File(cd, it) }.toTypedArray()
-                                // ViewMangaActivity.urlArray = Array(it.size) {return@Array ""}
-                                startActivity(Intent(context, ViewMangaActivity::class.java))
+                                Reader.viewOldMangaZipFile(
+                                    it.map { File(cd, it) }.toTypedArray(),
+                                    it[position], position, chosenFile
+                                )
                             }
                         }
                     }

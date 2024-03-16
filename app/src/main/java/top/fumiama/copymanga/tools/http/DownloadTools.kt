@@ -115,15 +115,14 @@ object DownloadTools {
     fun prepare(url: String?): FutureTask<ByteArray?>? =
         url?.let {
             Log.d("Mydl", "prepareHttp: $it")
-            var ret: ByteArray? = null
             val task = FutureTask(Callable {
+                var ret: ByteArray? = null
                 try {
                     val connection = getNormalConnection(it, "GET")
-
-                    val ci = connection?.inputStream
-                    ret = ci?.readBytes()
-                    ci?.close()
-                    connection?.disconnect()
+                    connection.inputStream?.use { ci ->
+                        ret = ci.readBytes()
+                    }
+                    connection.disconnect()
                 } catch (ex: Exception) {
                     ex.printStackTrace()
                 }

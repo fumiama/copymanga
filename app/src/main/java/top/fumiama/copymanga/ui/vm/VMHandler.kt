@@ -9,10 +9,12 @@ import android.view.View
 import androidx.lifecycle.lifecycleScope
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_viewmanga.*
+import kotlinx.android.synthetic.main.dialog_unzipping.*
 import kotlinx.android.synthetic.main.widget_infodrawer.*
 import kotlinx.android.synthetic.main.widget_infodrawer.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.json.Chapter2Return
@@ -20,10 +22,6 @@ import top.fumiama.copymanga.json.ChapterWithContent
 import top.fumiama.copymanga.json.ComicStructure
 import top.fumiama.copymanga.template.http.AutoDownloadHandler
 import top.fumiama.copymanga.template.http.PausableDownloader
-import top.fumiama.copymanga.ui.vm.ViewMangaActivity.Companion.comicName
-import top.fumiama.copymanga.ui.vm.ViewMangaActivity.Companion.pn
-import top.fumiama.copymanga.ui.vm.ViewMangaActivity.Companion.position
-import top.fumiama.copymanga.ui.vm.ViewMangaActivity.Companion.uuidArray
 import top.fumiama.copymanga.views.ScaleImageView
 import top.fumiama.dmzj.copymanga.R
 import java.io.File
@@ -97,11 +95,11 @@ class VMHandler(activity: ViewMangaActivity, private val chapterUrl: String, pri
             LOAD_IMAGES_INTO_LINE -> wv.get()?.lifecycleScope?.launch { loadImagesIntoLine() }
             RESTORE_PAGE_NUMBER -> {
                 sendEmptyMessage(DIALOG_HIDE)
-                wv.get()?.restorePN()
+                wv.get()?.apply { lifecycleScope.launch { restorePN() } }
             }
             LOAD_PAGE_FROM_ITEM -> {
                 val verticalMaxCount = wv.get()?.verticalLoadMaxCount?:20
-                val item = (pn - 1) / verticalMaxCount * verticalMaxCount
+                val item = ((wv.get()?.pn?:1) - 1) / verticalMaxCount * verticalMaxCount
                 loadScrollMode(item)
                 Log.d("MyVMH", "Load page from $item")
             }
@@ -130,6 +128,7 @@ class VMHandler(activity: ViewMangaActivity, private val chapterUrl: String, pri
             }
             DO_LAMBDA -> (msg.obj as? Runnable?)?.run()
             SET_NET_INFO -> wv.get()?.idtime?.text = SimpleDateFormat("HH:mm").format(Date()) + week + wv.get()?.toolsBox?.netInfo
+            SET_DL_TEXT -> dl.tunz.text = msg.obj as String
         }
     }
     override fun getGsonItem() = manga
@@ -159,9 +158,9 @@ class VMHandler(activity: ViewMangaActivity, private val chapterUrl: String, pri
         prepareManga()
     }
 
-    suspend fun loadFromFile(file: File): Boolean = withContext(Dispatchers.IO) {
+    suspend fun loadFromFile(file: File): Boolean {
         fakeLoad()
-        return@withContext try {
+        return try {
             val jsonFile = File(file.parentFile, "${file.nameWithoutExtension}.json")
             if(jsonFile.exists()) {
                 manga = Gson().fromJson(jsonFile.reader(), Chapter2Return::class.java)
@@ -172,13 +171,15 @@ class VMHandler(activity: ViewMangaActivity, private val chapterUrl: String, pri
                 manga?.let {
                     it.results = Chapter2Return.Results()
                     it.results.comic = ComicStructure()
-                    it.results.comic.name = file.parentFile?.name
+                    it.results.comic.name = file.parentFile?.parentFile?.name
                     it.results.chapter = ChapterWithContent()
                     it.results.chapter.name = file.nameWithoutExtension
-                    it.results.chapter.uuid = uuidArray[position]
-                    wv.get()?.countZipEntries { c ->
-                        it.results.chapter.size = c
-                        prepareManga()
+                    wv.get()?.apply {
+                        it.results.chapter.uuid = uuidArray[position]
+                        countZipEntries { c ->
+                            it.results.chapter.size = c
+                            prepareManga()
+                        }
                     }
                 }
             }
@@ -190,19 +191,21 @@ class VMHandler(activity: ViewMangaActivity, private val chapterUrl: String, pri
         }
     }
 
-    private suspend fun fakeLoad() = withContext(Dispatchers.IO) {
-        if(MainActivity.member?.hasLogin == true) launch {
-            PausableDownloader(chapterUrl) { _ -> }.run()
-        }
+    private fun fakeLoad() {
+        if (MainActivity.member?.hasLogin == true) Thread {
+            runBlocking { PausableDownloader(chapterUrl) { _ -> }.run() }
+        }.start()
     }
 
     private suspend fun prepareManga() = withContext(Dispatchers.Main) {
-        if(comicName == null) {
-            comicName = manga?.results?.comic?.name
+        wv.get()?.apply {
+            if(comicName == null) {
+                comicName = manga?.results?.comic?.name
+            }
+            count = manga?.results?.chapter?.size?:0
+            initManga()
+            vprog?.visibility = View.GONE
         }
-        wv.get()?.count = manga?.results?.chapter?.size?:0
-        wv.get()?.initManga()
-        wv.get()?.vprog?.visibility = View.GONE
     }
     private suspend fun loadImagesIntoLine(item: Int = (wv.get()?.currentItem?:0), doAfter: Runnable? = null) = withContext(Dispatchers.IO) {
         val maxCount: Int = (wv.get()?.verticalLoadMaxCount?:20)
@@ -220,7 +223,7 @@ class VMHandler(activity: ViewMangaActivity, private val chapterUrl: String, pri
                 if(notFull) obtainMessage(PREPARE_LAST_PAGE, loadCount + 1, maxCount).sendToTarget()
                 obtainMessage(DO_LAMBDA, Runnable{
                     doAfter?.run()
-                    wv.get()?.updateSeekBar(0)
+                    wv.get()?.apply { lifecycleScope.launch { updateSeekBar(0) } }
                 }).sendToTarget()
             }
         }
@@ -283,5 +286,6 @@ class VMHandler(activity: ViewMangaActivity, private val chapterUrl: String, pri
         const val DECREASE_IMAGE_COUNT_AND_RESTORE_PAGE_NUMBER_AT_ZERO = 20
         const val DO_LAMBDA = 21
         const val SET_NET_INFO = 22
+        const val SET_DL_TEXT = 23
     }
 }

@@ -3,7 +3,6 @@ package top.fumiama.copymanga.ui.comicdl
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
@@ -13,29 +12,31 @@ import android.view.ViewTreeObserver
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import com.google.gson.Gson
-import kotlinx.android.synthetic.main.fragment_book.*
-import kotlinx.android.synthetic.main.line_chapter.view.*
-import kotlinx.android.synthetic.main.widget_downloadbar.*
-import kotlinx.android.synthetic.main.fragment_dlcomic.*
-import kotlinx.android.synthetic.main.line_horizonal_empty.view.*
 import kotlinx.android.synthetic.main.button_tbutton.*
 import kotlinx.android.synthetic.main.button_tbutton.view.*
+import kotlinx.android.synthetic.main.fragment_book.*
+import kotlinx.android.synthetic.main.fragment_dlcomic.*
 import kotlinx.android.synthetic.main.line_caption.view.*
+import kotlinx.android.synthetic.main.line_chapter.view.*
+import kotlinx.android.synthetic.main.line_horizonal_empty.view.*
+import kotlinx.android.synthetic.main.widget_downloadbar.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import top.fumiama.dmzj.copymanga.R
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.json.ChapterStructure
 import top.fumiama.copymanga.json.ComicStructureOld
 import top.fumiama.copymanga.json.VolumeStructure
-import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.copymanga.manga.MangaDlTools
+import top.fumiama.copymanga.manga.Reader
+import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.copymanga.tools.ui.UITools
+import top.fumiama.copymanga.ui.comicdl.ComicDlFragment.Companion.exit
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment.Companion.json
 import top.fumiama.copymanga.ui.vm.ViewMangaActivity
 import top.fumiama.copymanga.views.ChapterToggleButton
 import top.fumiama.copymanga.views.LazyScrollView
+import top.fumiama.dmzj.copymanga.R
 import java.io.File
 import java.lang.ref.WeakReference
 
@@ -62,6 +63,7 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
     private var finishMap = arrayOf<Boolean?>()
     var downloading = false
     private var urlArray = arrayOf<String>()
+    private var uuidArray = arrayOf<String>()
 
     @SuppressLint("SetTextI18n")
     override fun handleMessage(msg: Message) {
@@ -111,8 +113,8 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
         if(isOld) analyzeOldStructure()
         else {
             urlArray = arrayOf()
-            ViewMangaActivity.fileArray = arrayOf()
-            ViewMangaActivity.uuidArray = arrayOf()
+            Reader.fileArray = arrayOf()
+            uuidArray = arrayOf()
             vols.forEachIndexed { i, vol ->
                 val caption = groupNames?.get(i)?:vol.results.list[0].group_path_word
                 Log.d("MyCDH", "caption: $caption, group name: ${groupNames?.get(i)}")
@@ -269,16 +271,14 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
                     i.isEnabled = false
                 }
                 i.url?.let {
-                    Thread {
-                        that?.lifecycleScope?.launch {
-                            mangaDlTools.downloadChapterInVol(
-                                it,
-                                i.chapterName,
-                                i.caption?:"null",
-                                i.index
-                            )
-                        }
-                    }.start()
+                    launch {
+                        mangaDlTools.downloadChapterInVol(
+                            it,
+                            i.chapterName,
+                            i.caption?:"null",
+                            i.index
+                        )
+                    }
                 }
             }
         }
@@ -308,6 +308,7 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
     }
 
     private suspend fun onZipDownloadFailure(index: Int, message: String) = withContext(Dispatchers.Main) {
+        if (exit) return@withContext
         tbtnlist[index].setBackgroundResource(R.drawable.rndbg_error)
         tbtnlist[index].isEnabled = true
         Toast.makeText(that?.context, "下载${tbtnlist[index].chapterName}失败: $message", Toast.LENGTH_SHORT).show()
@@ -345,7 +346,7 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
             tbtncnt++
 
             tbv.tbtn.uuid = uuid
-            ViewMangaActivity.uuidArray += uuid
+            uuidArray += uuid
             tbv.tbtn.chapterName = title
             tbv.tbtn.url = url
             //tbv.tbtn.hint = caption
@@ -358,7 +359,7 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
             withContext(Dispatchers.IO) {
                 val zipf = CMApi.getZipFile(that!!.context?.getExternalFilesDir(""), comicName, caption, title)
                 Log.d("MyCD", "Get zipf: $zipf")
-                ViewMangaActivity.fileArray += zipf
+                Reader.fileArray += zipf
                 if (zipf.exists()) withContext(Dispatchers.Main) {
                     tbv.tbtn.setBackgroundResource(R.drawable.rndbg_checked)
                     tbv.tbtn.isChecked = false
@@ -367,13 +368,9 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
                     if (zipf.exists() && !multiSelect) {
                         it.tbtn.setBackgroundResource(R.drawable.rndbg_checked)
                         it.tbtn.isChecked = false
-                        ViewMangaActivity.zipFile = zipf
                         ViewMangaActivity.dlHandler = this@ComicDlHandler
-                        ViewMangaActivity.position = it.tbtn.index
                         dl?.show()
-                        val intent = Intent(that?.context, ViewMangaActivity::class.java)
-                        intent.putExtra("urlArray", urlArray).putExtra("callFrom", "zipFirst")
-                        that?.startActivity(intent)
+                        Reader.viewMangaZipFile(it.tbtn.index, urlArray, uuidArray, zipf)
                     } else {
                         it.tbtn.setBackgroundResource(R.drawable.toggle_button)
                         if (it.tbtn.isChecked) that?.tdwn?.text = "$dldChapter/${++checkedChapter}"
@@ -393,14 +390,9 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
                     } else {
                         toolsBox.buildInfo("直接观看", "不下载而进行观看", "确定",
                             null, "取消", {
-                                ViewMangaActivity.zipFile = null
                                 ViewMangaActivity.dlHandler = this@ComicDlHandler
-                                ViewMangaActivity.position = it.tbtn.index
                                 dl?.show()
-
-                                val intent = Intent(that?.context, ViewMangaActivity::class.java)
-                                intent.putExtra("urlArray", urlArray)
-                                that?.startActivity(intent)
+                                Reader.start2viewManga(null, it.tbtn.index, urlArray, uuidArray)
                             }, null, null
                         )
                     }

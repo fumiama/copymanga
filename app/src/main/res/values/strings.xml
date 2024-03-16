@@ -56,6 +56,8 @@
     <string name="load_page_number_error">第%1$d页加载异常</string>
     <string name="load_chapter_error">加载章节错误</string>
     <string name="show_image_error_try_lower_resolution">图片加载错误，请尝试下载后使用较低图片质量查看</string>
+    <string name="touch_img_error">预载图片头失败</string>
+    <string name="analyze_img_size_error">读取图片大小失败</string>
 
     <string name="mainPageApiUrl">https://%1$s/api/v3/h5/homeIndex?platform=3</string>
     <string name="referUrl">https://%1$s</string>
@@ -171,7 +173,8 @@
     <string name="login_null_username">用户名为空</string>
     <string name="login_null_pwd">密码为空</string>
     <string name="login_get_conn_failed">登录失败</string>
-    <string name="login_get_avatar_failed">恢复登录失败</string>
+    <string name="login_parse_json_error">解析返回数据失败</string>
+    <string name="login_get_avatar_failed">获取用户信息失败</string>
     <string name="login_restart_to_apply">重启应用以彻底退出登录</string>
 
     <string name="old_download_card_name">前往旧版下载</string>
