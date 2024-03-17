@@ -48,36 +48,42 @@ class ShelfFragment : InfoCardLoader(R.layout.fragment_shelf, R.id.action_nav_su
     }
 
     private fun setUpdate() {
-        if (ad?.exit == true) return
-        line_shelf_updated.apt.setText(R.string.menu_update_time)
-        line_shelf_updated.setOnClickListener {
-            val same = sortValue in 0..1
-            sortValue = rotate(it.apim, same, 0)
-            if (!same) fade()
-            delayedRefresh(400)
-        }
+        line_shelf_updated.apply { post {
+            if (ad?.exit == true) return@post
+            apt.setText(R.string.menu_update_time)
+            setOnClickListener {
+                val same = sortValue in 0..1
+                sortValue = rotate(it.apim, same, 0)
+                if (!same) fade()
+                delayedRefresh(400)
+            }
+        } }
     }
 
     private fun setModify() {
-        if (ad?.exit == true) return
-        line_shelf_modifier.apt.setText(R.string.menu_add_time)
-        line_shelf_modifier.setOnClickListener {
-            val same = sortValue in 2..3
-            sortValue = rotate(it.apim, same, 2)
-            if (!same) fade()
-            delayedRefresh(400)
-        }
+        line_shelf_modifier.apply { post {
+            if (ad?.exit == true) return@post
+            apt.setText(R.string.menu_add_time)
+            setOnClickListener {
+                val same = sortValue in 2..3
+                sortValue = rotate(it.apim, same, 2)
+                if (!same) fade()
+                delayedRefresh(400)
+            }
+        } }
     }
 
     private fun setBrowse() {
-        if (ad?.exit == true) return
-        line_shelf_browse.apt.setText(R.string.menu_read_time)
-        line_shelf_browse.setOnClickListener {
-            val same = sortValue>=4
-            sortValue = rotate(it.apim, same, 4)
-            if (!same) fade()
-            delayedRefresh(400)
-        }
+        line_shelf_browse.apply { post {
+            if (ad?.exit == true) return@post
+            apt.setText(R.string.menu_read_time)
+            setOnClickListener {
+                val same = sortValue>=4
+                sortValue = rotate(it.apim, same, 4)
+                if (!same) fade()
+                delayedRefresh(400)
+            }
+        } }
     }
 
     private fun rotate(img: View, isSameSlot: Boolean, offset: Int): Int {
@@ -99,22 +105,14 @@ class ShelfFragment : InfoCardLoader(R.layout.fragment_shelf, R.id.action_nav_su
     }
 
     private fun fade() {
-        when(sortValue) {
-            0, 1 -> {
-                line_shelf_updated.alpha = 1f
-                line_shelf_modifier.alpha = 0.5f
-                line_shelf_browse.alpha = 0.5f
-            }
-            2, 3 -> {
-                line_shelf_updated.alpha = 0.5f
-                line_shelf_modifier.alpha = 1f
-                line_shelf_browse.alpha = 0.5f
-            }
-            4, 5 -> {
-                line_shelf_updated.alpha = 0.5f
-                line_shelf_modifier.alpha = 0.5f
-                line_shelf_browse.alpha = 1f
-            }
+        val alphae = when(sortValue) {
+            0, 1 -> listOf(1f, 0.5f, 0.5f)
+            2, 3 -> listOf(0.5f, 1f, 0.5f)
+            4, 5 -> listOf(0.5f, 0.5f, 1f)
+            else -> listOf(1f, 1f, 1f)
         }
+        line_shelf_updated.apply { post { alpha = alphae[0] } }
+        line_shelf_modifier.apply { post { alpha = alphae[1] } }
+        line_shelf_browse.apply { post { alpha = alphae[2] } }
     }
 }

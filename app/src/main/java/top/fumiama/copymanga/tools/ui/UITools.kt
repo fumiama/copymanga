@@ -8,6 +8,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.view.View
 import android.widget.Toast
+import androidx.preference.PreferenceManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import top.fumiama.dmzj.copymanga.R
@@ -94,11 +95,15 @@ class UITools(that: Context?, w: WeakReference<Activity>? = null) {
     private fun px2dp(px:Int):Int?{
         return zis?.resources?.displayMetrics?.density?.let { (px.toDouble() / it + 0.5).toInt()}
     }
-    fun calcWidthFromDp(marginLeftDp:Int, widthDp:Int):List<Int>{
+    fun calcWidthFromDp(marginLeftDp:Int, widthDp:Int): List<Int> {
         val margin = marginLeftDp.toDouble()
         val marginPx = dp2px(marginLeftDp)?:16
         val screenWidth = zis?.resources?.displayMetrics?.widthPixels?:1080
-        val numPerRow = ((px2dp(screenWidth)?:400).toDouble() / (widthDp + 2 * margin) + 0.5).toInt()
+        val numPerRow = ((px2dp(screenWidth)?:400).toDouble() / (widthDp + 2 * margin) + 0.5).toInt().let {
+            it + (zis?.let {
+                a -> PreferenceManager.getDefaultSharedPreferences(a).getInt("settings_cat_general_sb_card_per_row", 0)
+            } ?: 0)
+        }.let { if(it <= 0) 3 else it }
         val w = (screenWidth - marginPx*numPerRow*2)/numPerRow
         val totalWidth = screenWidth/numPerRow
         return listOf(numPerRow, w, totalWidth)

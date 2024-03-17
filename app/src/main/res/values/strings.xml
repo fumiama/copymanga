@@ -135,6 +135,8 @@
     <string name="settings_cat_general">通用</string>
     <string name="settings_cat_general_sb_title_startup_menu">启动时显示</string>
     <string name="settings_cat_general_sb_summary_startup_menu">默认主页</string>
+    <string name="settings_cat_general_sb_card_per_row">每行加载卡片数偏移</string>
+    <string name="settings_cat_general_sm_card_per_row">默认为0表示无偏移, 在此基础上加减</string>
 
     <string name="settings_cat_net">网络</string>
     <string name="settings_cat_net_sb_title_image_resolution">图片分辨率</string>

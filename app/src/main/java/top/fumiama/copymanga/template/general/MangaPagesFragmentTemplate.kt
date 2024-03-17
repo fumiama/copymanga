@@ -90,7 +90,7 @@ open class MangaPagesFragmentTemplate(inflateRes:Int, private val isLazy: Boolea
         cardPerRow = widthData?.get(0) ?: 3
         cardWidth = widthData?.get(2) ?: 128
         cardHeight = (cardWidth / 0.75 + 0.5).toInt()
-        withContext(Dispatchers.Main){
+        withContext(Dispatchers.Main) {
             mysp.footerView.lht.text = "加载"
             mysp.headerView.lht.text = "刷新"
             mydll?.setPadding(0, 0, 0, navBarHeight)
@@ -102,8 +102,8 @@ open class MangaPagesFragmentTemplate(inflateRes:Int, private val isLazy: Boolea
         setListeners()
     }
 
-    private fun managePage() {
-        lifecycleScope.launch { addPage() }
+    private suspend fun managePage() {
+        addPage()
         if (isLazy) {
             mysp.apply {
                 post {
@@ -118,8 +118,8 @@ open class MangaPagesFragmentTemplate(inflateRes:Int, private val isLazy: Boolea
                                 withContext(Dispatchers.IO) {
                                     reset()
                                     delay(600)
+                                    addPage()
                                 }
-                                addPage()
                             }
                         }
                     })

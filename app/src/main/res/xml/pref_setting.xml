@@ -14,6 +14,15 @@
             app:entries="@array/menus"
             app:entryValues="@array/menu_ids"
             android:defaultValue="0"/>
+        <SeekBarPreference
+            android:defaultValue="0"
+            android:max="8"
+            app:iconSpaceReserved="false"
+            app:key="settings_cat_general_sb_card_per_row"
+            app:min="-8"
+            app:showSeekBarValue="true"
+            app:summary="@string/settings_cat_general_sm_card_per_row"
+            app:title="@string/settings_cat_general_sb_card_per_row" />
     </PreferenceCategory>
     <PreferenceCategory
         app:iconSpaceReserved="false"

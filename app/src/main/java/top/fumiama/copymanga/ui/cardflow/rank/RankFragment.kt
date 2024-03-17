@@ -56,7 +56,7 @@ class RankFragment : InfoCardLoader(R.layout.fragment_rank, R.id.action_nav_rank
 
     override fun setListeners() {
         super.setListeners()
-        frlai.lrt.addOnTabSelectedListener(object: TabLayout.OnTabSelectedListener {
+        frlai.lrt.apply { post { addOnTabSelectedListener(object: TabLayout.OnTabSelectedListener {
             override fun onTabReselected(tab: TabLayout.Tab?) {}
 
             override fun onTabSelected(tab: TabLayout.Tab?) {
@@ -68,7 +68,7 @@ class RankFragment : InfoCardLoader(R.layout.fragment_rank, R.id.action_nav_rank
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab?) {}
-        })
+        }) } }
     }
 
     fun showSexInfo(toolsBox: UITools) {
