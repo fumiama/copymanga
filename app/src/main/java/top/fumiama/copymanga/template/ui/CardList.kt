@@ -133,7 +133,7 @@ class CardList(
                         ).addListener(GlideHideLottieViewListener(WeakReference(it.laic)) {
                             if (exitCardList) return@GlideHideLottieViewListener
                             cardLoadingWaits.decrementAndGet()
-                        })
+                        }).timeout(60000)
                         if (waitMillis > 0) it.imic.postDelayed({
                             if (exitCardList) return@postDelayed
                             g.into(it.imic)

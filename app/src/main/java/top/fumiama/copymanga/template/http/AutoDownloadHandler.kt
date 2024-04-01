@@ -80,7 +80,7 @@ open class AutoDownloadHandler(
             try {
                 val data = DownloadTools.getHttpContent(
                     CMApi.apiProxy?.wrap(url)?:url, null,
-                    mainWeakReference?.get()?.getString(R.string.pc_ua)!!
+                    DownloadTools.pc_ua
                 )
                 if(exit) return@withContext
                 val fi = data.inputStream()

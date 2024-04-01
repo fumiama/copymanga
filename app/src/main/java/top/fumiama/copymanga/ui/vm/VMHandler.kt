@@ -70,7 +70,7 @@ class VMHandler(activity: ViewMangaActivity, private val chapterUrl: String, pri
             } else {
                 showInfCard(); true
             }
-            LOAD_IMG_ON -> {
+            /*LOAD_IMG_ON -> {
                 val scaleImageView = msg.obj as ScaleImageView
                 // msg.arg2: isLast
                 wv.get()?.apply {
@@ -80,10 +80,9 @@ class VMHandler(activity: ViewMangaActivity, private val chapterUrl: String, pri
                 }
                 //scaleImageView.setHeight2FitImgWidth()
                 //if(msg.arg2 == 1) sendEmptyMessage(DELAYED_RESTORE_PAGE_NUMBER)
-            }
+            }*/
             CLEAR_IMG_ON -> {
-                val img = msg.obj as ScaleImageView
-                img.visibility = View.GONE
+                (msg.obj as ScaleImageView).apply { post { visibility = View.GONE } }
                 //sendEmptyMessage(DECREASE_IMAGE_COUNT_AND_RESTORE_PAGE_NUMBER_AT_ZERO)
             }
             PREPARE_LAST_PAGE -> wv.get()?.prepareLastPage(msg.arg1, msg.arg2)
@@ -207,7 +206,7 @@ class VMHandler(activity: ViewMangaActivity, private val chapterUrl: String, pri
             vprog?.visibility = View.GONE
         }
     }
-    private suspend fun loadImagesIntoLine(item: Int = (wv.get()?.currentItem?:0), doAfter: Runnable? = null) = withContext(Dispatchers.IO) {
+    private suspend fun loadImagesIntoLine(item: Int = (wv.get()?.currentItem?:0), doAfter: Runnable? = null) {
         val maxCount: Int = (wv.get()?.verticalLoadMaxCount?:20)
         Log.d("MyVMH", "Fun: loadImagesIntoLine($item, $maxCount)")
         wv.get()?.realCount?.let { count ->
@@ -216,8 +215,15 @@ class VMHandler(activity: ViewMangaActivity, private val chapterUrl: String, pri
                 val loadCount = (if(notFull) count - item else maxCount) - 1
                 obtainMessage(INIT_IMAGE_COUNT, loadCount+1, 0).sendToTarget()
                 Log.d("MyVMH", "count: $count, loadCount: $loadCount, notFull: $notFull")
-                if(loadCount >= 0) for(i in 0..loadCount) {
-                    obtainMessage(LOAD_IMG_ON,item + i, if(i == loadCount - 1) 1 else 0, wv.get()?.scrollImages?.get(i)).sendToTarget()
+                if(loadCount >= 0) withContext(Dispatchers.IO) {
+                    for(i in 0..loadCount) {
+                        wv.get()?.apply {
+                            val p = item + i
+                            scrollPositions[i] = p
+                            launch { loadImgOn(scrollImages[i], scrollButtons[i], p, false) }
+                        }
+                        //obtainMessage(LOAD_IMG_ON,item + i, if(i == loadCount - 1) 1 else 0, wv.get()?.scrollImages?.get(i)).sendToTarget()
+                    }
                 }
                 //else sendEmptyMessageDelayed(RESTORE_PAGE_NUMBER, 233)
                 if(notFull) obtainMessage(PREPARE_LAST_PAGE, loadCount + 1, maxCount).sendToTarget()
@@ -267,7 +273,7 @@ class VMHandler(activity: ViewMangaActivity, private val chapterUrl: String, pri
         const val HIDE_INFO_CARD = 1
         const val SHOW_INFO_CARD = 2
         const val TRIGGER_INFO_CARD = 3
-        const val LOAD_IMG_ON = 4
+        //const val LOAD_IMG_ON = 4
         const val CLEAR_IMG_ON = 5
         const val PREPARE_LAST_PAGE = 6
         const val DIALOG_SHOW = 7

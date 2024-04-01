@@ -20,6 +20,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
 import android.view.WindowInsetsController
+import android.widget.Button
 import android.widget.SeekBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
@@ -31,8 +32,12 @@ import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.model.GlideUrl
+import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.request.transition.Transition
 import com.liaoinstan.springview.widget.SpringView
 import kotlinx.android.synthetic.main.activity_viewmanga.*
@@ -45,6 +50,7 @@ import kotlinx.android.synthetic.main.widget_titlebar.*
 import kotlinx.android.synthetic.main.widget_titlebar.view.*
 import kotlinx.android.synthetic.main.widget_viewmangainfo.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity
@@ -68,13 +74,15 @@ import kotlin.math.abs
 
 class ViewMangaActivity : TitleActivityTemplate() {
     var count = 0
-    private lateinit var handler: VMHandler
+    private lateinit var mHandler: VMHandler
     lateinit var tt: TimeThread
     var clicked = 0
     private var isInSeek = false
     private var isInScroll = true
     //private var progressLog: PropertiesTools? = null
     var scrollImages = arrayOf<ScaleImageView>()
+    var scrollButtons = arrayOf<Button>()
+    var scrollPositions = arrayOf<Int>()
     //var zipFirst = false
     //private var useFullScreen = false
     var r2l = true
@@ -169,11 +177,11 @@ class ViewMangaActivity : TitleActivityTemplate() {
         isVertical = pb["vertical"]
         notUseVP = pb["noVP"] || isVertical
         //url = intent.getStringExtra("url")
-        handler = VMHandler(this@ViewMangaActivity, if(urlArray.isNotEmpty()) urlArray[position] else "", resources.getStringArray(R.array.weeks))
+        mHandler = VMHandler(this@ViewMangaActivity, if(urlArray.isNotEmpty()) urlArray[position] else "", resources.getStringArray(R.array.weeks))
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
                 settingsPref?.getInt("settings_cat_vm_sb_quality", 100)?.let { q = if (it > 0) it else 100 }
-                tt = TimeThread(handler, VMHandler.SET_NET_INFO, 10000)
+                tt = TimeThread(mHandler, VMHandler.SET_NET_INFO, 10000)
                 tt.canDo = true
                 tt.start()
                 volTurnPage = settingsPref?.getBoolean("settings_cat_vm_sw_vol_turn", false)?:false
@@ -184,7 +192,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
                 Log.d("MyVM", "Now ZipFile is $zipFile")
                 try {
                     if (zipFile != null && zipFile?.exists() == true) {
-                        if (!handler.loadFromFile(zipFile!!)) prepareImgFromWeb()
+                        if (!mHandler.loadFromFile(zipFile!!)) prepareImgFromWeb()
                     } else prepareImgFromWeb()
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -231,7 +239,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
     private suspend fun alertCellar() = withContext(Dispatchers.Main) {
         toolsBox.buildInfo(
             "注意", "要使用使用流量观看吗？", "确定", "本次阅读不再提醒", "取消",
-            { handler.startLoad() }, { noCellarAlert = true; handler.startLoad() }, { finish() }
+            { mHandler.startLoad() }, { noCellarAlert = true; mHandler.startLoad() }, { finish() }
         )
     }
 
@@ -260,10 +268,10 @@ class ViewMangaActivity : TitleActivityTemplate() {
         getImgUrlArray()?.apply {
             if(cut) {
                 Log.d("MyVM", "is cut, load all pages...")
-                handler.sendEmptyMessage(VMHandler.DIALOG_SHOW)     // showDl
+                mHandler.sendEmptyMessage(VMHandler.DIALOG_SHOW)     // showDl
                 isCut = BooleanArray(size)
                 forEachIndexed { i, it ->
-                    handler.obtainMessage(VMHandler.SET_DL_TEXT, "$i/$size").sendToTarget()
+                    mHandler.obtainMessage(VMHandler.SET_DL_TEXT, "$i/$size").sendToTarget()
                     if(it != null) try {
                         DownloadTools.getHttpContent(CMApi.resolution.wrap(CMApi.imageProxy?.wrap(it)?:it), 1024)?.inputStream()?.let {
                             isCut[i] = canCut(it)
@@ -290,7 +298,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
                     indexMap += index+1
                     if(b) indexMap += -(index+1)
                 }
-                handler.sendEmptyMessage(15)     // hideDl
+                mHandler.sendEmptyMessage(15)     // hideDl
                 Log.d("MyVM", "load all pages finished")
             }
             count = size
@@ -301,7 +309,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
 
     @OptIn(ExperimentalStdlibApi::class)
     suspend fun initManga() = withContext(Dispatchers.IO) {
-        val uuid = handler.manga?.results?.chapter?.uuid
+        val uuid = mHandler.manga?.results?.chapter?.uuid
         Log.d("MyVM", "initManga, chapter uuid: $uuid")
         if (uuid != null && uuid != "") {
             pn = getPreferences(MODE_PRIVATE).getInt(uuid, -4)
@@ -316,7 +324,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
 
     private suspend fun prepareImgFromWeb() {
         if(!noCellarAlert && toolsBox.netInfo == getString(R.string.TRANSPORT_CELLULAR)) alertCellar()
-        else handler.startLoad()
+        else mHandler.startLoad()
     }
 
     private fun canCut(inputStream: InputStream): Boolean{
@@ -353,7 +361,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         else (if (notUseVP) currentItem else vp.currentItem) + 1
     }
 
-    private fun setPageNumber(num: Int) {
+    private fun setPageNumber(num: Int) { lifecycleScope.launch {
         Log.d("MyVM", "setPageNumber($num)")
         if (r2l && !notUseVP) vp.currentItem = realCount - num
         else if (notUseVP) {
@@ -362,53 +370,36 @@ class ViewMangaActivity : TitleActivityTemplate() {
                 val offset = currentItem % verticalLoadMaxCount
                 Log.d("MyVM", "Current: $currentItem, Height: ${psivl.height}, scrollY: ${psivs.scrollY}")
                 if (!isInScroll || isInSeek) psivs.scrollY = psivl.height * offset / size
-                lifecycleScope.launch { updateSeekBar() }
+                updateSeekBar()
             } else {
                 currentItem = num - 1
                 try {
                     loadOneImg()
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    lifecycleScope.launch {
+                    withContext(Dispatchers.Main) {
                         toolsBox.toastError(getString(R.string.load_page_number_error).format(currentItem))
                     }
                 }
             }
         } else {
             Log.d("MyVM", "Set vp current: ${num-1}")
-            //var delta = num - 1 - vp.currentItem
             vp.currentItem = num - 1
-            /*lifecycleScope.launch {
-                withContext(Dispatchers.IO) {
-                    if(delta >= 1) while (delta-- > 0){
-                        delay(20)
-                        withContext(Dispatchers.Main) {
-                            vp.currentItem++
-                        }
-                    }
-                    else if(delta <= -1) while (delta++ < 0){
-                        delay(20)
-                        withContext(Dispatchers.Main) {
-                            vp.currentItem--
-                        }
-                    }
-                }
-            }*/
         }
-    }
+    } }
 
     /*fun clearImgOn(imgView: ScaleImageView){
         imgView.visibility = View.GONE
-        handler.sendEmptyMessage(VMHandler.DECREASE_IMAGE_COUNT_AND_RESTORE_PAGE_NUMBER_AT_ZERO)
+        mHandler.sendEmptyMessage(VMHandler.DECREASE_IMAGE_COUNT_AND_RESTORE_PAGE_NUMBER_AT_ZERO)
     }*/
 
     //private fun getTempFile(position: Int) = File(cacheDir, "$position")
 
-    private fun getImgUrl(position: Int) = handler.manga?.results?.chapter?.let {
+    private fun getImgUrl(position: Int) = mHandler.manga?.results?.chapter?.let {
         it.contents[it.words.indexOf(position)].url
     }
 
-    private fun getImgUrlArray() = handler.manga?.results?.chapter?.let{
+    private fun getImgUrlArray() = mHandler.manga?.results?.chapter?.let{
             val re = arrayOfNulls<String>(it.contents.size)
             for(i in it.contents.indices) {
                 re[i] = getImgUrl(i)
@@ -420,20 +411,25 @@ class ViewMangaActivity : TitleActivityTemplate() {
 
     private suspend fun loadImg(imgView: ScaleImageView, bitmap: Bitmap, useCut: Boolean, isLeft: Boolean, isPlaceholder: Boolean = true) = withContext(Dispatchers.IO) {
         val bitmap2load = if(!isPlaceholder && useCut) cutBitmap(bitmap, isLeft) else bitmap
-        withContext(Dispatchers.Main) {
-            imgView.setImageBitmap(bitmap2load)
+        imgView.apply { post {
+            setImageBitmap(bitmap2load)
             if(!isPlaceholder && isVertical) {
-                imgView.setHeight2FitImgWidth()
-                handler.sendEmptyMessage(VMHandler.DECREASE_IMAGE_COUNT_AND_RESTORE_PAGE_NUMBER_AT_ZERO)
+                setHeight2FitImgWidth()
+                Log.d("MyVM", "dec remainingImageCount")
+                mHandler.sendEmptyMessage(VMHandler.DECREASE_IMAGE_COUNT_AND_RESTORE_PAGE_NUMBER_AT_ZERO)
             }
-        }
+        } }
     }
 
-    private suspend fun loadImgUrlInto(imgView: ScaleImageView, url: String, useCut: Boolean, isLeft: Boolean){
+    private suspend fun loadImgUrlInto(imgView: ScaleImageView, button: Button, url: String, useCut: Boolean, isLeft: Boolean, check: (() -> Boolean)? = null): Boolean {
         Log.d("MyVM", "Load from adt: $url")
-        PausableDownloader(CMApi.resolution.wrap(CMApi.imageProxy?.wrap(url)?:url), 1000, false) {
-            it.let { loadImg(imgView, BitmapFactory.decodeByteArray(it, 0, it.size), useCut, isLeft, false) }
+        val success = PausableDownloader(CMApi.resolution.wrap(CMApi.imageProxy?.wrap(url)?:url), 1000, false) { data ->
+            check?.let { it() }?.let { if(it) loadImg(imgView, BitmapFactory.decodeByteArray(data, 0, data.size), useCut, isLeft, false) }
         }.run()
+        if (!success) button.apply { post {
+            visibility = View.VISIBLE
+        } }
+        return success
     }
 
     private fun getLoadingBitmap(position: Int): Bitmap {
@@ -450,44 +446,53 @@ class ViewMangaActivity : TitleActivityTemplate() {
         return loading
     }
 
-    suspend fun loadImgOn(imgView: ScaleImageView, position: Int) = withContext(Dispatchers.IO) {
+    suspend fun loadImgOn(imgView: ScaleImageView, reloadButton: Button, position: Int, isSingle: Boolean = false): Boolean = withContext(Dispatchers.IO) {
         Log.d("MyVM", "Load img: $position")
-        if (position < 0 || position > realCount) return@withContext
+        if (isSingle && position != currentItem) return@withContext true
+        if (position < 0 || position > realCount) return@withContext false
         val index2load = if(cut) abs(indexMap[position]) -1 else position
         val useCut = cut && isCut[index2load]
         val isLeft = cut && indexMap[position] > 0
-        if (zipFile?.exists() == true) getImgBitmap(index2load)?.let {
+        val success: Boolean = if (zipFile?.exists() == true) getImgBitmap(index2load)?.let {
             loadImg(imgView, it, useCut, isLeft, false)
-        }
+            true
+        }?:false
         else {
             val sleepTime = loadImgOnWait.getAndIncrement().toLong()*200
             Log.d("MyVM", "loadImgOn sleep: $sleepTime ms")
             val re = tasks?.get(index2load)
             if (sleepTime > 0 && re?.isDone != true) {
                 loadImg(imgView, getLoadingBitmap(position), useCut, isLeft, true)
-                Thread.sleep(sleepTime)
+                delay(sleepTime)
+                if (isSingle && position != currentItem) return@withContext true
             }
-            if (re != null) {
+            val s: Boolean = if (re != null) {
                 if(!re.isDone) {
                     loadImg(imgView, getLoadingBitmap(position), useCut, isLeft, true)
                     re.run()
                 }
                 val data = re.get()
+                if (isSingle && position != currentItem) return@withContext true
                 if(data != null && data.isNotEmpty()) {
                     BitmapFactory.decodeByteArray(data, 0, data.size)?.let {
                         loadImg(imgView, it, useCut, isLeft, false)
                         Log.d("MyVM", "Load position $position from task")
                     }?:Log.d("MyVM", "null bitmap at $position")
+                    true
                 }
                 else getImgUrl(index2load)?.let {
                     loadImg(imgView, getLoadingBitmap(position), useCut, isLeft, true)
-                    loadImgUrlInto(imgView, it, useCut, isLeft)
-                }
+                    loadImgUrlInto(imgView, reloadButton, it, useCut, isLeft) {
+                        return@loadImgUrlInto !(isSingle && position != currentItem)
+                    }
+                }?:false
             }
             else getImgUrl(index2load)?.let {
-                loadImg(imgView, getLoadingBitmap(position), useCut, isLeft, true)
-                loadImgUrlInto(imgView, it, useCut, isLeft)
-            }
+                    loadImg(imgView, getLoadingBitmap(position), useCut, isLeft, true)
+                    loadImgUrlInto(imgView, reloadButton, it, useCut, isLeft) {
+                        return@loadImgUrlInto !(isSingle && position != currentItem)
+                    }
+                }?:false
             loadImgOnWait.decrementAndGet()
             tasks?.apply {
                 if (index2load >= size) return@apply
@@ -513,34 +518,61 @@ class ViewMangaActivity : TitleActivityTemplate() {
                 get(pos)?.apply {
                     if(!isDone) {
                         tasksRunStatus?.set(pos, true)
-                        run()
+                        Thread(this).start()
                     }
                 }
             }
+            s
         }
         withContext(Dispatchers.Main) {
             if(imgView.visibility != View.VISIBLE) imgView.visibility = View.VISIBLE
         }
+        return@withContext success
     }
 
-    private fun loadOneImg() {
-        lifecycleScope.launch {
-            loadImgOn(onei, currentItem)
-            updateSeekBar()
-        }
+    private suspend fun loadOneImg() {
+        val img = onei
+        oneb.apply { post {
+            if (!hasOnClickListeners()) setOnClickListener {
+                lifecycleScope.launch {
+                    if (loadImgOn(img, this@apply, currentItem, true)) {
+                        post { visibility = View.GONE }
+                    }
+                }
+            }
+        } }
+        loadImgOn(onei, oneb, currentItem, true)
+        updateSeekBar()
     }
 
-    private fun initImgList(){
+    private fun initImgList() {
         for (i in 0 until verticalLoadMaxCount) {
-            val newImg = ScaleImageView(this)
-            scrollImages += newImg
-            psivl.addView(newImg)
+            val newOneImage = layoutInflater.inflate(R.layout.page_imgview, psivl, false)
+            val img = newOneImage.onei
+            val b = newOneImage.oneb
+            val p = scrollPositions.size
+            b.apply { post {
+                setOnClickListener {
+                    lifecycleScope.launch {
+                        if (loadImgOn(img, this@apply, scrollPositions[p])) {
+                            post { visibility = View.GONE }
+                        }
+                    }
+                }
+            } }
+            scrollImages += img
+            scrollButtons += b
+            scrollPositions += -1
+            psivl.addView(newOneImage)
         }
     }
 
     fun prepareLastPage(loadCount: Int, maxCount: Int){
-        for (i in loadCount until maxCount) handler.obtainMessage(VMHandler.CLEAR_IMG_ON, scrollImages[i]).sendToTarget()
-        // handler.dl?.hide()
+        for (i in loadCount until maxCount) {
+            mHandler.obtainMessage(VMHandler.CLEAR_IMG_ON, scrollImages[i]).sendToTarget()
+            scrollButtons[i].apply { post { visibility = View.GONE } }
+        }
+        // mHandler.dl?.hide()
     }
 
     private suspend fun getImgBitmap(position: Int): Bitmap? = withContext(Dispatchers.IO) {
@@ -584,7 +616,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         infoDrawerDelta = position.toFloat()
         infcard.translationY = infoDrawerDelta
         Log.d("MyVM", "Set info drawer delta to $infoDrawerDelta")
-        handler.sendEmptyMessage(if (fullyHideInfo) 16 else VMHandler.HIDE_INFO_CARD)
+        mHandler.sendEmptyMessage(if (fullyHideInfo) 16 else VMHandler.HIDE_INFO_CARD)
     }
 
     @ExperimentalStdlibApi
@@ -605,15 +637,13 @@ class ViewMangaActivity : TitleActivityTemplate() {
             }*/
         } catch (e: Exception) {
             e.printStackTrace()
-            lifecycleScope.launch {
-                toolsBox.toastError(R.string.load_chapter_error)
-                finish()
-            }
+            toolsBox.toastError(R.string.load_chapter_error)
+            finish()
         }
     }
 
     private suspend fun setProgress() = withContext(Dispatchers.IO) {
-        handler.manga?.results?.chapter?.uuid?.let {
+        mHandler.manga?.results?.chapter?.uuid?.let {
             getPreferences(MODE_PRIVATE).edit {
                 //it["chapterId"] = hm.chapterId.toString()
                 putInt(it, pageNum)
@@ -623,15 +653,21 @@ class ViewMangaActivity : TitleActivityTemplate() {
         }
     }
 
+    private fun fadeRecreate() {
+        val oa = ObjectAnimator.ofFloat(vcp, "alpha", 1f, 0.1f).setDuration(1000)
+        oa.doOnEnd {
+            onecons?.removeAllViews()
+            psivl?.removeAllViews()
+            recreate()
+        }
+        oa.start()
+    }
+
     private fun prepareIdBtCut() {
         idtbcut.isChecked = cut
         idtbcut.setOnClickListener {
             pb["useCut"] = idtbcut.isChecked
-            val oa = ObjectAnimator.ofFloat(vcp, "alpha", 1f, 0.1f).setDuration(1000)
-            oa.doOnEnd {
-                recreate()
-            }
-            oa.start()
+            fadeRecreate()
         }
     }
 
@@ -643,11 +679,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
                 return@setOnClickListener
             }
             pb["r2l"] = idtblr.isChecked
-            val oa = ObjectAnimator.ofFloat(vcp, "alpha", 1f, 0.1f).setDuration(1000)
-            oa.doOnEnd {
-                recreate()
-            }
-            oa.start()
+            fadeRecreate()
         }
     }
 
@@ -659,11 +691,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
                 return@setOnClickListener
             }
             pb["noVP"] = idtbvp.isChecked
-            val oa = ObjectAnimator.ofFloat(vcp, "alpha", 1f, 0.1f).setDuration(1000)
-            oa.doOnEnd {
-                recreate()
-            }
-            oa.start()
+            fadeRecreate()
         }
     }
 
@@ -701,7 +729,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         oneinfo.alpha = 0F
         infseek.visibility = View.GONE
         isearch.visibility = View.GONE
-        inftitle.ttitle.text = "$comicName ${handler.manga?.results?.chapter?.name}"
+        inftitle.ttitle.text = "$comicName ${mHandler.manga?.results?.chapter?.name}"
         inftxtprogress.text = "$pageNum/$realCount"
         infseek.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             var p = 0
@@ -734,7 +762,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
                     val pS = p
                     Log.d("MyVM", "stop seek at $pS")
                     if (isVertical && startP/verticalLoadMaxCount != p/verticalLoadMaxCount) {
-                        handler.obtainMessage(
+                        mHandler.obtainMessage(
                             VMHandler.LOAD_ITEM_SCROLL_MODE,
                             p / verticalLoadMaxCount * verticalLoadMaxCount,
                             0,
@@ -755,7 +783,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         })
         isearch.setImageResource(R.drawable.ic_author)
         isearch.setOnClickListener {
-            handler.sendEmptyMessage(if (fullyHideInfo) VMHandler.TRIGGER_INFO_CARD_FULL else VMHandler.TRIGGER_INFO_CARD) // trigger info card
+            mHandler.sendEmptyMessage(if (fullyHideInfo) VMHandler.TRIGGER_INFO_CARD_FULL else VMHandler.TRIGGER_INFO_CARD) // trigger info card
         }
     }
 
@@ -783,25 +811,26 @@ class ViewMangaActivity : TitleActivityTemplate() {
             vp.visibility = View.GONE
             vsp.visibility = View.VISIBLE
             initImgList()
-            handler.sendEmptyMessage(if(isPnValid) VMHandler.LOAD_PAGE_FROM_ITEM else VMHandler.LOAD_SCROLL_MODE)
+            mHandler.sendEmptyMessage(if(isPnValid) VMHandler.LOAD_PAGE_FROM_ITEM else VMHandler.LOAD_SCROLL_MODE)
             psivs.setOnScrollChangeListener { _, _, scrollY, _, _ ->
                 isInScroll = true
                 if(!isInSeek) {
                     val delta = (scrollY.toFloat() * size.toFloat() / psivl.height.toFloat() + 0.5).toInt() - currentItem % verticalLoadMaxCount
                     if(delta != 0 && !(delta > 0 && pageNum == size)) {
-                        pageNum += delta
-                        Log.d("MyVM", "Scroll to offset $delta")
+                        val fin = pageNum + delta
+                        pageNum = when {
+                            fin <= 0 -> 1
+                            fin%verticalLoadMaxCount == 0 -> fin/verticalLoadMaxCount*verticalLoadMaxCount
+                            else -> fin
+                        }
+                        Log.d("MyVM", "Scroll to offset $delta, page $pageNum")
                     }
                 }
             }
         }
         idtbvh.setOnClickListener {
             pb["vertical"] = idtbvh.isChecked
-            val oa = ObjectAnimator.ofFloat(vcp, "alpha", 1f, 0.1f).setDuration(1000)
-            oa.doOnEnd {
-                recreate()
-            }
-            oa.start()
+            fadeRecreate()
         }
     }
 
@@ -813,7 +842,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
                 (pageNum-1).let { lifecycleScope.launch { updateSeekBar(it) } }
                 return
             }
-            handler.obtainMessage(
+            mHandler.obtainMessage(
                 VMHandler.LOAD_ITEM_SCROLL_MODE,
                 currentItem - verticalLoadMaxCount, 0,
                 Runnable{
@@ -832,7 +861,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
                 (pageNum+1).let { lifecycleScope.launch { updateSeekBar(it) } }
                 return
             }
-            handler.sendEmptyMessage(VMHandler.LOAD_SCROLL_MODE)
+            mHandler.sendEmptyMessage(VMHandler.LOAD_SCROLL_MODE)
         }
     }
 
@@ -850,8 +879,8 @@ class ViewMangaActivity : TitleActivityTemplate() {
         tt.canDo = false
         destroy = true
         dlHandler = null
-        handler.dl.dismiss()
-        handler.destroy()
+        mHandler.dl.dismiss()
+        mHandler.destroy()
         super.onDestroy()
     }
 
@@ -875,15 +904,19 @@ class ViewMangaActivity : TitleActivityTemplate() {
                     getImgBitmap(index2load)?.let {
                         //Glide.with(this@ViewMangaActivity).load(if(useCut) cutBitmap(it, isLeft) else it).into(holder.itemView.onei)
                         holder.itemView.onei.setImageBitmap(if(useCut) cutBitmap(it, isLeft) else it)
+                        holder.itemView.oneb.visibility = View.GONE
                     }
                 }
                 else getImgUrl(index2load)?.let{
-                    if(useCut){
+                    if(useCut) {
                         val thisOneI = holder.itemView.onei
+                        val thisOneB = holder.itemView.oneb
                         Glide.with(this@ViewMangaActivity.applicationContext)
                             .asBitmap()
                             .load(GlideUrl(CMApi.resolution.wrap(CMApi.imageProxy?.wrap(it)?:it), CMApi.myGlideHeaders))
                             .placeholder(BitmapDrawable(resources, getLoadingBitmap(pos)))
+                            .timeout(60000)
+                            .addListener(OneButtonRequestListener(thisOneB))
                             .into(object : CustomTarget<Bitmap>() {
                                 override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
                                     thisOneI.setImageBitmap(cutBitmap(resource, isLeft))
@@ -892,13 +925,47 @@ class ViewMangaActivity : TitleActivityTemplate() {
                             })
                     } else Glide.with(this@ViewMangaActivity.applicationContext)
                         .load(GlideUrl(CMApi.resolution.wrap(CMApi.imageProxy?.wrap(it)?:it), CMApi.myGlideHeaders))
+                        .timeout(60000)
                         .placeholder(BitmapDrawable(resources, getLoadingBitmap(pos)))
+                        .addListener(OneButtonRequestListener(holder.itemView.oneb))
                         .into(holder.itemView.onei)
                 }
             }
 
             override fun getItemCount(): Int {
                 return realCount
+            }
+
+            private inner class OneButtonRequestListener<T>(private val thisOneB: Button) : RequestListener<T> {
+                var mTarget: Target<T>? = null
+                init {
+                    thisOneB.apply { post {
+                        setOnClickListener { mTarget?.request?.apply {
+                            clear()
+                            begin()
+                        } }
+                    } }
+                }
+                override fun onLoadFailed(
+                    e: GlideException?,
+                    model: Any?,
+                    target: Target<T>,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    thisOneB.visibility = View.VISIBLE
+                    mTarget = target
+                    return false
+                }
+                override fun onResourceReady(
+                    resource: T & Any,
+                    model: Any,
+                    target: Target<T>?,
+                    dataSource: DataSource,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    thisOneB.visibility = View.GONE
+                    return false
+                }
             }
         }
     }
@@ -937,7 +1004,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
             isearch.invalidate()
             clicked = 0 // false
         }, 300)
-        handler.sendEmptyMessage(if (fullyHideInfo) VMHandler.HIDE_INFO_CARD_FULL else VMHandler.HIDE_INFO_CARD)
+        mHandler.sendEmptyMessage(if (fullyHideInfo) VMHandler.HIDE_INFO_CARD_FULL else VMHandler.HIDE_INFO_CARD)
     }
 
     companion object {

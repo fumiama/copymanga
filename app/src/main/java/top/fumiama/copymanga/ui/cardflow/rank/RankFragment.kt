@@ -4,8 +4,6 @@ import android.os.Bundle
 import com.google.android.material.tabs.TabLayout
 import kotlinx.android.synthetic.main.fragment_rank.*
 import kotlinx.android.synthetic.main.line_rank.view.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.template.ui.InfoCardLoader
 import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.copymanga.tools.ui.UITools
@@ -27,12 +25,14 @@ class RankFragment : InfoCardLoader(R.layout.fragment_rank, R.id.action_nav_rank
 
     override fun onPause() {
         super.onPause()
+        wr = null
         ad?.exit = true
     }
 
     override fun onResume() {
         super.onResume()
-        ad?.exit = true
+        wr = WeakReference(this)
+        ad?.exit = false
     }
 
     override fun onDestroy() {
@@ -72,7 +72,7 @@ class RankFragment : InfoCardLoader(R.layout.fragment_rank, R.id.action_nav_rank
     }
 
     fun showSexInfo(toolsBox: UITools) {
-        if (ad?.exit != false) return
+        if (ad?.exit == true) return
         toolsBox.buildInfo("切换类型", "选择一种想筛选的漫画类型",
             "男频", "全部", "女频", {
                 if(!isLoading) {

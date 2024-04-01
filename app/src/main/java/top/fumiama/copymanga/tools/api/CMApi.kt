@@ -3,6 +3,7 @@ package top.fumiama.copymanga.tools.api
 import androidx.preference.PreferenceManager
 import com.bumptech.glide.load.model.LazyHeaders
 import top.fumiama.copymanga.MainActivity
+import top.fumiama.copymanga.tools.http.DownloadTools
 import top.fumiama.copymanga.tools.http.Proxy
 import top.fumiama.copymanga.tools.http.Resolution
 import top.fumiama.dmzj.copymanga.R
@@ -36,20 +37,11 @@ object CMApi {
                 PreferenceManager.getDefaultSharedPreferences(it).apply {
                     if (field === null)
                         field = LazyHeaders.Builder()
-                            .addHeader(
-                                "referer",
-                                MainActivity.mainWeakReference?.get()?.getString(R.string.referer)!!
-                            )
-                            .addHeader(
-                                "User-Agent",
-                                MainActivity.mainWeakReference?.get()?.getString(R.string.pc_ua)!!
-                            )
+                            .addHeader("referer", DownloadTools.referer)
+                            .addHeader("User-Agent", DownloadTools.pc_ua)
                             .addHeader("source", "copyApp")
                             .addHeader("webp", "1")
-                            .addHeader(
-                                "version",
-                                MainActivity.mainWeakReference?.get()?.getString(R.string.app_ver)!!
-                            )
+                            .addHeader("version", DownloadTools.app_ver)
                             .addHeader(
                                 "region",
                                 if (!getBoolean("settings_cat_net", false)) "1" else "0"

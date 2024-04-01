@@ -205,7 +205,9 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                     //Log.d("MyHomeFVP", "Load img: $it")
                     Glide.with(this@HomeFragment).load(
                         GlideUrl(CMApi.imageProxy?.wrap(it)?:it, CMApi.myGlideHeaders)
-                    ).addListener(GlideHideLottieViewListener(WeakReference(holder.itemView.lai))).into(holder.itemView.vpi)
+                    )
+                        .addListener(GlideHideLottieViewListener(WeakReference(holder.itemView.lai)))
+                        .timeout(60000).into(holder.itemView.vpi)
                 }
                 holder.itemView.vpt.text = thisBanner?.brief
                 holder.itemView.vpc.setOnClickListener {
@@ -244,6 +246,7 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                         context?.let {
                             Glide.with(it).load(R.drawable.img_defmask)
                                 .addListener(GlideHideLottieViewListener(WeakReference(laic)))
+                                .timeout(60000)
                                 .into(imic)
                         }
                         cic.isClickable = false
@@ -275,7 +278,7 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                             Glide.with(it)
                                 .load(GlideUrl(CMApi.imageProxy?.wrap(cover)?:cover, CMApi.myGlideHeaders))
                                 .addListener(GlideHideLottieViewListener(WeakReference(laic)))
-                                .into(imic)
+                                .timeout(60000).into(imic)
                         }
                         lwc.setOnClickListener {
                             val bundle = Bundle()

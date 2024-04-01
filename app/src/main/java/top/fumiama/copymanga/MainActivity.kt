@@ -235,6 +235,7 @@ class MainActivity : AppCompatActivity() {
                 if(avatar != "")
                     Glide.with(this@MainActivity).load(avatar)
                         .apply(RequestOptions.bitmapTransform(CircleCrop()))
+                        .timeout(60000)
                         .into(this@ic)
                 else setImageResource(R.mipmap.ic_launcher)
             } }

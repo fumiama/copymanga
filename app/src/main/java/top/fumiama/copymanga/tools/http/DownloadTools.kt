@@ -13,6 +13,13 @@ import java.util.concurrent.Callable
 import java.util.concurrent.FutureTask
 
 object DownloadTools {
+    val app_ver = MainActivity.mainWeakReference?.get()?.let { main ->
+        PreferenceManager.getDefaultSharedPreferences(main)
+            ?.getString("settings_cat_general_et_app_version", main.getString(R.string.app_ver))
+            ?:main.getString(R.string.app_ver)
+    }!!
+    val pc_ua = MainActivity.mainWeakReference?.get()!!.getString(R.string.pc_ua).format(app_ver)
+    val referer = MainActivity.mainWeakReference?.get()!!.getString(R.string.referer).format(app_ver)
     fun getApiConnection(url: String, method: String = "GET", refer: String? = null, ua: String? = null, timeout: Int = 20000) =
         url.let {
             val connection = URL(url).openConnection() as HttpURLConnection
@@ -30,7 +37,7 @@ object DownloadTools {
                         setRequestProperty("region", if(!getBoolean("settings_cat_net_sw_use_foreign", false)) "1" else "0")
                     }
                     it.getPreferences(Context.MODE_PRIVATE).apply {
-                        setRequestProperty("version", it.getString(R.string.app_ver))
+                        setRequestProperty("version", app_ver)
                         getString("token", "")?.let { tk ->
                             setRequestProperty("authorization", "Token $tk")
                         }

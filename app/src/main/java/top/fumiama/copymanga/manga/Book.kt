@@ -18,7 +18,7 @@ class Book(val path: String, private val getString: (Int) -> String, private val
     private val mBookApiUrl = getString(R.string.bookInfoApiUrl).format(CMApi.myHostApiUrl, path).let {
         CMApi.apiProxy?.wrap(it)?:it
     }
-    private val mUserAgent = getString(R.string.pc_ua)
+    private val mUserAgent = getString(R.string.pc_ua).format(DownloadTools.app_ver)
     private var mBook: BookInfoStructure? = null
     private var mGroupPathWords = arrayOf<String>()
     private var mKeys = arrayOf<String>()

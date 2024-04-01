@@ -18,8 +18,8 @@ class PausableDownloader(private val url: String, private val waitMilliseconds: 
             try {
                 val data = (DownloadTools.getHttpContent(
                     (if(isApi) CMApi.apiProxy?.wrap(url) else null)?:url,
-                    mainWeakReference?.get()?.getString(R.string.referer)!!,
-                    mainWeakReference?.get()?.getString(R.string.pc_ua)!!
+                    DownloadTools.referer,
+                    DownloadTools.pc_ua
                 ))
                 whenFinish?.let { it(data) }
                 return@withContext true

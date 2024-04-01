@@ -13,8 +13,8 @@ class Shelf(private val token: String, getString: (Int) -> String) {
     private val hostUrl: String = getString(R.string.hostUrl)
     private val apiUrl: String = getString(R.string.shelfOperateApiUrl).format(hostUrl)
     private val queryApiUrlTemplate = getString(R.string.bookUserQueryApiUrl)
-    private val referer: String = getString(R.string.referer)
-    private val ua: String = getString(R.string.pc_ua)
+    private val referer: String = getString(R.string.referer).format(DownloadTools.app_ver)
+    private val ua: String = getString(R.string.pc_ua).format(DownloadTools.app_ver)
     private val addApiUrl get() = "$apiUrl?platform=3".let { CMApi.apiProxy?.wrap(it)?:it }
     private val delApiUrl get() = "${apiUrl}s?platform=3".let { CMApi.apiProxy?.wrap(it)?:it }
     suspend fun add(comicId: String): String = withContext(Dispatchers.IO) {

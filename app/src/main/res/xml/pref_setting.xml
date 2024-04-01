@@ -23,6 +23,17 @@
             app:showSeekBarValue="true"
             app:summary="@string/settings_cat_general_sm_card_per_row"
             app:title="@string/settings_cat_general_sb_card_per_row" />
+        <EditTextPreference
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:defaultValue="@string/app_ver"
+            android:selectAllOnFocus="false"
+            android:singleLine="true"
+            android:title="@string/settings_cat_general_et_title_app_version"
+            android:summary="@string/settings_cat_general_et_summary_app_version"
+            app:enableCopying="true"
+            app:iconSpaceReserved="false"
+            app:key="settings_cat_general_et_app_version" />
     </PreferenceCategory>
     <PreferenceCategory
         app:iconSpaceReserved="false"

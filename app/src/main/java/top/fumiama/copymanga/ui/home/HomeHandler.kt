@@ -341,7 +341,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
                 val g = Glide.with(it).load(GlideUrl(CMApi.imageProxy?.wrap(img)?:img, CMApi.myGlideHeaders))
                     .addListener(GlideHideLottieViewListener(WeakReference(cv.laic)) {
                         cardLoadingWaits.decrementAndGet()
-                    })
+                    }).timeout(60000)
                 if (waitMillis > 0) cv.imic.postDelayed({
                     g.into(cv.imic)
                 }, waitMillis) else cv.imic.post { g.into(cv.imic) }

@@ -1,5 +1,6 @@
 package top.fumiama.copymanga.ui.book
 
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -14,8 +15,12 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.model.GlideUrl
+import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
+import com.bumptech.glide.request.target.Target
 import com.google.android.material.tabs.TabLayoutMediator
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.card_book.*
@@ -80,17 +85,36 @@ class BookHandler(private val th: WeakReference<BookFragment>): Handler(Looper.m
     private fun setCover() {
         if (exit) return
         that?.apply {
-            val load = Glide.with(this).load(
+            Glide.with(this).load(
                 if (book?.cover != null)
                     GlideUrl(CMApi.imageProxy?.wrap(book?.cover!!)?:book?.cover!!, CMApi.myGlideHeaders)
                 else book?.cachedCover
-            ).addListener(GlideHideLottieViewListener(WeakReference(laic)))
-            load.into(imic)
-            context?.let { it1 -> GlideBlurTransformation(it1) }
-                ?.let { it2 -> RequestOptions.bitmapTransform(it2) }
-                ?.let { it3 -> load.apply(it3).into(lbibg) }
-            //imf?.visibility = View.GONE
-            //fbl?.addView(divider)
+            )
+                .timeout(60000)
+                .addListener(GlideHideLottieViewListener(WeakReference(laic)))
+                .addListener(object : RequestListener<Drawable> {
+                    override fun onLoadFailed(
+                        e: GlideException?,
+                        model: Any?,
+                        target: Target<Drawable>,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        return false
+                    }
+
+                    override fun onResourceReady(
+                        resource: Drawable,
+                        model: Any,
+                        target: Target<Drawable>?,
+                        dataSource: DataSource,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        context?.let { it1 -> GlideBlurTransformation(it1) }
+                            ?.let { it2 -> RequestOptions.bitmapTransform(it2) }
+                            ?.let { it3 -> Glide.with(this@apply).load(resource).apply(it3).into(lbibg) }
+                        return false
+                    }
+                }).into(imic)
         }
     }
 
