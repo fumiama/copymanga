@@ -141,6 +141,8 @@
     <string name="settings_cat_general_et_summary_app_version">默认&appver;</string>
     <string name="settings_cat_general_sb_card_per_row">每行加载卡片数偏移</string>
     <string name="settings_cat_general_sm_card_per_row">默认为0表示无偏移, 在此基础上加减</string>
+    <string name="settings_cat_general_sw_disable_kanban_animation">不显示看板娘动画</string>
+    <string name="settings_cat_general_sm_disable_kanban_animation">如加载卡顿可考虑开启此选项</string>
 
     <string name="settings_cat_net">网络</string>
     <string name="settings_cat_net_sb_title_image_resolution">图片分辨率</string>

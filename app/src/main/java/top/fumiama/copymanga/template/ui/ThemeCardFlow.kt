@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.View
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.line_finish.*
-import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.dmzj.copymanga.R
 
@@ -24,7 +23,7 @@ open class ThemeCardFlow(private val api: Int, nav: Int) : StatusCardFlow(0, nav
         arguments?.apply {
             getString("path")?.apply { theme = this }
             getString("name")?.apply {
-                mainWeakReference?.get()?.toolbar?.title = this
+                activity?.toolbar?.title = this
             }
         }
     }
@@ -38,7 +37,7 @@ open class ThemeCardFlow(private val api: Int, nav: Int) : StatusCardFlow(0, nav
     override fun onResume() {
         super.onResume()
         arguments?.getString("name")?.apply {
-            mainWeakReference?.get()?.toolbar?.title = this
+            activity?.toolbar?.title = this
         }
     }
 }

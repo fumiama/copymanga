@@ -26,7 +26,10 @@
             android:id="@+id/fbtab"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:layout_scrollFlags="scroll"/>
+            android:background="@android:color/transparent"
+            android:backgroundTint="@android:color/transparent"
+            app:layout_scrollFlags="scroll"
+            app:tabBackground="@android:color/transparent" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.viewpager2.widget.ViewPager2

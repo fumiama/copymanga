@@ -26,10 +26,10 @@ import kotlinx.android.synthetic.main.viewpage_horizonal.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.MainActivity.Companion.ime
-import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.json.BookListStructure
 import top.fumiama.copymanga.template.general.NoBackRefreshFragment
 import top.fumiama.copymanga.template.http.PausableDownloader
@@ -46,9 +46,9 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         if(isFirstInflate) {
-            val tb = mainWeakReference?.get()?.toolsBox
-            val netInfo = tb?.netInfo
-            if(netInfo != null && netInfo != tb.transportStringNull && netInfo != tb.transportStringError)
+            val tb = (activity as MainActivity).toolsBox
+            val netInfo = tb.netInfo
+            if(netInfo != tb.transportStringNull && netInfo != tb.transportStringError)
                 MainActivity.member?.apply { lifecycleScope.launch {
                     info().let { l ->
                         if (l.code != 200 && l.code != 449) {
@@ -163,7 +163,7 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                 setOnTouchListener { _, e ->
                     Log.d("MyHF", "fhns on touch")
                     if (e.action == MotionEvent.ACTION_UP && mSearchEditText?.text?.isNotEmpty() == true) {
-                        ime?.hideSoftInputFromWindow(mainWeakReference?.get()?.window?.decorView?.windowToken, 0)
+                        ime?.hideSoftInputFromWindow(activity?.window?.decorView?.windowToken, 0)
                     }
                     false
                 }

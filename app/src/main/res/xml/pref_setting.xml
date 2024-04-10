@@ -14,15 +14,12 @@
             app:entries="@array/menus"
             app:entryValues="@array/menu_ids"
             android:defaultValue="0"/>
-        <SeekBarPreference
-            android:defaultValue="0"
-            android:max="8"
+        <SwitchPreferenceCompat
             app:iconSpaceReserved="false"
-            app:key="settings_cat_general_sb_card_per_row"
-            app:min="-8"
-            app:showSeekBarValue="true"
-            app:summary="@string/settings_cat_general_sm_card_per_row"
-            app:title="@string/settings_cat_general_sb_card_per_row" />
+            app:key="settings_cat_general_sw_disable_kanban_animation"
+            app:selectable="true"
+            app:summary="@string/settings_cat_general_sm_disable_kanban_animation"
+            app:title="@string/settings_cat_general_sw_disable_kanban_animation" />
         <EditTextPreference
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -34,6 +31,15 @@
             app:enableCopying="true"
             app:iconSpaceReserved="false"
             app:key="settings_cat_general_et_app_version" />
+        <SeekBarPreference
+            android:defaultValue="0"
+            android:max="8"
+            app:iconSpaceReserved="false"
+            app:key="settings_cat_general_sb_card_per_row"
+            app:min="-8"
+            app:showSeekBarValue="true"
+            app:summary="@string/settings_cat_general_sm_card_per_row"
+            app:title="@string/settings_cat_general_sb_card_per_row" />
     </PreferenceCategory>
     <PreferenceCategory
         app:iconSpaceReserved="false"

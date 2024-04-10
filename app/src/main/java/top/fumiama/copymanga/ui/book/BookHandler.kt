@@ -35,14 +35,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.json.ThemeStructure
 import top.fumiama.copymanga.manga.Reader
 import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.copymanga.tools.ui.GlideBlurTransformation
 import top.fumiama.copymanga.tools.ui.GlideHideLottieViewListener
 import top.fumiama.copymanga.tools.ui.Navigate
-import top.fumiama.copymanga.ui.vm.ViewMangaActivity
 import top.fumiama.dmzj.copymanga.R
 import java.lang.ref.WeakReference
 
@@ -123,7 +121,7 @@ class BookHandler(private val th: WeakReference<BookFragment>): Handler(Looper.m
         that?.apply {
             // tic?.text = book?.name
             // tic?.visibility = View.GONE
-            mainWeakReference?.get()?.toolbar?.title = book?.name
+            activity?.toolbar?.title = book?.name
             btauth?.text = that?.getString(R.string.text_format_region)?.format(book?.region?:"未知")
             bttag?.text = that?.getString(R.string.text_format_img_type)?.format(book?.imageType?:"未知")
             bthit?.text = that?.getString(R.string.text_format_hit)?.format(book?.popular?:-1)

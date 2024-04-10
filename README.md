@@ -1,5 +1,5 @@
 <div align="center">
-  <img src=".github/komako.jpg" width = "300" height = "300" alt="Komako"><br>
+  <img src="app/src/main/res/drawable-nodpi/kohima.webp" width = "256" height = "256" alt="Kohima"><br>
   <h1>copymanga 拷贝漫画</h1>
   拷贝漫画的第三方APP，优化阅读/下载体验<br><br>
 

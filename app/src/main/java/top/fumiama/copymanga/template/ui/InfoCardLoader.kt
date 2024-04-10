@@ -180,8 +180,10 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
                 delay(timeMillis)
+                showKanban()
                 reset()
                 addPage()
+                hideKanban()
             }
         }
     }

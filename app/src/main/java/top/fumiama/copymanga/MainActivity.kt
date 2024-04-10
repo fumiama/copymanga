@@ -53,7 +53,6 @@ import top.fumiama.copymanga.tools.ui.UITools
 import top.fumiama.copymanga.ui.book.BookFragment.Companion.bookHandler
 import top.fumiama.copymanga.ui.cardflow.rank.RankFragment
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment
-import top.fumiama.copymanga.ui.download.DownloadFragment
 import top.fumiama.copymanga.ui.download.NewDownloadFragment
 import top.fumiama.copymanga.update.Update
 import top.fumiama.copymanga.user.Member
@@ -98,22 +97,6 @@ class MainActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController!!, appBarConfiguration)
         nav_view.setupWithNavController(navController!!)
-        PreferenceManager.getDefaultSharedPreferences(this)?.apply {
-            if (contains("settings_cat_general_sb_startup_menu")) getString("settings_cat_general_sb_startup_menu", "0")?.toInt()?.let {
-                if (it > 0) {
-                    Log.d("MyMain", "nav 2 dest $it")
-                    navController!!.navigate(listOf(
-                        R.id.nav_home,
-                        R.id.nav_sort,
-                        R.id.nav_rank,
-                        R.id.nav_sub,
-                        R.id.nav_history,
-                        R.id.nav_new_download,
-                        R.id.nav_settings
-                    )[it])
-                }
-            }
-        }
 
         headPic = File(getExternalFilesDir(""), "headPic")
         drawer_layout.addDrawerListener(object : DrawerLayout.DrawerListener {
@@ -156,6 +139,26 @@ class MainActivity : AppCompatActivity() {
                         Log.d("MyMA", "finish menu waiting")
                         changeMenuList(latestDestination)
                     }
+                }
+            }
+        }
+    }
+
+    override fun onPostCreate(savedInstanceState: Bundle?) {
+        super.onPostCreate(savedInstanceState)
+        PreferenceManager.getDefaultSharedPreferences(this)?.apply {
+            if (contains("settings_cat_general_sb_startup_menu")) getString("settings_cat_general_sb_startup_menu", "0")?.toInt()?.let {
+                if (it > 0) {
+                    Log.d("MyMain", "nav 2 dest $it")
+                    navController!!.navigate(listOf(
+                        R.id.nav_home,
+                        R.id.nav_sort,
+                        R.id.nav_rank,
+                        R.id.nav_sub,
+                        R.id.nav_history,
+                        R.id.nav_new_download,
+                        R.id.nav_settings
+                    )[it])
                 }
             }
         }

@@ -60,7 +60,12 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
     override fun handleMessage(msg: Message) {
         super.handleMessage(msg)
         when (msg.what) {
-            -1 -> homeF?.swiperefresh?.isRefreshing = msg.obj as Boolean
+            -1 -> {
+                homeF?.apply {
+                    swiperefresh?.isRefreshing = msg.obj as Boolean
+                    lifecycleScope.launch { if(msg.obj as Boolean) showKanban() else hideKanban() }
+                }
+            }
             //0 -> setLayouts()
             1 -> inflateCardLines()
             2 -> homeF?.swiperefresh?.let { setSwipe(it) }
@@ -274,6 +279,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
             Log.d("MyHFH", "Refresh items.")
             homeF?.lifecycleScope?.launch {
                 withContext(Dispatchers.IO) {
+                    homeF?.showKanban()
                     fhib?.isAutoPlay = false
                     fhib?.adapter?.notifyDataSetChanged()
                     index = null

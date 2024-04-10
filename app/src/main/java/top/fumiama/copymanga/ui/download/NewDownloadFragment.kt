@@ -12,7 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import top.fumiama.copymanga.MainActivity
+import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.manga.Reader
 import top.fumiama.copymanga.template.general.MangaPagesFragmentTemplate
 import top.fumiama.copymanga.template.ui.CardList
@@ -26,8 +26,8 @@ import java.lang.ref.WeakReference
 @OptIn(ExperimentalStdlibApi::class)
 class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownload, forceLoad = true) {
     private var sortedBookList: List<File>? = null
-    private val oldDlCardName = MainActivity.mainWeakReference?.get()?.getString(R.string.old_download_card_name)!!
-    private val extDir = MainActivity.mainWeakReference?.get()?.getExternalFilesDir("")
+    private val oldDlCardName = mainWeakReference?.get()?.getString(R.string.old_download_card_name)!!
+    private val extDir = mainWeakReference?.get()?.getExternalFilesDir("")
     private var isReverse = false
     private var isContentChanged = false
     private var exit = false
@@ -35,8 +35,9 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         wn = WeakReference(this)
-        val settingsPref = MainActivity.mainWeakReference?.get()?.let { PreferenceManager.getDefaultSharedPreferences(it) }
-        showAll = settingsPref?.getBoolean("settings_cat_md_sw_show_0m_manga", false)?:false
+        showAll = activity?.let {
+            PreferenceManager.getDefaultSharedPreferences(it)
+        }?.getBoolean("settings_cat_md_sw_show_0m_manga", false)?:false
     }
 
     override fun onPause() {
@@ -221,9 +222,11 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
                 isContentChanged = true
                 lifecycleScope.launch {
                     withContext(Dispatchers.IO) {
+                        showKanban()
                         reset()
                         delay(600)
                         addPage()
+                        hideKanban()
                     }
                 }
             }

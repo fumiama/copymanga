@@ -16,7 +16,6 @@ import top.fumiama.copymanga.json.VolumeStructure
 import top.fumiama.copymanga.template.general.NoBackRefreshFragment
 import top.fumiama.dmzj.copymanga.R
 import java.io.File
-import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
 
 class ComicDlFragment: NoBackRefreshFragment(R.layout.fragment_dlcomic) {

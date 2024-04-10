@@ -23,7 +23,6 @@ import kotlinx.android.synthetic.main.widget_downloadbar.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.json.ChapterStructure
 import top.fumiama.copymanga.json.ComicStructureOld
 import top.fumiama.copymanga.json.VolumeStructure
@@ -126,6 +125,7 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
             }
             complete = true
         }
+        that?.hideKanban()
     }
     private suspend fun addDiv() = withContext(Dispatchers.Main) {
         that?.ldwn?.addView(
@@ -191,7 +191,7 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
         val widthData = toolsBox.calcWidthFromDpRoot(8, 64)
         btnNumPerRow = widthData[0]
         btnw = widthData[1]
-        dl = mainWeakReference?.get()?.let { Dialog(it) }
+        dl = that?.activity?.let { Dialog(it) }
         dl?.setContentView(R.layout.dialog_unzipping)
         that?.dlsdwn?.viewTreeObserver?.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener{
             override fun onGlobalLayout() {

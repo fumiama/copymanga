@@ -69,6 +69,7 @@ open class MangaPagesFragmentTemplate(inflateRes:Int, private val isLazy: Boolea
                 return
             }
             lifecycleScope.launch {
+                showKanban()
                 withContext(Dispatchers.IO) {
                     delay(600)
                     setLayouts()
@@ -100,6 +101,7 @@ open class MangaPagesFragmentTemplate(inflateRes:Int, private val isLazy: Boolea
         initCardList(WeakReference(this@MangaPagesFragmentTemplate))
         managePage()
         setListeners()
+        hideKanban()
     }
 
     private suspend fun managePage() {
@@ -116,9 +118,11 @@ open class MangaPagesFragmentTemplate(inflateRes:Int, private val isLazy: Boolea
                         override fun onRefresh() {
                             lifecycleScope.launch {
                                 withContext(Dispatchers.IO) {
+                                    showKanban()
                                     reset()
                                     delay(600)
                                     addPage()
+                                    hideKanban()
                                 }
                             }
                         }

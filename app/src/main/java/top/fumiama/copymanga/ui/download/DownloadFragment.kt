@@ -13,7 +13,6 @@ import kotlinx.android.synthetic.main.fragment_download.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.manga.Reader
 import top.fumiama.copymanga.template.general.NoBackRefreshFragment
 import top.fumiama.copymanga.tools.file.FileUtils
@@ -27,7 +26,7 @@ class DownloadFragment: NoBackRefreshFragment(R.layout.fragment_download) {
         super.onViewCreated(view, savedInstanceState)
         if(isFirstInflate) {
             arguments?.getString("title")?.let {
-                mainWeakReference?.get()?.toolbar?.title = it
+                activity?.toolbar?.title = it
             }
             lifecycleScope.launch {
                 scanFile(arguments?.getString("file")?.let { File(it) }?:context?.getExternalFilesDir("")?:run {
