@@ -13,6 +13,7 @@ import top.fumiama.copymanga.tools.http.Comandy
 import top.fumiama.copymanga.tools.http.DownloadTools
 import top.fumiama.copymanga.tools.http.DownloadTools.app_ver
 import top.fumiama.copymanga.tools.http.DownloadTools.pc_ua
+import top.fumiama.copymanga.tools.http.Proxy
 import top.fumiama.dmzj.copymanga.R
 import java.net.URLEncoder
 import java.nio.charset.Charset
@@ -21,7 +22,7 @@ class Member(private val pref: SharedPreferences, private val getString: (Int) -
     val hasLogin: Boolean get() = pref.getString("token", "")?.isNotEmpty()?:false
     suspend fun login(username: String, pwd: String, salt: Int): LoginInfoStructure = withContext(Dispatchers.IO) {
         var err = ""
-        if (Comandy.useComandy) getComandyLoginConnection(username, pwd, salt).let { capsule ->
+        if (!Proxy.useApiProxy && Comandy.useComandy) getComandyLoginConnection(username, pwd, salt).let { capsule ->
             try {
                 val para = Gson().toJson(capsule)
                 Comandy.instance?.request(para)?.let { result ->

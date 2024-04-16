@@ -107,7 +107,7 @@ object DownloadTools {
 
     suspend fun getHttpContent(u: String, refer: String? = null, ua: String? = pc_ua): ByteArray =
         withContext(Dispatchers.IO) {
-            if (Comandy.useComandy) {
+            if (!u.startsWith("https://copymanga.azurewebsites.net") && Comandy.useComandy) {
                 getComandyApiConnection(u, "GET", refer, ua).let { capsule ->
                     val para = Gson().toJson(capsule)
                     //Log.d("MyDT", "comandy request: $para")
@@ -147,7 +147,7 @@ object DownloadTools {
 
     fun prepare(u: String, readSize: Int = -1) = run {
         Log.d("MyDT", "prepareHttp: $u")
-        FutureTask(if (Comandy.useComandy) Callable{
+        FutureTask(if (!u.startsWith("https://copymanga.azurewebsites.net") && Comandy.useComandy) Callable{
             try {
                 Comandy.instance?.request(Gson().toJson(
                     getComandyNormalConnection(u, "GET", pc_ua))
@@ -189,7 +189,7 @@ object DownloadTools {
     fun requestWithBody(url: String, method: String, body: ByteArray, refer: String? = referer, ua: String? = pc_ua, contentType: String? = "application/x-www-form-urlencoded;charset=utf-8"): ByteArray? {
         Log.d("MyDT", "$method Http: $url")
         var ret: ByteArray? = null
-        val task = FutureTask(if(Comandy.useComandy) Callable{
+        val task = FutureTask(if(!url.startsWith("https://copymanga.azurewebsites.net") && Comandy.useComandy) Callable{
             try {
                 val capsule = getComandyApiConnection(url, method, refer, ua)
                 contentType?.let { capsule.headers["content-type"] = it }

@@ -44,9 +44,6 @@ class ComandyGlideModule: AppGlideModule() {
             }
             try {
                 val para = Gson().toJson(capsule)
-                MainActivity.mainWeakReference?.get()?.runOnUiThread {
-                    Log.d("MyCGM", "request: $para")
-                }
                 Comandy.instance!!.request(para).let { result ->
                     Gson().fromJson(result, ComandyCapsule::class.java)!!.let {
                         if (it.code != 200) {
@@ -88,7 +85,9 @@ class ComandyGlideModule: AppGlideModule() {
         }
 
         override fun handles(model: GlideUrl): Boolean {
-            return Comandy.useComandy && Comandy.instance != null && model.toURL().let { it.protocol == "https" }
+            return Comandy.useComandy && Comandy.instance != null && model.toURL().let {
+                it.protocol == "https" && it.host != "copymanga.azurewebsites.net"
+            }
         }
 
     }
