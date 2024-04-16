@@ -30,26 +30,34 @@ class Proxy(id: Int, private val apiRegex: Regex, keyID: Int? = null) {
     }
 
     companion object {
+        private var mUseImageProxy: Boolean? = null
         val useImageProxy: Boolean
             get() {
+                if (mUseImageProxy != null) return mUseImageProxy!!
                 MainActivity.mainWeakReference?.get()?.let {
                     PreferenceManager.getDefaultSharedPreferences(it).apply {
                         val b = getBoolean("settings_cat_net_sw_use_img_proxy", false)
                         Log.d("MyProxy", "use image proxy: $b")
+                        mUseImageProxy = b
                         return b
                     }
                 }
+                mUseImageProxy = false
                 return false
             }
+        private var mUseApiProxy: Boolean? = null
         val useApiProxy: Boolean
             get() {
+                if (mUseApiProxy != null) return mUseApiProxy!!
                 MainActivity.mainWeakReference?.get()?.let {
                     PreferenceManager.getDefaultSharedPreferences(it).apply {
                         val b = getBoolean("settings_cat_net_sw_use_api_proxy", false)
                         Log.d("MyProxy", "use api proxy: $b")
+                        mUseApiProxy = b
                         return b
                     }
                 }
+                mUseApiProxy = false
                 return false
             }
     }

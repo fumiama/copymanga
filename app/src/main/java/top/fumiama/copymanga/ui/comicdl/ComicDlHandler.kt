@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
+import androidx.preference.PreferenceManager
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.button_tbutton.*
 import kotlinx.android.synthetic.main.button_tbutton.view.*
@@ -21,6 +22,7 @@ import kotlinx.android.synthetic.main.line_chapter.view.*
 import kotlinx.android.synthetic.main.line_horizonal_empty.view.*
 import kotlinx.android.synthetic.main.widget_downloadbar.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.json.ChapterStructure
@@ -38,6 +40,7 @@ import top.fumiama.copymanga.views.LazyScrollView
 import top.fumiama.dmzj.copymanga.R
 import java.io.File
 import java.lang.ref.WeakReference
+import java.util.concurrent.atomic.AtomicInteger
 
 class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragment>, private val vols: Array<VolumeStructure>, private val comicName: String, private val groupNames: Array<String>?):Handler(looper) {
     constructor(looper: Looper, th: WeakReference<ComicDlFragment>, comicName: String) : this(looper, th, arrayOf(), comicName, null) {
@@ -63,6 +66,7 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
     var downloading = false
     private var urlArray = arrayOf<String>()
     private var uuidArray = arrayOf<String>()
+    private val maxBatch = that?.activity?.let { PreferenceManager.getDefaultSharedPreferences(it) }?.getInt("settings_cat_md_sb_max_batch", 16)?:16
 
     @SuppressLint("SetTextI18n")
     override fun handleMessage(msg: Message) {
@@ -265,12 +269,15 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
     }
     
     private suspend fun downloadChapterPages() = withContext(Dispatchers.IO) {
+        val totalInDownload = AtomicInteger(0)
         tbtnlist.forEach { i ->
             if(i.isChecked) {
                 withContext(Dispatchers.Main) {
                     i.isEnabled = false
                 }
                 i.url?.let {
+                    while (totalInDownload.get() >= maxBatch) delay(1000)
+                    totalInDownload.incrementAndGet()
                     launch {
                         mangaDlTools.downloadChapterInVol(
                             it,
@@ -278,7 +285,7 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
                             i.caption?:"null",
                             i.index
                         )
-                    }
+                    }.invokeOnCompletion { totalInDownload.decrementAndGet() }
                 }
             }
         }

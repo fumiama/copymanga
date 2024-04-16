@@ -1,6 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
 
 android {
     defaultConfig {
@@ -8,8 +9,8 @@ android {
         applicationId 'top.fumiama.copymanga'
         minSdkVersion 23
         targetSdkVersion 34
-        versionCode 57
-        versionName '2.2.9'
+        versionCode 58
+        versionName '2.3.0'
         resourceConfigurations += ['zh', 'zh-rCN']
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -46,6 +47,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }*/
     }
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
@@ -78,7 +84,7 @@ dependencies {
     implementation 'com.github.yalantis:ucrop:2.2.6'
     implementation 'com.to.aboomy:pager2banner:1.0.1'
     implementation 'com.github.bumptech.glide:glide:4.16.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0'
+    kapt 'com.github.bumptech.glide:compiler:4.16.0'
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'com.github.vovaksenov99:OverscrollableScrollView:1.0'
     implementation 'com.liaoinstan.springview:library:1.7.0'
@@ -86,4 +92,5 @@ dependencies {
     implementation 'com.lapism:search:2.4.1@aar'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
     implementation 'com.airbnb.android:lottie:6.4.0'
+    implementation 'net.java.dev.jna:jna:5.14.0'
 }

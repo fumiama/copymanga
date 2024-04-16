@@ -10,9 +10,7 @@ import androidx.core.animation.doOnEnd
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
 import kotlinx.android.synthetic.main.content_main.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.tools.ui.UITools
 import java.util.concurrent.atomic.AtomicBoolean
@@ -48,8 +46,8 @@ open class NoBackRefreshFragment(private val layoutToLoad: Int): Fragment() {
         isFirstInflate = true
         Log.d("MyNBRF", "destroyed")
     }
-    suspend fun showKanban() = withContext(Dispatchers.Main) {
-        if (disableAnimation) return@withContext
+    fun showKanban() {
+        if (disableAnimation) return
         (activity?:(MainActivity.mainWeakReference?.get()))?.apply {cmaini?.post {
             if(cmaini?.visibility == View.GONE) {
                 Log.d("MyNBRF", "show: start, set h: ${window?.decorView?.height}")
@@ -62,8 +60,8 @@ open class NoBackRefreshFragment(private val layoutToLoad: Int): Fragment() {
         Log.d("MyNBRF", "show: end")
     }
     private var isHideRunning = AtomicBoolean()
-    suspend fun hideKanban() = withContext(Dispatchers.Main) {
-        if (disableAnimation) return@withContext
+    fun hideKanban() {
+        if (disableAnimation) return
         (activity?:(MainActivity.mainWeakReference?.get()))?.apply { cmaini?.post {
             if(!isHideRunning.get() && cmaini?.visibility == View.VISIBLE) {
                 isHideRunning.set(true)

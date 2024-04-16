@@ -5,8 +5,10 @@ import android.util.Base64
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import top.fumiama.copymanga.json.ComandyCapsule
 import top.fumiama.copymanga.json.LoginInfoStructure
 import top.fumiama.copymanga.tools.api.CMApi
+import top.fumiama.copymanga.tools.http.Comandy
 import top.fumiama.copymanga.tools.http.DownloadTools
 import top.fumiama.dmzj.copymanga.R
 import java.net.URLEncoder
@@ -16,29 +18,37 @@ class Member(private val pref: SharedPreferences, private val getString: (Int) -
     val hasLogin: Boolean get() = pref.getString("token", "")?.isNotEmpty()?:false
     suspend fun login(username: String, pwd: String, salt: Int): LoginInfoStructure = withContext(Dispatchers.IO) {
         var err = ""
-        getLoginConnection(username, pwd, salt).apply {
+        if (Comandy.useComandy) getComandyLoginConnection(username, pwd, salt).let { capsule ->
+            try {
+                Comandy.instance?.request(Gson().toJson(capsule))?.let { result ->
+                    Gson().fromJson(result, ComandyCapsule::class.java)!!.let {
+                        if (it.code != 200) {
+                            val l = LoginInfoStructure()
+                            l.code = it.code
+                            l.message = it.data?.let { d -> Base64.decode(d, Base64.DEFAULT).decodeToString() }
+                            return@withContext l
+                        }
+                        Base64.decode(it.data, Base64.DEFAULT)
+                    }
+                }
+            } catch (e: Exception) {
+                err = e.message.toString()
+                null
+            }
+        }?.let {
+            try {
+                saveInfo(it)
+            } catch (e: Exception) {
+                err = e.message.toString()
+            }
+        }
+        else getLoginConnection(username, pwd, salt).apply {
             inputStream.use {
                 it?.readBytes()?.let { data ->
-                    data.inputStream().use { dataIn ->
-                        try {
-                            Gson().fromJson<LoginInfoStructure>(
-                                dataIn.reader(), LoginInfoStructure::class.java
-                            )?.let { info ->
-                                if(info.code == 200) {
-                                    pref.edit()?.apply {
-                                        putString("token", info.results?.token)
-                                        putString("user_id", info.results?.user_id)
-                                        putString("username", info.results?.username)
-                                        putString("nickname", info.results?.nickname)
-                                        apply()
-                                        return@withContext info()
-                                    }
-                                }
-                                return@withContext info
-                            }?: run { err = getString(R.string.login_parse_json_error) }
-                        } catch (e: Exception) {
-                            err = data.decodeToString()
-                        }
+                    try {
+                        saveInfo(data)
+                    } catch (e: Exception) {
+                        err = e.message.toString()
                     }
                 }?: run { err = getString(R.string.login_get_conn_failed) }
             }
@@ -101,6 +111,26 @@ class Member(private val pref: SharedPreferences, private val getString: (Int) -
         }
     }
 
+    private suspend fun saveInfo(data: ByteArray) = data.inputStream().use { dataIn ->
+        try {
+            Gson().fromJson(dataIn.reader(), LoginInfoStructure::class.java)?.let { l ->
+                if(l.code == 200) {
+                    pref.edit()?.apply {
+                        putString("token", l.results?.token)
+                        putString("user_id", l.results?.user_id)
+                        putString("username", l.results?.username)
+                        putString("nickname", l.results?.nickname)
+                        apply()
+                        return@use info()
+                    }
+                }
+                return@use l
+            }?: throw Exception(getString(R.string.login_parse_json_error))
+        } catch (e: Exception) {
+            throw Exception(data.decodeToString(), e)
+        }
+    }
+
     private fun getLoginConnection(username: String, pwd: String, salt: Int) =
         getString(R.string.loginApiUrl).format(CMApi.myHostApiUrl).let {
             CMApi.apiProxy?.wrap(it)?:it
@@ -114,6 +144,22 @@ class Member(private val pref: SharedPreferences, private val getString: (Int) -
                     val r = if(!getBoolean("settings_cat_net_sw_use_foreign", false)) "1" else "0"
                     val pwdEncoded = Base64.encode("$pwd-$salt".toByteArray(), Base64.DEFAULT).decodeToString()
                     outputStream.write("username=${URLEncoder.encode(username, Charset.defaultCharset().name())}&password=$pwdEncoded&salt=$salt&platform=3&authorization=Token+&version=1.4.4&source=copyApp&region=$r&webp=1".toByteArray())
+                }
+            }
+        }
+
+    private fun getComandyLoginConnection(username: String, pwd: String, salt: Int) =
+        getString(R.string.loginApiUrl).format(CMApi.myHostApiUrl).let {
+            CMApi.apiProxy?.wrap(it)?:it
+        }.let {
+            DownloadTools.getComandyApiConnection(it, "POST").apply {
+                pref.apply {
+                    headers["content-type"] = "application/x-www-form-urlencoded;charset=utf-8"
+                    headers["platform"] = "3"
+                    headers["accept"] = "application/json"
+                    val r = if(!getBoolean("settings_cat_net_sw_use_foreign", false)) "1" else "0"
+                    val pwdEncoded = Base64.encode("$pwd-$salt".toByteArray(), Base64.DEFAULT).decodeToString()
+                    data = "username=${URLEncoder.encode(username, Charset.defaultCharset().name())}&password=$pwdEncoded&salt=$salt&platform=3&authorization=Token+&version=1.4.4&source=copyApp&region=$r&webp=1"
                 }
             }
         }

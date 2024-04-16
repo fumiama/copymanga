@@ -44,6 +44,12 @@
     <PreferenceCategory
         app:iconSpaceReserved="false"
         app:title="@string/settings_cat_net">
+        <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
+            app:key="settings_cat_net_sw_use_comandy"
+            app:selectable="true"
+            app:summary="@string/settings_cat_net_sm_use_comandy"
+            app:title="@string/settings_cat_net_sw_use_comandy" />
         <ListPreference
             android:max="1500"
             app:iconSpaceReserved="false"
@@ -146,5 +152,14 @@
             app:selectable="true"
             app:summary="@string/settings_cat_md_sm_show_0m_manga"
             app:title="@string/settings_cat_md_sw_show_0m_manga" />
+        <SeekBarPreference
+            android:defaultValue="16"
+            android:max="32"
+            app:iconSpaceReserved="false"
+            app:key="settings_cat_md_sb_max_batch"
+            app:min="1"
+            app:showSeekBarValue="true"
+            app:summary="@string/settings_cat_md_sm_max_batch"
+            app:title="@string/settings_cat_md_sb_max_batch" />
     </PreferenceCategory>
 </PreferenceScreen>

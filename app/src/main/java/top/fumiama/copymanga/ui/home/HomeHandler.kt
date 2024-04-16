@@ -63,7 +63,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
             -1 -> {
                 homeF?.apply {
                     swiperefresh?.isRefreshing = msg.obj as Boolean
-                    lifecycleScope.launch { if(msg.obj as Boolean) showKanban() else hideKanban() }
+                    if(msg.obj as Boolean) showKanban() else hideKanban()
                 }
             }
             //0 -> setLayouts()
@@ -281,8 +281,8 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
                 withContext(Dispatchers.IO) {
                     homeF?.showKanban()
                     fhib?.isAutoPlay = false
-                    fhib?.adapter?.notifyDataSetChanged()
                     index = null
+                    fhib?.adapter?.notifyDataSetChanged()
                     fhib = null
                     indexLines = arrayOf()
                     this@HomeHandler.sendEmptyMessage(6)    //removeAllViews

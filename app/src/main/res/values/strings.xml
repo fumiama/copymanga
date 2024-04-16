@@ -89,6 +89,9 @@
     <string name="apiProxyApiUrl">https://copymanga.azurewebsites.net/api/api?code=%1$s&amp;url=%2$s</string>
     <string name="imgResolutionKeyID">settings_cat_net_sb_image_resolution</string>
 
+    <string name="comandy_version_url">https://gitea.seku.su/api/v1/repos/fumiama/comandy/releases/tags/default</string>
+    <string name="comandy_download_url">"https://gitea.seku.su/fumiama/comandy/releases/download/default/%1$s_libcomandy.so.gz"</string>
+
     <string name="complete">已完结</string>
 
     <string name="TRANSPORT_WIFI">WIFI</string>
@@ -151,6 +154,8 @@
     <string name="settings_cat_net_sm_use_cellar">打开后不再在开始阅读时提示</string>
     <string name="settings_cat_net_sw_use_foreign">使用海外线路</string>
     <string name="settings_cat_net_sm_use_foreign">不管使用什么线路, API访问均是海外, 只有图片CDN可能会变化（也可能不变）, 请酌情选择使用</string>
+    <string name="settings_cat_net_sw_use_comandy">增强型数据访问</string>
+    <string name="settings_cat_net_sm_use_comandy">使用经过优化的请求方法访问服务器</string>
     <string name="settings_cat_net_et_title_api_url">请求API网址</string>
     <string name="settings_cat_net_et_summary_api_url">一般无需更改，除非拷贝漫画官方更改网址，默认：&hosturl;</string>
     <string name="settings_cat_net_sw_use_api_proxy">使用API代理（重启生效）</string>
@@ -175,6 +180,8 @@
     <string name="settings_cat_md">漫画下载</string>
     <string name="settings_cat_md_sw_show_0m_manga">显示未下载漫画</string>
     <string name="settings_cat_md_sm_show_0m_manga">打开后将在我的下载显示所有浏览过详情页的漫画，旧版下载永远全部显示</string>
+    <string name="settings_cat_md_sb_max_batch">漫画下载并发限制</string>
+    <string name="settings_cat_md_sm_max_batch">默认为16</string>
 
     <string name="login_null_username">用户名为空</string>
     <string name="login_null_pwd">密码为空</string>
