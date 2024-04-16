@@ -78,10 +78,7 @@ open class AutoDownloadHandler(
         var cnt = 0
         while (cnt++ <= 3) {
             try {
-                val data = DownloadTools.getHttpContent(
-                    CMApi.apiProxy?.wrap(url)?:url, null,
-                    DownloadTools.pc_ua
-                )
+                val data = DownloadTools.getHttpContent(CMApi.apiProxy?.wrap(url)?:url)
                 if(exit) return@withContext
                 val fi = data.inputStream()
                 val pass = setGsonItem(Gson().fromJson(fi.reader(), jsonClass))

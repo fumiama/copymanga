@@ -105,7 +105,7 @@ object DownloadTools {
             capsule
         }
 
-    suspend fun getHttpContent(u: String, refer: String? = null, ua: String? = null): ByteArray =
+    suspend fun getHttpContent(u: String, refer: String? = null, ua: String? = pc_ua): ByteArray =
         withContext(Dispatchers.IO) {
             if (Comandy.useComandy) {
                 getComandyApiConnection(u, "GET", refer, ua).let { capsule ->
@@ -150,7 +150,7 @@ object DownloadTools {
         FutureTask(if (Comandy.useComandy) Callable{
             try {
                 Comandy.instance?.request(Gson().toJson(
-                    getComandyNormalConnection(u, "GET"))
+                    getComandyNormalConnection(u, "GET", pc_ua))
                 )?.let { result ->
                     Gson().fromJson(result, ComandyCapsule::class.java)?.let {
                         if (it.code != 200) null
@@ -164,7 +164,7 @@ object DownloadTools {
         } else Callable {
             var ret: ByteArray? = null
             try {
-                val connection = getNormalConnection(u, "GET")
+                val connection = getNormalConnection(u, "GET", pc_ua)
                 val ci = connection.inputStream
                 if(readSize > 0) {
                     ret = ByteArray(readSize)
@@ -186,22 +186,22 @@ object DownloadTools {
         }
     }*/
 
-    fun requestWithBody(url: String, method: String, body: ByteArray, refer: String? = null, ua: String? = null): ByteArray? {
+    fun requestWithBody(url: String, method: String, body: ByteArray, refer: String? = referer, ua: String? = pc_ua, contentType: String? = "application/x-www-form-urlencoded;charset=utf-8"): ByteArray? {
         Log.d("MyDT", "$method Http: $url")
         var ret: ByteArray? = null
         val task = FutureTask(if(Comandy.useComandy) Callable{
             try {
                 val capsule = getComandyApiConnection(url, method, refer, ua)
+                contentType?.let { capsule.headers["content-type"] = it }
                 capsule.data = body.decodeToString()
                 Comandy.instance?.request(Gson().toJson(capsule))?.let { result ->
                     Gson().fromJson(result, ComandyCapsule::class.java)?.let {
-                        if (it.code != 200) null
-                        else it.data?.let { d -> Base64.decode(d, Base64.DEFAULT) }
+                        it.data?.let { d -> Base64.decode(d, Base64.DEFAULT) }?:"empty comandy data".encodeToByteArray()
                     }
                 }
             } catch (ex: Exception) {
                 ex.printStackTrace()
-                null
+                ex.message?.encodeToByteArray()
             }
         }
         else Callable {

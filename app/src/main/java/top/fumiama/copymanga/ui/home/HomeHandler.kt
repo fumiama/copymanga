@@ -342,7 +342,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
         cv.tic.apply { post { text = name } }
         homeF?.let {
             if(img.startsWith("http")) {
-                Log.d("MyHH", "load card image: $img")
+                //Log.d("MyHH", "load card image: $img")
                 val waitMillis = cardLoadingWaits.getAndIncrement().toLong()*200
                 val g = Glide.with(it).load(GlideUrl(CMApi.imageProxy?.wrap(img)?:img, CMApi.myGlideHeaders))
                     .addListener(GlideHideLottieViewListener(WeakReference(cv.laic)) {

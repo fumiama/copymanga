@@ -2,6 +2,7 @@ package top.fumiama.copymanga.user
 
 import android.content.SharedPreferences
 import android.util.Base64
+import android.util.Log
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -10,6 +11,8 @@ import top.fumiama.copymanga.json.LoginInfoStructure
 import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.copymanga.tools.http.Comandy
 import top.fumiama.copymanga.tools.http.DownloadTools
+import top.fumiama.copymanga.tools.http.DownloadTools.app_ver
+import top.fumiama.copymanga.tools.http.DownloadTools.pc_ua
 import top.fumiama.dmzj.copymanga.R
 import java.net.URLEncoder
 import java.nio.charset.Charset
@@ -20,12 +23,13 @@ class Member(private val pref: SharedPreferences, private val getString: (Int) -
         var err = ""
         if (Comandy.useComandy) getComandyLoginConnection(username, pwd, salt).let { capsule ->
             try {
-                Comandy.instance?.request(Gson().toJson(capsule))?.let { result ->
+                val para = Gson().toJson(capsule)
+                Comandy.instance?.request(para)?.let { result ->
                     Gson().fromJson(result, ComandyCapsule::class.java)!!.let {
                         if (it.code != 200) {
                             val l = LoginInfoStructure()
                             l.code = it.code
-                            l.message = it.data?.let { d -> Base64.decode(d, Base64.DEFAULT).decodeToString() }
+                            l.message = it.data?.let { d -> Base64.decode(d, Base64.DEFAULT).decodeToString() }?:"HTTP ${it.code}"
                             return@withContext l
                         }
                         Base64.decode(it.data, Base64.DEFAULT)
@@ -37,7 +41,7 @@ class Member(private val pref: SharedPreferences, private val getString: (Int) -
             }
         }?.let {
             try {
-                saveInfo(it)
+                return@withContext saveInfo(it)
             } catch (e: Exception) {
                 err = e.message.toString()
             }
@@ -46,7 +50,7 @@ class Member(private val pref: SharedPreferences, private val getString: (Int) -
             inputStream.use {
                 it?.readBytes()?.let { data ->
                     try {
-                        saveInfo(data)
+                        return@withContext saveInfo(data)
                     } catch (e: Exception) {
                         err = e.message.toString()
                     }
@@ -143,7 +147,7 @@ class Member(private val pref: SharedPreferences, private val getString: (Int) -
                     setRequestProperty("accept", "application/json")
                     val r = if(!getBoolean("settings_cat_net_sw_use_foreign", false)) "1" else "0"
                     val pwdEncoded = Base64.encode("$pwd-$salt".toByteArray(), Base64.DEFAULT).decodeToString()
-                    outputStream.write("username=${URLEncoder.encode(username, Charset.defaultCharset().name())}&password=$pwdEncoded&salt=$salt&platform=3&authorization=Token+&version=1.4.4&source=copyApp&region=$r&webp=1".toByteArray())
+                    outputStream.write("username=${URLEncoder.encode(username, Charset.defaultCharset().name())}&password=$pwdEncoded&salt=$salt&platform=3&authorization=Token+&version=$app_ver&source=copyApp&region=$r&webp=1".toByteArray())
                 }
             }
         }
@@ -152,14 +156,14 @@ class Member(private val pref: SharedPreferences, private val getString: (Int) -
         getString(R.string.loginApiUrl).format(CMApi.myHostApiUrl).let {
             CMApi.apiProxy?.wrap(it)?:it
         }.let {
-            DownloadTools.getComandyApiConnection(it, "POST").apply {
+            DownloadTools.getComandyApiConnection(it, "POST", null, pc_ua).apply {
                 pref.apply {
                     headers["content-type"] = "application/x-www-form-urlencoded;charset=utf-8"
                     headers["platform"] = "3"
                     headers["accept"] = "application/json"
                     val r = if(!getBoolean("settings_cat_net_sw_use_foreign", false)) "1" else "0"
                     val pwdEncoded = Base64.encode("$pwd-$salt".toByteArray(), Base64.DEFAULT).decodeToString()
-                    data = "username=${URLEncoder.encode(username, Charset.defaultCharset().name())}&password=$pwdEncoded&salt=$salt&platform=3&authorization=Token+&version=1.4.4&source=copyApp&region=$r&webp=1"
+                    data = "username=${URLEncoder.encode(username, Charset.defaultCharset().name())}&password=$pwdEncoded&salt=$salt&platform=3&authorization=Token+&version=$app_ver&source=copyApp&region=$r&webp=1"
                 }
             }
         }

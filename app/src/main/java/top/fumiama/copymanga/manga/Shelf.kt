@@ -14,7 +14,6 @@ class Shelf(private val token: String, getString: (Int) -> String) {
     private val apiUrl: String = getString(R.string.shelfOperateApiUrl).format(hostUrl)
     private val queryApiUrlTemplate = getString(R.string.bookUserQueryApiUrl)
     private val referer: String = getString(R.string.referer).format(DownloadTools.app_ver)
-    private val ua: String = getString(R.string.pc_ua).format(DownloadTools.app_ver)
     private val addApiUrl get() = "$apiUrl?platform=3".let { CMApi.apiProxy?.wrap(it)?:it }
     private val delApiUrl get() = "${apiUrl}s?platform=3".let { CMApi.apiProxy?.wrap(it)?:it }
     suspend fun add(comicId: String): String = withContext(Dispatchers.IO) {
@@ -29,9 +28,13 @@ class Shelf(private val token: String, getString: (Int) -> String) {
             append(token)
         }
         val re = DownloadTools.requestWithBody(
-            addApiUrl, "POST", body.encodeToByteArray(), referer, ua
+            addApiUrl, "POST", body.encodeToByteArray()
         )?.decodeToString() ?: return@withContext "空回应"
-        return@withContext Gson().fromJson(re, ReturnBase::class.java).message
+        return@withContext try {
+            Gson().fromJson(re, ReturnBase::class.java).message
+        } catch (e: Exception) {
+            "$re ${e.message}"
+        }
     }
 
     suspend fun del(vararg bookIds: Int): String = withContext(Dispatchers.IO) {
@@ -48,9 +51,13 @@ class Shelf(private val token: String, getString: (Int) -> String) {
             append(token)
         }
         val re = DownloadTools.requestWithBody(
-            delApiUrl, "DELETE", body.encodeToByteArray(), referer, ua
+            delApiUrl, "DELETE", body.encodeToByteArray()
         )?.decodeToString() ?: return@withContext "空回应"
-        return@withContext Gson().fromJson(re, ReturnBase::class.java).message
+        return@withContext try {
+            Gson().fromJson(re, ReturnBase::class.java).message
+        } catch (e: Exception) {
+            "$re ${e.message}"
+        }
     }
 
     suspend fun query(pathWord: String): BookQueryStructure? = withContext(Dispatchers.IO) {
@@ -58,7 +65,7 @@ class Shelf(private val token: String, getString: (Int) -> String) {
             Gson().fromJson(DownloadTools.getHttpContent(
                 queryApiUrlTemplate.format(hostUrl, pathWord).let {
                     CMApi.apiProxy?.wrap(it)?:it
-                }, referer, ua
+                }, referer
             ).decodeToString(), BookQueryStructure::class.java)
         } catch (e: Exception) {
             e.printStackTrace()
