@@ -77,9 +77,7 @@
 
 ##---------------End: proguard configuration for Gson  ----------
 
--keep class com.sun.jna.** { *; }
--keep class * implements com.sun.jna.** { *; }
--dontwarn java.awt.Component
--dontwarn java.awt.GraphicsEnvironment
--dontwarn java.awt.HeadlessException
--dontwarn java.awt.Window
+## JNA Proguard rules
+-dontwarn java.awt.*
+-keep class com.sun.jna.* { *; }
+-keepclassmembers class * extends com.sun.jna.* { public *; }
