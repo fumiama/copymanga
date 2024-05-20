@@ -16,6 +16,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import android.widget.Toast
@@ -143,8 +144,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-
-        WindowCompat.setDecorFitsSystemWindows(window, false)
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
@@ -162,6 +161,15 @@ class MainActivity : AppCompatActivity() {
                         R.id.nav_new_download,
                         R.id.nav_settings
                     )[it])
+                }
+            }
+            if (contains("settings_cat_general_sw_enable_transparent_systembar")) {
+                if (getBoolean("settings_cat_general_sw_enable_transparent_systembar", false)) {
+                    WindowCompat.setDecorFitsSystemWindows(window, false)
+                    window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+                    window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
+                    window.statusBarColor = 0
+                    window.navigationBarColor = 0
                 }
             }
         }

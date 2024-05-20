@@ -20,6 +20,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
 import android.view.WindowInsetsController
+import android.view.WindowManager
 import android.widget.Button
 import android.widget.SeekBar
 import android.widget.Toast
@@ -203,6 +204,10 @@ class ViewMangaActivity : TitleActivityTemplate() {
                     ObjectAnimator.ofFloat(vcp, "alpha", 0.1f, 1f).setDuration(1000).start()
                 }
             }
+        }
+        if (settingsPref?.getBoolean("settings_cat_general_sw_enable_transparent_systembar", false) == true) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R)
+                window.attributes.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
         }
     }
 

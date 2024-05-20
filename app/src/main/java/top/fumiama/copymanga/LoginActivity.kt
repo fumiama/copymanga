@@ -2,10 +2,12 @@ package top.fumiama.copymanga
 
 import android.os.Bundle
 import android.util.Log
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.preference.PreferenceManager
 import kotlinx.android.synthetic.main.activity_login.*
 import kotlinx.coroutines.launch
 import top.fumiama.dmzj.copymanga.R
@@ -59,6 +61,16 @@ class LoginActivity : AppCompatActivity() {
                 Toast.makeText(this@LoginActivity, l?.message, Toast.LENGTH_LONG).show()
             }
         }
-        WindowCompat.setDecorFitsSystemWindows(window, false)
+        PreferenceManager.getDefaultSharedPreferences(this)?.apply {
+            if (contains("settings_cat_general_sw_enable_transparent_systembar")) {
+                if (getBoolean("settings_cat_general_sw_enable_transparent_systembar", false)) {
+                    WindowCompat.setDecorFitsSystemWindows(window, false)
+                    window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+                    window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
+                    window.statusBarColor = 0
+                    window.navigationBarColor = 0
+                }
+            }
+        }
     }
 }

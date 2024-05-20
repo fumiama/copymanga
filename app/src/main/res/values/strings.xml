@@ -146,6 +146,8 @@
     <string name="settings_cat_general_sm_card_per_row">默认为0表示无偏移, 在此基础上加减</string>
     <string name="settings_cat_general_sw_disable_kanban_animation">不显示看板娘动画</string>
     <string name="settings_cat_general_sm_disable_kanban_animation">如加载卡顿可考虑开启此选项</string>
+    <string name="settings_cat_general_sw_enable_transparent_systembar">沉浸式系统栏</string>
+    <string name="settings_cat_general_sm_enable_transparent_systembar">使全面屏设备导航栏和状态栏更沉浸</string>
 
     <string name="settings_cat_net">网络</string>
     <string name="settings_cat_net_sb_title_image_resolution">图片分辨率</string>
