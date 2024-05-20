@@ -26,6 +26,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.net.toUri
+import androidx.core.view.WindowCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
@@ -142,6 +143,8 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+
+        WindowCompat.setDecorFitsSystemWindows(window, false)
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.activity_login.*
 import kotlinx.coroutines.launch
@@ -58,5 +59,6 @@ class LoginActivity : AppCompatActivity() {
                 Toast.makeText(this@LoginActivity, l?.message, Toast.LENGTH_LONG).show()
             }
         }
+        WindowCompat.setDecorFitsSystemWindows(window, false)
     }
 }
