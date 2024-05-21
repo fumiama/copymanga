@@ -13,27 +13,44 @@ import kotlinx.android.synthetic.main.fragment_download.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import top.fumiama.copymanga.MainActivity
+import top.fumiama.copymanga.manga.MangaDlTools
 import top.fumiama.copymanga.manga.Reader
 import top.fumiama.copymanga.template.general.NoBackRefreshFragment
 import top.fumiama.copymanga.tools.file.FileUtils
 import top.fumiama.copymanga.tools.ui.Navigate
 import top.fumiama.dmzj.copymanga.R
 import java.io.File
+import java.lang.ref.WeakReference
 import java.util.regex.Pattern
 
 class DownloadFragment: NoBackRefreshFragment(R.layout.fragment_download) {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        wd = WeakReference(this)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        wd = null
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         if(isFirstInflate) {
             arguments?.getString("title")?.let {
                 activity?.toolbar?.title = it
             }
-            lifecycleScope.launch {
-                scanFile(arguments?.getString("file")?.let { File(it) }?:context?.getExternalFilesDir("")?:run {
-                    findNavController().popBackStack()
-                    return@launch
-                })
-            }
+            initScan()
+        }
+    }
+
+    private fun initScan() {
+        lifecycleScope.launch {
+            scanFile(arguments?.getString("file")?.let { File(it) }?:context?.getExternalFilesDir("")?:run {
+                findNavController().popBackStack()
+                return@launch
+            })
         }
     }
 
@@ -127,5 +144,22 @@ class DownloadFragment: NoBackRefreshFragment(R.layout.fragment_download) {
         }
         //Log.d("MyDLL2", newString.toString().toFloat().toString())
         return if(newString.isEmpty()) 0f else newString.toString().toFloat()
+    }
+
+    fun removeAllEmpty() {
+        MainActivity.mainWeakReference?.get()?.getExternalFilesDir("")?.listFiles()?.toList().let {
+            var removed = false
+            MangaDlTools.getEmptyMangaList(it)?.forEach { f ->
+                if (f.exists()) {
+                    FileUtils.recursiveRemove(f)
+                    removed = true
+                }
+            }
+            if (removed) initScan()
+        }
+    }
+
+    companion object {
+        var wd: WeakReference<DownloadFragment>? = null
     }
 }

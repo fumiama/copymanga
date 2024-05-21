@@ -13,6 +13,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
+import top.fumiama.copymanga.manga.MangaDlTools
 import top.fumiama.copymanga.manga.Reader
 import top.fumiama.copymanga.template.general.MangaPagesFragmentTemplate
 import top.fumiama.copymanga.template.ui.CardList
@@ -72,28 +73,12 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
             sortedBookList = extDir?.listFiles()?.toList()
             var size = sortedBookList?.size?:0
             if (size > 0) {
-                if (isReverse) {
-                    Log.d("MyNDF", "reversed...")
-                    sortedBookList = sortedBookList?.asReversed()
-                }
-                setProgress(40)
                 if (!showAll) {
-                    val cache = hashMapOf<String, Boolean>()
-                    sortedBookList = sortedBookList?.filter {
-                        setProgress(40+20*cache.size/size)
-                        it.absolutePath.let { path ->
-                            if (cache.containsKey(path)) cache[path]!!
-                            else {
-                                val b = (it.listFiles { f ->
-                                    return@listFiles f.isDirectory && f.listFiles()?.isNotEmpty() ?: false
-                                }?.size ?: 0) > 0
-                                cache[path] = b
-                                b
-                            }
-                        }
+                    sortedBookList = MangaDlTools.getNonEmptyMangaList(sortedBookList) {
+                        setProgress(40+20*it/100)
                     }
                 }
-                setProgress(60)
+                setProgress(40)
                 size = sortedBookList?.size?:0
                 val cache = hashMapOf<String, String>()
                 sortedBookList = sortedBookList?.sortedBy {
@@ -106,6 +91,11 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
                             s
                         }
                     }
+                }
+                setProgress(60)
+                if (isReverse) {
+                    Log.d("MyNDF", "reversed...")
+                    sortedBookList = sortedBookList?.asReversed()
                 }
                 setProgress(80)
             }

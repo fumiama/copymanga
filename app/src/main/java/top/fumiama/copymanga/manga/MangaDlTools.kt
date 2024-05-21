@@ -91,4 +91,44 @@ class MangaDlTools {
         fun handleMessage(index: Int, isSuccess: Boolean, message: String)
         fun handleMessage(index: Int, downloaded: Int, total: Int, isSuccess: Boolean, message: String)
     }
+
+    companion object {
+        fun getNonEmptyMangaList(sortedBookList: List<File>?, setProgress: ((Int) -> Unit)? = null): List<File>? {
+            val cache = hashMapOf<String, Boolean>()
+            val size = sortedBookList?.size?:0
+            if(size <= 0) return null
+            return sortedBookList?.filter {
+                setProgress?.let { it(100*cache.size/size) }
+                it.absolutePath.let { path ->
+                    if (cache.containsKey(path)) cache[path]!!
+                    else {
+                        val b = (it.listFiles { f ->
+                            return@listFiles f.isDirectory && f.listFiles()?.isNotEmpty() ?: false
+                        }?.size ?: 0) > 0
+                        cache[path] = b
+                        b
+                    }
+                }
+            }
+        }
+
+        fun getEmptyMangaList(sortedBookList: List<File>?, setProgress: ((Int) -> Unit)? = null): List<File>? {
+            val cache = hashMapOf<String, Boolean>()
+            val size = sortedBookList?.size?:0
+            if(size <= 0) return null
+            return sortedBookList?.filter {
+                setProgress?.let { it(100*cache.size/size) }
+                it.absolutePath.let { path ->
+                    if (cache.containsKey(path)) cache[path]!!
+                    else {
+                        val b = (it.listFiles { f ->
+                            return@listFiles f.isDirectory && f.listFiles()?.isNotEmpty() ?: false
+                        }?.size ?: 0) <= 0
+                        cache[path] = b
+                        b
+                    }
+                }
+            }
+        }
+    }
 }

@@ -10,6 +10,7 @@
     <string name="action_info">关于</string>
     <string name="action_download">下载</string>
     <string name="action_sort">整理</string>
+    <string name="action_del">删除</string>
 
     <string name="menu_home">主页</string>
     <string name="menu_sort">分类</string>
@@ -33,6 +34,7 @@
     <string name="err_pick_img">选取图片失败</string>
     <string name="err_crop_img">裁剪图片失败</string>
     <string name="download_apk_fail">下载更新失败</string>
+    <string name="delele_all_empty_manga">删除所有空漫画?</string>
 
     <string name="login">登录</string>
     <string name="logout">注销</string>

@@ -55,6 +55,7 @@ import top.fumiama.copymanga.tools.ui.UITools
 import top.fumiama.copymanga.ui.book.BookFragment.Companion.bookHandler
 import top.fumiama.copymanga.ui.cardflow.rank.RankFragment
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment
+import top.fumiama.copymanga.ui.download.DownloadFragment
 import top.fumiama.copymanga.ui.download.NewDownloadFragment
 import top.fumiama.copymanga.update.Update
 import top.fumiama.copymanga.user.Member
@@ -197,6 +198,17 @@ class MainActivity : AppCompatActivity() {
                 RankFragment.wr?.get()?.showSexInfo(toolsBox)
                 true
             }
+            R.id.action_del -> {
+                if (DownloadFragment.wd != null) {
+                    val dl = AlertDialog.Builder(this)
+                    dl.setMessage(R.string.delele_all_empty_manga)
+                    dl.setPositiveButton(android.R.string.ok) { _, _ ->
+                        DownloadFragment.wd?.get()?.removeAllEmpty()
+                    }
+                    dl.show()
+                }
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -261,36 +273,49 @@ class MainActivity : AppCompatActivity() {
                 menuMain?.findItem(R.id.action_info)?.isVisible = true
                 menuMain?.findItem(R.id.action_download)?.isVisible = false
                 menuMain?.findItem(R.id.action_sort)?.isVisible = false
+                menuMain?.findItem(R.id.action_del)?.isVisible = false
             }
             R.id.nav_book -> {
                 Log.d("MyMA", "enter book")
                 menuMain?.findItem(R.id.action_info)?.isVisible = false
                 menuMain?.findItem(R.id.action_download)?.isVisible = true
                 menuMain?.findItem(R.id.action_sort)?.isVisible = false
+                menuMain?.findItem(R.id.action_del)?.isVisible = false
             }
             R.id.nav_group -> {
                 Log.d("MyMA", "enter group")
                 menuMain?.findItem(R.id.action_info)?.isVisible = false
                 menuMain?.findItem(R.id.action_download)?.isVisible = false
                 menuMain?.findItem(R.id.action_sort)?.isVisible = true
+                menuMain?.findItem(R.id.action_del)?.isVisible = false
             }
             R.id.nav_new_download -> {
                 Log.d("MyMA", "enter new_download")
                 menuMain?.findItem(R.id.action_info)?.isVisible = false
                 menuMain?.findItem(R.id.action_download)?.isVisible = false
                 menuMain?.findItem(R.id.action_sort)?.isVisible = true
+                menuMain?.findItem(R.id.action_del)?.isVisible = false
             }
             R.id.nav_rank -> {
                 Log.d("MyMA", "enter rank")
                 menuMain?.findItem(R.id.action_info)?.isVisible = false
                 menuMain?.findItem(R.id.action_download)?.isVisible = false
                 menuMain?.findItem(R.id.action_sort)?.isVisible = true
+                menuMain?.findItem(R.id.action_del)?.isVisible = false
+            }
+            R.id.nav_download -> {
+                Log.d("MyMA", "enter old download")
+                menuMain?.findItem(R.id.action_info)?.isVisible = false
+                menuMain?.findItem(R.id.action_download)?.isVisible = false
+                menuMain?.findItem(R.id.action_sort)?.isVisible = false
+                menuMain?.findItem(R.id.action_del)?.isVisible = true
             }
             else -> {
                 Log.d("MyMA", "enter others")
                 menuMain?.findItem(R.id.action_info)?.isVisible = false
                 menuMain?.findItem(R.id.action_download)?.isVisible = false
                 menuMain?.findItem(R.id.action_sort)?.isVisible = false
+                menuMain?.findItem(R.id.action_del)?.isVisible = false
             }
         }
     }
