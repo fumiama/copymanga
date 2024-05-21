@@ -16,6 +16,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import android.widget.Toast
@@ -26,6 +27,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.net.toUri
+import androidx.core.view.WindowCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
@@ -160,6 +162,13 @@ class MainActivity : AppCompatActivity() {
                         R.id.nav_settings
                     )[it])
                 }
+            }
+            if (getBoolean("settings_cat_general_sw_enable_transparent_systembar", false)) {
+                WindowCompat.setDecorFitsSystemWindows(window, false)
+                window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+                window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
+                window.statusBarColor = 0
+                window.navigationBarColor = 0
             }
         }
     }

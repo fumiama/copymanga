@@ -20,6 +20,12 @@
             app:selectable="true"
             app:summary="@string/settings_cat_general_sm_disable_kanban_animation"
             app:title="@string/settings_cat_general_sw_disable_kanban_animation" />
+        <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
+            app:key="settings_cat_general_sw_enable_transparent_systembar"
+            app:selectable="true"
+            app:summary="@string/settings_cat_general_sm_enable_transparent_systembar"
+            app:title="@string/settings_cat_general_sw_enable_transparent_systembar" />
         <EditTextPreference
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
