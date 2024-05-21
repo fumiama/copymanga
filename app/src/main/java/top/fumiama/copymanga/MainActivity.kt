@@ -163,14 +163,12 @@ class MainActivity : AppCompatActivity() {
                     )[it])
                 }
             }
-            if (contains("settings_cat_general_sw_enable_transparent_systembar")) {
-                if (getBoolean("settings_cat_general_sw_enable_transparent_systembar", false)) {
-                    WindowCompat.setDecorFitsSystemWindows(window, false)
-                    window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-                    window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
-                    window.statusBarColor = 0
-                    window.navigationBarColor = 0
-                }
+            if (getBoolean("settings_cat_general_sw_enable_transparent_systembar", false)) {
+                WindowCompat.setDecorFitsSystemWindows(window, false)
+                window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+                window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
+                window.statusBarColor = 0
+                window.navigationBarColor = 0
             }
         }
     }
