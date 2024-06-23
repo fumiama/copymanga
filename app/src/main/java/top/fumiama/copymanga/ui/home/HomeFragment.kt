@@ -202,6 +202,7 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
             override fun onBindViewHolder(holder: ViewData, position: Int) {
                 val thisBanner = homeHandler.index?.results?.banners?.get(position)
                 thisBanner?.cover?.let {
+                    if(it.isEmpty()) return@let
                     //Log.d("MyHomeFVP", "Load img: $it")
                     Glide.with(this@HomeFragment).load(
                         GlideUrl(CMApi.imageProxy?.wrap(it)?:it, CMApi.myGlideHeaders)

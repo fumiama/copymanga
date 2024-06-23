@@ -11,8 +11,8 @@ android {
         applicationId 'top.fumiama.copymanga'
         minSdkVersion 23
         targetSdkVersion 34
-        versionCode 61
-        versionName '2.3.3'
+        versionCode 62
+        versionName '2.3.4'
         resourceConfigurations += ['zh', 'zh-rCN']
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -73,7 +73,7 @@ android {
 dependencies {
     //noinspection GradleDependency
     implementation 'androidx.core:core-ktx:1.12.0'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'com.google.android.material:material:1.12.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
@@ -94,6 +94,6 @@ dependencies {
     implementation 'com.lapism:search:2.4.1@aar'
     //noinspection GradleDependency
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
-    implementation 'com.airbnb.android:lottie:6.4.0'
+    implementation 'com.airbnb.android:lottie:6.4.1'
     implementation 'net.java.dev.jna:jna:5.14.0@aar'
 }
