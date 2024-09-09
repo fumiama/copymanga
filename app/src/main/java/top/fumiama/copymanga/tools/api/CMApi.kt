@@ -15,7 +15,7 @@ object CMApi {
             if (field != null) return field
             if (Proxy.useImageProxy) field = Proxy(
                 R.string.imgProxyApiUrl,
-                Regex("^https://[0-9a-z-]+\\.mangafuna\\.xyz/"),
+                Regex("^https://[0-9a-z-]+\\.mangafun[a-z]\\.(xyz|fun)/"),
                 R.string.imgProxyKeyID
             )
             return field
