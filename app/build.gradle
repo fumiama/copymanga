@@ -89,8 +89,8 @@ dependencies {
     kapt 'com.github.bumptech.glide:compiler:4.16.0'
     implementation 'com.google.code.gson:gson:2.11.0'
     implementation 'com.github.vovaksenov99:OverscrollableScrollView:1.0'
-    implementation 'com.liaoinstan.springview:library:1.7.0'
-    implementation 'com.github.zawadz88.materialpopupmenu:material-popup-menu:4.0.1'
+    implementation 'com.github.liaoinstan.SpringView:library:0a24d3e9dd'
+    implementation 'com.github.zawadz88:MaterialPopupMenu:4.1.0'
     implementation 'com.lapism:search:2.4.1@aar'
     //noinspection GradleDependency
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
