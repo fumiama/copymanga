@@ -10,7 +10,7 @@ import top.fumiama.copymanga.template.http.PausableDownloader
 import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.dmzj.copymanga.R
 
-class Volume(private val path: String, private val groupPathWord: String, getString: (Int) -> String, private val isExit: ()->Boolean) {
+class Volume(private val path: String, private val groupPathWord: String, getString: (Int) -> String, private val isExit: ()->Boolean, private val setProgress: ((Int) -> Unit)? = null) {
     private val mGroupInfoApiUrlTemplate = getString(R.string.groupInfoApiUrl)
     private val exit: Boolean
         get() {
@@ -21,12 +21,20 @@ class Volume(private val path: String, private val groupPathWord: String, getStr
         }
     private var mDownloaders = arrayOf<PausableDownloader>()
     private var mVolume: VolumeStructure? = null
+    private var mProgress = 0
+        set(value) {
+            setProgress?.let { it(field) }
+            field = value
+        }
+    private var mDelta = 0
     suspend fun updateChapters(count: Int): VolumeStructure? = withContext(Dispatchers.IO) {
         val times = count / 100
         val remain = count % 100
         val re = arrayOfNulls<VolumeStructure>(if(remain != 0) (times+1) else (times))
         if (re.isEmpty()) return@withContext null
         Log.d("MyV", "${groupPathWord}卷共需加载${if(times == 0) 1 else times}次")
+        mProgress = 0
+        mDelta = 100/re.size
         download(re, 0, count)
         return@withContext mVolume
     }
@@ -40,6 +48,7 @@ class Volume(private val path: String, private val groupPathWord: String, getStr
             mDownloaders += ad
             ad.run()
         }
+        mProgress += mDelta
     }
     private fun whenFinish(re: Array<VolumeStructure?>, c: Int, offset: Int): suspend (ByteArray) -> Unit = lambda@ { result: ByteArray ->
         try {

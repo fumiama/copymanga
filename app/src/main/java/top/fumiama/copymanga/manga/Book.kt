@@ -97,14 +97,16 @@ class Book(val path: String, private val getString: (Int) -> String, private val
     /**
      * 更新云端最新章节信息并缓存到本地
      */
-    suspend fun updateVolumes(whenFinish: suspend () -> Unit) = withContext(Dispatchers.IO) withIO@ {
+    suspend fun updateVolumes(setProgress: (Int) -> Unit, whenFinish: suspend () -> Unit) = withContext(Dispatchers.IO) withIO@ {
         var isDownload = false
         var volumes = if(loadCache && loadVolumes()) mVolumes else emptyArray<VolumeStructure>()
+        if(mGroupPathWords.isEmpty()) return@withIO
         if(volumes.isEmpty()) {
             isDownload = true
+            val delta = 100/mGroupPathWords.size
             mGroupPathWords.forEachIndexed { i, g ->
-                Volume(path, g, getString) {
-                    return@Volume exit
+                Volume(path, g, getString, { return@Volume exit }) { p ->
+                    setProgress(i*delta+100*p/delta)
                 }.updateChapters(mCounts[i])?.let {
                     volumes += it
                 }
@@ -116,6 +118,7 @@ class Book(val path: String, private val getString: (Int) -> String, private val
                 mVolumes = volumes
             }
             goSaveHead(isDownload)
+            setProgress(100)
             whenFinish()
         }
     }

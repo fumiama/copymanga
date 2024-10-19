@@ -8,6 +8,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.fragment_dlcomic.*
+import kotlinx.android.synthetic.main.widget_downloadbar.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -24,6 +25,7 @@ class ComicDlFragment: NoBackRefreshFragment(R.layout.fragment_dlcomic) {
         super.onViewCreated(view, savedInstanceState)
         exit = false
         ldwn?.setPadding(0, 0, 0, navBarHeight)
+        dlsdwn?.translationY = -navBarHeight.toFloat()
         if(isFirstInflate) lifecycleScope.launch {
             withContext(Dispatchers.IO) {
                 when {

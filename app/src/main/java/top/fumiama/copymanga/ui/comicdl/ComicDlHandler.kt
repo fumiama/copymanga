@@ -199,8 +199,11 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
         dl?.setContentView(R.layout.dialog_unzipping)
         that?.dlsdwn?.viewTreeObserver?.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener{
             override fun onGlobalLayout() {
-                cdwnWidth = that!!.dlsdwn.width
-                Log.d("MyDl", "Get dlsdwn height: $cdwnWidth")
+                that!!.apply {
+                    cdwnWidth = dlsdwn.width
+                    Log.d("MyDl", "Get dlsdwn width: $cdwnWidth")
+                    ldwn?.setPadding(0, 0, 0, dlsdwn.height+navBarHeight)
+                }
                 that!!.dlsdwn.viewTreeObserver.removeOnGlobalLayoutListener(this)
             }
         })

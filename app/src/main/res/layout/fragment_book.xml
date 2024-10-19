@@ -44,12 +44,29 @@
         app:layout_constraintTop_toBottomOf="@+id/fbiinf"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
-    <com.airbnb.lottie.LottieAnimationView
-        android:id="@+id/fbloading"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/fbc"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:alpha="0.5"
-        app:lottie_autoPlay="true"
-        app:lottie_loop="true"
-        app:lottie_rawRes="@raw/lottie_loading" />
+        android:alpha="0">
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="@dimen/book_card_width"
+            android:layout_height="@dimen/icon_size_middle"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ProgressBar
+                android:id="@+id/fbloading"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:padding="16dp" />
+        </androidx.cardview.widget.CardView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

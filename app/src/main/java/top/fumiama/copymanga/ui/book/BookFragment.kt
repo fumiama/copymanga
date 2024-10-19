@@ -1,11 +1,14 @@
 package top.fumiama.copymanga.ui.book
 
+import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Context.MODE_PRIVATE
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.core.animation.addListener
+import androidx.core.animation.doOnEnd
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import kotlinx.android.synthetic.main.app_bar_main.*
@@ -42,6 +45,12 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
             lifecycleScope.launch {
                 prepareHandler()
                 try {
+                    fbloading?.apply {
+                        post {
+                            progress = 0
+                            invalidate()
+                        }
+                    }
                     book?.updateInfo()
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -52,12 +61,25 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
                 }
                 Log.d("MyBF", "read path: ${book?.path}")
                 for (i in 1..3) {
-                    mBookHandler?.sendEmptyMessageDelayed(i, (i*100).toLong())
+                    mBookHandler?.sendEmptyMessage(i)
                 }
                 try {
-                    book?.updateVolumes {
-                        delay(300)
-                        mBookHandler?.sendEmptyMessage(10)
+                    fbc?.apply {
+                        alpha = 0f
+                        visibility = View.VISIBLE
+                        invalidate()
+                        ObjectAnimator.ofFloat(this, "alpha", 0f, 1f)
+                            .setDuration(300)
+                            .start()
+                    }
+                    book?.updateVolumes({ fbloading?.apply { post {
+                        val oa = ObjectAnimator.ofInt(this, "progress", 20 + it*8/10)
+                            .setDuration(128)
+                        oa.addUpdateListener { invalidate() }
+                        oa.start()
+                        Log.d("MyBF", "set progress $it")
+                    } } }) {
+                        mBookHandler?.sendEmptyMessage(BookHandler.SET_VOLUMES)
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -95,14 +117,15 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
     }
 
     fun setStartRead() {
-        if(mBookHandler?.chapterNames?.isNotEmpty() == true) activity?.apply {
+        if(mBookHandler?.chapterNames?.isNotEmpty() != true) return
+        activity?.apply {
             book?.name?.let { name ->
                 getPreferences(MODE_PRIVATE).getInt(name, -1).let { p ->
                     this@BookFragment.lbbstart.apply {
                         var i = 0
-                        if(p >= 0) {
-                            text = mBookHandler!!.chapterNames[p]
-                            i = p
+                        if(p >= 0) mBookHandler!!.chapterNames.let {
+                            i = if (p >= it.size) it.size-1 else p
+                            text = it[i]
                         }
                         setOnClickListener {
                             mBookHandler?.apply {

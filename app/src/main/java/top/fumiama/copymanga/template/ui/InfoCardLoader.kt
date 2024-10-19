@@ -49,7 +49,7 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
                                     book?.comic?.path_word, null, null,
                                     isFinish = false, isNew = false
                                 )
-                                setProgress(20+80*i/size)
+                                setProgress(20+80*(i+1)/size)
                             }
                             offset += size
                         }
@@ -71,7 +71,7 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
                                     book?.comic?.path_word, null, null,
                                     book?.comic?.status==1
                                 )
-                                setProgress(20+80*i/size)
+                                setProgress(20+80*(i+1)/size)
                             }
                             offset += size
                         }
@@ -94,7 +94,7 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
                                     book?.comic?.status==1,
                                     book.comic?.browse?.chapter_uuid != book.comic?.last_chapter_id
                                 )
-                                setProgress(20+80*i/size)
+                                setProgress(20+80*(i+1)/size)
                             }
                             offset += size
                         }
@@ -112,7 +112,7 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
                                 Log.d("MyICL", "load @ $i")
                                 if(ad?.exit == true) return@PausableDownloader
                                 cardList?.addCard(book?.name?:"null", null, book?.cover, book?.path_word, null, null, false)
-                                setProgress(20+80*i/size)
+                                setProgress(20+80*(i+1)/size)
                             }
                             offset += size
                         }

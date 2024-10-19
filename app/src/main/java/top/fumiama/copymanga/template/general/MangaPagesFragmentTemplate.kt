@@ -1,5 +1,6 @@
 package top.fumiama.copymanga.template.general
 
+import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.ConnectivityManager
@@ -8,6 +9,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.core.animation.doOnEnd
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -157,18 +159,31 @@ open class MangaPagesFragmentTemplate(inflateRes:Int, private val isLazy: Boolea
         var newP = p
         mypl?.post {
             if (p == mypl?.progress) return@post
-            if (newP >= 100) {
-                Log.d("MyMPFT", "set 100, hide")
-                mypc?.visibility = View.GONE
-                return@post
-            }
+            if (newP >= 100) newP = 100
             else if (newP < 0) newP = 0
+            if (mypl?.progress == 0) {
+                Log.d("MyMPFT", "set from 0, show")
+                mypc?.apply {
+                    visibility = View.VISIBLE
+                    invalidate()
+                    ObjectAnimator.ofFloat(this, "alpha", 0f, 1f)
+                        .setDuration(300)
+                        .start()
+                }
+            }
+            if(newP == 100) {
+                Log.d("MyMPFT", "set to 100, hide")
+                mypc?.apply {
+                    val oa = ObjectAnimator.ofFloat(this, "alpha", 1f, 0f).setDuration(300)
+                    oa.doOnEnd { visibility = View.GONE }
+                    oa.start()
+                }
+            }
             mypl?.apply {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    setProgress(newP, true)
-                } else progress = newP
-                invalidate()
-                Log.d("MyMPFT", "set ${mypl?.progress}")
+                val oa = ObjectAnimator.ofInt(this, "progress", newP).setDuration(100)
+                oa.addUpdateListener { invalidate() }
+                oa.start()
+                Log.d("MyMPFT", "set $progress")
             }
         }
     }

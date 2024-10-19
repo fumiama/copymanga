@@ -1,5 +1,6 @@
 package top.fumiama.copymanga.ui.book
 
+import android.animation.ObjectAnimator
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.Handler
@@ -10,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.animation.doOnEnd
 import androidx.core.widget.NestedScrollView
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -70,9 +72,10 @@ class BookHandler(private val th: WeakReference<BookFragment>): Handler(Looper.m
 
     private fun endSetLayouts() {
         if (exit) return
-        that?.fbloading?.apply {
-            pauseAnimation()
-            visibility = View.GONE
+        that?.fbc?.apply {
+            val oa = ObjectAnimator.ofFloat(this, "alpha", 1f, 0f).setDuration(300)
+            oa.doOnEnd { visibility = View.GONE }
+            oa.start()
         }
         complete = true
         that?.setStartRead()
@@ -291,7 +294,7 @@ class BookHandler(private val th: WeakReference<BookFragment>): Handler(Looper.m
                 }
             }
         }
-        sendEmptyMessage(9) // end set layout
+        sendEmptyMessage(END_SET_LAYOUTS)
     }
 
     private fun loadVolume(name: String, path: String, nav: Int){
@@ -330,5 +333,11 @@ class BookHandler(private val th: WeakReference<BookFragment>): Handler(Looper.m
 
             override fun getItemCount(): Int = that?.book?.keys?.size?:0
         }
+    }
+
+    companion object {
+        const val NAVIGATE_TO_DOWNLOAD = 6
+        const val END_SET_LAYOUTS = 9
+        const val SET_VOLUMES = 10
     }
 }

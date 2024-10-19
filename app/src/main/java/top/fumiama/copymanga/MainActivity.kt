@@ -53,6 +53,7 @@ import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.manga.Shelf
 import top.fumiama.copymanga.tools.ui.UITools
 import top.fumiama.copymanga.ui.book.BookFragment.Companion.bookHandler
+import top.fumiama.copymanga.ui.book.BookHandler
 import top.fumiama.copymanga.ui.cardflow.rank.RankFragment
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment
 import top.fumiama.copymanga.ui.download.DownloadFragment
@@ -189,7 +190,7 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             R.id.action_download -> {
-                bookHandler.get()?.sendEmptyMessage(6)
+                bookHandler.get()?.sendEmptyMessage(BookHandler.NAVIGATE_TO_DOWNLOAD)
                 true
             }
             R.id.action_sort -> {
