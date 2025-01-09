@@ -52,12 +52,14 @@ class CardList(
     private suspend fun inflateRow(index: Int, whenFinish: suspend (index: Int)->Unit) = withContext(Dispatchers.IO) {
         Log.d("MyCL", "inflateRow: $index, cardPR: $cardPerRow")
         that?.apply {
-            layoutInflater.inflate(R.layout.line_horizonal_empty, mydll, false)?.let {
-                if(exitCardList) return@withContext
-                it.layoutParams.height = cardHeight + 16
-                mydll?.apply { post { addView(it) } }
-                recycleOneRow(it, index)
-                whenFinish(index)
+            mydll?.let { m ->
+                layoutInflater.inflate(R.layout.line_horizonal_empty, m, false)?.let {
+                    if(exitCardList) return@withContext
+                    it.layoutParams.height = cardHeight + 16
+                    m.apply { post { addView(it) } }
+                    recycleOneRow(it, index)
+                    whenFinish(index)
+                }
             }
         }
     }

@@ -70,6 +70,9 @@ class MangaDlTools {
         var re: Array<String> = arrayOf()
         val hm: HashMap<Int, String> = hashMapOf()
         val chapter = chapter2Return.results.chapter
+        if (chapter.words == null) {
+            return chapter.contents.map { it.url?:"" }.toTypedArray()
+        }
         if(chapter.words.size < chapter.contents.size) {
             chapter.words = chapter.words.toMutableList().apply {
                 chapter.contents.indices.forEach {

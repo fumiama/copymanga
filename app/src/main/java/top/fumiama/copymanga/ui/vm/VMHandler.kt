@@ -134,11 +134,13 @@ class VMHandler(activity: ViewMangaActivity, private val chapterUrl: String, pri
     override fun setGsonItem(gsonObj: Any): Boolean {
         super.setGsonItem(gsonObj)
         val m = gsonObj as Chapter2Return
-        if(m.results.chapter.words.size != m.results.chapter.contents.size) {
-            return false
-        }
-        if(m.results.chapter.words.size != m.results.chapter.size) {
-            m.results.chapter.size = m.results.chapter.words.size // 有时 size 不对
+        if (m.results.chapter.words != null) {
+            if(m.results.chapter.words.size != m.results.chapter.contents.size) {
+                return false
+            }
+            if(m.results.chapter.words.size != m.results.chapter.size) {
+                m.results.chapter.size = m.results.chapter.words.size // 有时 size 不对
+            }
         }
         manga = m
         return true

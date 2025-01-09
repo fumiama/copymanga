@@ -149,6 +149,19 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
 
     private suspend fun inflateRank(){
         var comics = arrayOf<ComicStructure>()
+        if (index?.results?.rankDayComics == null) {
+            // is in hotmanga
+            index?.results?.rankWeeklyFreeComics?.list?.let {
+                for((i, book) in it.withIndex()){
+                    if(i > 2) break
+                    comics += book.comic
+                }
+            }
+            if(comics.size == 3) allocateLine(homeF?.getString(R.string.hot_rank_list)?:"", R.drawable.img_novel_bill, comics) {
+                homeF?.findNavController()?.navigate(R.id.nav_rank)
+            }
+            return
+        }
         index?.results?.rankDayComics?.list?.let {
             for((i, book) in it.withIndex()){
                 if(i > 2) break
@@ -173,6 +186,18 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
     }
 
     private suspend fun inflateHot(){
+        if (index?.results?.hotComics == null) {
+            // is in hotmanga
+            index?.results?.updateWeeklyFreeComics?.let {
+                var comics = arrayOf<ComicStructure>()
+                for((i, rec) in it.list.withIndex()){
+                    if(i > 5) break
+                    comics += rec.comic
+                }
+                if(comics.size == 6) allocateLine(homeF?.getString(R.string.hot_list)?:"", R.drawable.img_hot, comics)
+            }
+            return
+        }
         index?.results?.hotComics?.let {
             var comics = arrayOf<ComicStructure>()
             for((i, rec) in it.withIndex()){

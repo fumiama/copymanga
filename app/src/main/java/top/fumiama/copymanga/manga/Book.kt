@@ -52,6 +52,7 @@ class Book(val path: String, private val getString: (Int) -> String, private val
     val volumes get() = mVolumes
     val uuid get() = mBook?.results?.comic?.uuid
     val json get() = mJsonString
+    val version get() = if (mBook?.results?.comic?.reclass != null) 1 else 2
 
     constructor(name: String, getString: (Int) -> String, exDir: File): this(
         Reader.getComicPathWordInFolder(File(exDir, name)),

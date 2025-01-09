@@ -9,9 +9,8 @@ import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.copymanga.tools.http.DownloadTools
 import top.fumiama.dmzj.copymanga.R
 
-class Shelf(private val token: String, getString: (Int) -> String) {
-    private val hostUrl: String = getString(R.string.hostUrl)
-    private val apiUrl: String = getString(R.string.shelfOperateApiUrl).format(hostUrl)
+class Shelf(private val token: String, private val getString: (Int) -> String) {
+    private val apiUrl: String get() = getString(R.string.shelfOperateApiUrl).format(CMApi.myHostApiUrl)
     private val queryApiUrlTemplate = getString(R.string.bookUserQueryApiUrl)
     private val referer: String = getString(R.string.referer).format(DownloadTools.app_ver)
     private val addApiUrl get() = "$apiUrl?platform=3".let { CMApi.apiProxy?.wrap(it)?:it }
@@ -63,7 +62,7 @@ class Shelf(private val token: String, getString: (Int) -> String) {
     suspend fun query(pathWord: String): BookQueryStructure? = withContext(Dispatchers.IO) {
         try {
             Gson().fromJson(DownloadTools.getHttpContent(
-                queryApiUrlTemplate.format(hostUrl, pathWord).let {
+                queryApiUrlTemplate.format(CMApi.myHostApiUrl, pathWord).let {
                     CMApi.apiProxy?.wrap(it)?:it
                 }, referer
             ).decodeToString(), BookQueryStructure::class.java)

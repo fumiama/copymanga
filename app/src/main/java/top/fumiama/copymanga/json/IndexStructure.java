@@ -6,12 +6,16 @@ public class IndexStructure extends ReturnBase {
         public Banners[] banners;
         public Topics topics;
         public RecComics recComics;
+        // copymanga
         public RankComics rankDayComics;
         public RankComics rankWeekComics;
         public RankComics rankMonthComics;
         public ComicWrap[] hotComics;
         public ComicWrap[] newComics;
         public FinishComics finishComics;
+        // hotmanga
+        public RankComics rankWeeklyFreeComics;
+        public WeeklyComics updateWeeklyFreeComics;
 
         public static class Banners{
             public int type;
@@ -54,6 +58,9 @@ public class IndexStructure extends ReturnBase {
             public String path_word;
             public String name;
             public String type;
+        }
+        public static class WeeklyComics extends InfoBase {
+            public TypeBookStructure[] list;
         }
     }
 }

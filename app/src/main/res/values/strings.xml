@@ -62,6 +62,7 @@
     <string name="touch_img_error">预载图片头失败</string>
     <string name="analyze_img_size_error">读取图片大小失败</string>
 
+    <string name="networkApiUrl">https://%1$s/api/v3/system/network2?platform=3</string>
     <string name="mainPageApiUrl">https://%1$s/api/v3/h5/homeIndex?platform=3</string>
     <string name="referUrl">https://%1$s</string>
     <string name="hostUrl">&hosturl;</string>
@@ -72,7 +73,7 @@
     <string name="bookInfoApiUrl">https://%1$s/api/v3/comic2/%2$s?platform=3</string>
     <string name="bookUserQueryApiUrl">https://%1$s/api/v3/comic2/%2$s/query?platform=3</string>
     <string name="groupInfoApiUrl">https://%1$s/api/v3/comic/%2$s/group/%3$s/chapters?limit=100&amp;offset=%4$d&amp;platform=3</string>
-    <string name="chapterInfoApiUrl">https://%1$s/api/v3/comic/%2$s/chapter2/%3$s?platform=3</string>
+    <string name="chapterInfoApiUrl">https://%1$s/api/v3/comic/%2$s/chapter%3$s/%4$s?platform=3</string>
     <string name="topicApiUrl">https://%1$s/api/v3/topic/%2$s?platform=3</string>
     <string name="topicContentApiUrl">https://%1$s/api/v3/topic/%2$s/contents?type=%3$d&amp;limit=21&amp;offset=%4$d&amp;platform=3</string>
     <string name="recommendApiUrl">https://%1$s/api/v3/recs?pos=3200102&amp;limit=21&amp;offset=%2$d&amp;platform=3</string>
@@ -128,6 +129,7 @@
     <string name="topics_series">专题系列</string>
     <string name="manga_rec">漫画推荐</string>
     <string name="rank_list">排行榜 ☟日周月 ☛冠亚季</string>
+    <string name="hot_rank_list">本周排行</string>
     <string name="hot_list">热门更新</string>
     <string name="new_list">全新上架</string>
 

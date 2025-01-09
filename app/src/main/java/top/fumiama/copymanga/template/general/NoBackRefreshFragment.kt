@@ -40,11 +40,11 @@ open class NoBackRefreshFragment(private val layoutToLoad: Int): Fragment() {
         return rootView
     }
     override fun onDestroy() {
-        super.onDestroy()
-        Thread { runBlocking { hideKanban() } }.start()
+        hideKanban()
         _rootView = null
         isFirstInflate = true
         Log.d("MyNBRF", "destroyed")
+        super.onDestroy()
     }
     fun showKanban() {
         if (disableAnimation) return

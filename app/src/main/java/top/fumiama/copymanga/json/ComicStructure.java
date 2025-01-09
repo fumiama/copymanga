@@ -7,6 +7,7 @@ public class ComicStructure {
     public int img_type;
     public ValueDisplayPair region;
     public ValueDisplayPair status;
+    public ValueDisplayPair reclass; // identify hotmanga
     public ThemeStructure[] theme;
     public String path_word;
     public ThemeStructure[] author;

@@ -5,7 +5,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -87,15 +86,16 @@ open class MangaPagesFragmentTemplate(inflateRes:Int, private val isLazy: Boolea
         //jsonReaderNow = null
     }
 
-    open suspend fun setLayouts() = withContext(Dispatchers.IO) {
+    private suspend fun setLayouts() = withContext(Dispatchers.IO) {
+        if (!isFirstInflate) return@withContext
         val toolsBox = this@MangaPagesFragmentTemplate.context?.let { UITools(it) }
         val widthData = toolsBox?.calcWidthFromDp(8, 135)
         cardPerRow = widthData?.get(0) ?: 3
         cardWidth = widthData?.get(2) ?: 128
         cardHeight = (cardWidth / 0.75 + 0.5).toInt()
         withContext(Dispatchers.Main) {
-            mysp.footerView.lht.text = "加载"
-            mysp.headerView.lht.text = "刷新"
+            mysp?.footerView?.lht?.text = "加载"
+            mysp?.headerView?.lht?.text = "刷新"
             mydll?.setPadding(0, 0, 0, navBarHeight)
         }
         Log.d("MyMPAT", "Card per row: $cardPerRow")

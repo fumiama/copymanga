@@ -42,8 +42,13 @@ import java.io.File
 import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicInteger
 
-class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragment>, private val vols: Array<VolumeStructure>, private val comicName: String, private val groupNames: Array<String>?):Handler(looper) {
-    constructor(looper: Looper, th: WeakReference<ComicDlFragment>, comicName: String) : this(looper, th, arrayOf(), comicName, null) {
+class ComicDlHandler(
+    looper: Looper, private val th: WeakReference<ComicDlFragment>,
+    private val vols: Array<VolumeStructure>, private val comicName: String,
+    private val groupNames: Array<String>?, private val version: Int,
+):Handler(looper) {
+    constructor(looper: Looper, th: WeakReference<ComicDlFragment>, comicName: String)
+            : this(looper, th, arrayOf(), comicName, null, 2) {
         isOld = true
     }
     private var isOld = false
@@ -123,7 +128,7 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
                 Log.d("MyCDH", "caption: $caption, group name: ${groupNames?.get(i)}")
                 withContext(Dispatchers.Main) {
                     addCaption(caption) {
-                        addButtons(vol.results.list, caption)
+                        addButtons(vol.results.list, caption, version)
                     }
                 }
             }
@@ -334,9 +339,9 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
         //ObjectAnimator.ofFloat(dlsdwn, "alpha", 0.9f, 0.3f).setDuration(233).start()
         ObjectAnimator.ofFloat(that?.dlsdwn, "translationX", 0f, cdwnWidth.toFloat() * 0.9f).setDuration(233).start()
     }
-    private suspend fun addButtons(chapters: Array<ChapterStructure>, caption: String) = withContext(Dispatchers.IO) {
+    private suspend fun addButtons(chapters: Array<ChapterStructure>, caption: String, version: Int) = withContext(Dispatchers.IO) {
         chapters.forEach { chapter ->
-            val u = CMApi.getChapterInfoApiUrl(chapter.comic_path_word, chapter.uuid)?:""
+            val u = CMApi.getChapterInfoApiUrl(chapter.comic_path_word, chapter.uuid, version)?:""
             addButton(chapter.name, chapter.uuid, caption, u)
             urlArray += u
         }
@@ -437,7 +442,7 @@ class ComicDlHandler(looper: Looper, private val th: WeakReference<ComicDlFragme
                     for (chapter in group.chapters) {
                         val newUrl = CMApi.getChapterInfoApiUrl(
                             chapter.url.substringAfter("/comic/").substringBefore('/'),
-                            chapter.url.substringAfterLast('/')
+                            chapter.url.substringAfterLast('/'), version,
                         )?:""
                         Log.d("MyCD", "Generate new url: $newUrl")
                         addButton(chapter.name, "", group.name, newUrl)

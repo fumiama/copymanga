@@ -401,7 +401,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
     //private fun getTempFile(position: Int) = File(cacheDir, "$position")
 
     private fun getImgUrl(position: Int) = mHandler.manga?.results?.chapter?.let {
-        it.contents[it.words.indexOf(position)].url
+        it.contents[it.words?.indexOf(position)?:position].url
     }
 
     private fun getImgUrlArray() = mHandler.manga?.results?.chapter?.let{

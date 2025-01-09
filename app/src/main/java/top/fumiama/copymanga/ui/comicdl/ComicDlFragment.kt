@@ -60,7 +60,8 @@ class ComicDlFragment: NoBackRefreshFragment(R.layout.fragment_dlcomic) {
         withContext(Dispatchers.Main) {
             handler = ComicDlHandler(Looper.myLooper()!!, WeakReference(this@ComicDlFragment),
                 volumes, arguments?.getString("name")?:"null",
-                if(isFromFile) groupArray else arguments?.getStringArray("groupNames")
+                if(isFromFile) groupArray else arguments?.getStringArray("groupNames"),
+                arguments?.getInt("version")?:2,
             )
         }
         if(!isFromFile) {

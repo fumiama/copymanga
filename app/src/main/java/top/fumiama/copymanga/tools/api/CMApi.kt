@@ -72,7 +72,7 @@ object CMApi {
     fun getZipFile(exDir: File?, manga: String, caption: CharSequence, name: CharSequence) =
         File(exDir, "$manga/$caption/$name.zip")
 
-    fun getChapterInfoApiUrl(arg1: String?, arg2: String?) =
+    fun getChapterInfoApiUrl(path: String?, uuid: String?, version: Int) =
         MainActivity.mainWeakReference?.get()?.getString(R.string.chapterInfoApiUrl)
-            ?.format(myHostApiUrl, arg1, arg2)
+            ?.format(myHostApiUrl, path, if (version >= 2) "$version" else "" , uuid)
 }

@@ -7,8 +7,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
-import androidx.core.animation.addListener
-import androidx.core.animation.doOnEnd
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import kotlinx.android.synthetic.main.app_bar_main.*
@@ -16,7 +14,6 @@ import kotlinx.android.synthetic.main.card_book.*
 import kotlinx.android.synthetic.main.fragment_book.*
 import kotlinx.android.synthetic.main.line_booktandb.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity
@@ -79,7 +76,7 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
                         oa.start()
                         Log.d("MyBF", "set progress $it")
                     } } }) {
-                        mBookHandler?.sendEmptyMessage(BookHandler.SET_VOLUMES)
+                        mBookHandler?.obtainMessage(BookHandler.SET_VOLUMES, book?.version?:2, 0)?.sendToTarget()
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -227,6 +224,7 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
         if(book?.volumes != null && book?.json != null) {
             bundle.putString("loadJson", book!!.json)
         }
+        bundle.putInt("version", book?.version?:2)
         findNavController().let {
             Navigate.safeNavigateTo(it, R.id.action_nav_book_to_nav_group, bundle)
         }

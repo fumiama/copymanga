@@ -64,9 +64,9 @@ class BookHandler(private val th: WeakReference<BookFragment>): Handler(Looper.m
             1 -> setCover()
             2 -> setTexts()
             3 -> setAuthorsAndTags()
-            6 -> if(complete) that?.navigate2dl()
-            9 -> endSetLayouts()
-            10 -> setVolumes()
+            NAVIGATE_TO_DOWNLOAD -> if(complete) that?.navigate2dl()
+            END_SET_LAYOUTS -> endSetLayouts()
+            SET_VOLUMES -> setVolumes(msg.arg1)
         }
     }
 
@@ -263,7 +263,7 @@ class BookHandler(private val th: WeakReference<BookFragment>): Handler(Looper.m
         }
     }
 
-    private suspend fun setViewManga() = withContext(Dispatchers.IO) {
+    private suspend fun setViewManga(version: Int) = withContext(Dispatchers.IO) {
         if (exit) return@withContext
         that?.apply {
             book?.apply {
@@ -279,7 +279,8 @@ class BookHandler(private val th: WeakReference<BookFragment>): Handler(Looper.m
                     v.results.list.forEach {
                         urlArray += CMApi.getChapterInfoApiUrl(
                             path,
-                            it.uuid
+                            it.uuid,
+                            version
                         )?:""
                         val f = CMApi.getZipFile(context?.getExternalFilesDir(""), comicName, keys[groupIndex], it.name)
                         Reader.fileArray += f
@@ -307,7 +308,7 @@ class BookHandler(private val th: WeakReference<BookFragment>): Handler(Looper.m
         }
     }
 
-    private fun setVolumes() {
+    private fun setVolumes(version: Int) {
         that?.apply {
             fbtab?.let { tab ->
                 fbvp?.let { vp ->
@@ -317,7 +318,7 @@ class BookHandler(private val th: WeakReference<BookFragment>): Handler(Looper.m
                     }.attach()
                 }
             }
-            lifecycleScope.launch { setViewManga() }
+            lifecycleScope.launch { setViewManga(version) }
         }
     }
 

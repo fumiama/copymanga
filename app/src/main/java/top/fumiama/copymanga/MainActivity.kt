@@ -23,6 +23,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.collection.size
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
@@ -31,6 +32,7 @@ import androidx.core.view.WindowCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
+import androidx.navigation.contains
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
@@ -127,20 +129,25 @@ class MainActivity : AppCompatActivity() {
         ime = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
 
         var latestDestination: Int
-        navController!!.addOnDestinationChangedListener { _, destination, _ ->
+        navController!!.addOnDestinationChangedListener { controller, destination, _ ->
             latestDestination = destination.id
-            Log.d("MyMA", "latestDestination: $latestDestination")
+            Log.d("MyMain", "latestDestination: ${destination.label}")
             if (isMenuWaiting) {
                 return@addOnDestinationChangedListener
             }
+            if (latestDestination !in appBarConfiguration.topLevelDestinations) {
+                drawer_layout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+            } else {
+                drawer_layout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
+            }
             isMenuWaiting = true
-            Log.d("MyMA", "start menu waiting")
+            Log.d("MyMain", "start menu waiting")
             lifecycleScope.launch {
                 withContext(Dispatchers.IO) {
                     delay(1000)
                     withContext(Dispatchers.Main) {
                         isMenuWaiting = false
-                        Log.d("MyMA", "finish menu waiting")
+                        Log.d("MyMain", "finish menu waiting")
                         changeMenuList(latestDestination)
                     }
                 }
@@ -270,49 +277,49 @@ class MainActivity : AppCompatActivity() {
     private fun changeMenuList(latestDestination: Int) {
         when (latestDestination) {
             R.id.nav_home -> {
-                Log.d("MyMA", "enter home")
+                Log.d("MyMain", "enter home")
                 menuMain?.findItem(R.id.action_info)?.isVisible = true
                 menuMain?.findItem(R.id.action_download)?.isVisible = false
                 menuMain?.findItem(R.id.action_sort)?.isVisible = false
                 menuMain?.findItem(R.id.action_del)?.isVisible = false
             }
             R.id.nav_book -> {
-                Log.d("MyMA", "enter book")
+                Log.d("MyMain", "enter book")
                 menuMain?.findItem(R.id.action_info)?.isVisible = false
                 menuMain?.findItem(R.id.action_download)?.isVisible = true
                 menuMain?.findItem(R.id.action_sort)?.isVisible = false
                 menuMain?.findItem(R.id.action_del)?.isVisible = false
             }
             R.id.nav_group -> {
-                Log.d("MyMA", "enter group")
+                Log.d("MyMain", "enter group")
                 menuMain?.findItem(R.id.action_info)?.isVisible = false
                 menuMain?.findItem(R.id.action_download)?.isVisible = false
                 menuMain?.findItem(R.id.action_sort)?.isVisible = true
                 menuMain?.findItem(R.id.action_del)?.isVisible = false
             }
             R.id.nav_new_download -> {
-                Log.d("MyMA", "enter new_download")
+                Log.d("MyMain", "enter new_download")
                 menuMain?.findItem(R.id.action_info)?.isVisible = false
                 menuMain?.findItem(R.id.action_download)?.isVisible = false
                 menuMain?.findItem(R.id.action_sort)?.isVisible = true
                 menuMain?.findItem(R.id.action_del)?.isVisible = false
             }
             R.id.nav_rank -> {
-                Log.d("MyMA", "enter rank")
+                Log.d("MyMain", "enter rank")
                 menuMain?.findItem(R.id.action_info)?.isVisible = false
                 menuMain?.findItem(R.id.action_download)?.isVisible = false
                 menuMain?.findItem(R.id.action_sort)?.isVisible = true
                 menuMain?.findItem(R.id.action_del)?.isVisible = false
             }
             R.id.nav_download -> {
-                Log.d("MyMA", "enter old download")
+                Log.d("MyMain", "enter old download")
                 menuMain?.findItem(R.id.action_info)?.isVisible = false
                 menuMain?.findItem(R.id.action_download)?.isVisible = false
                 menuMain?.findItem(R.id.action_sort)?.isVisible = false
                 menuMain?.findItem(R.id.action_del)?.isVisible = true
             }
             else -> {
-                Log.d("MyMA", "enter others")
+                Log.d("MyMain", "enter others")
                 menuMain?.findItem(R.id.action_info)?.isVisible = false
                 menuMain?.findItem(R.id.action_download)?.isVisible = false
                 menuMain?.findItem(R.id.action_sort)?.isVisible = false
