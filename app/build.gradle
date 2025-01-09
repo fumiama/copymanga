@@ -71,13 +71,17 @@ android {
 }
 
 dependencies {
+    api fileTree(include: ['*.aar'], dir: 'libs') // https://stackoverflow.com/a/63029110/28801553
+
     //noinspection GradleDependency
     implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'com.google.android.material:material:1.12.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.0'
+    //noinspection GradleDependency
     implementation 'androidx.navigation:navigation-fragment-ktx:2.7.7'
+    //noinspection GradleDependency
     implementation 'androidx.navigation:navigation-ui-ktx:2.7.7'
     testImplementation 'junit:junit:4.13.2'
     implementation "androidx.preference:preference-ktx:1.2.1"
@@ -91,7 +95,7 @@ dependencies {
     implementation 'com.github.vovaksenov99:OverscrollableScrollView:1.0'
     implementation 'com.github.liaoinstan.SpringView:library:0a24d3e9dd'
     implementation 'com.github.zawadz88:MaterialPopupMenu:4.1.0'
-    implementation 'com.lapism:search:2.4.1@aar'
+    implementation files('libs/com.lapism/search-2.4.1.aar') // https://stackoverflow.com/a/63029110/28801553
     //noinspection GradleDependency
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
     implementation 'com.airbnb.android:lottie:6.5.2'

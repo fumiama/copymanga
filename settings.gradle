@@ -1,2 +1,8 @@
+pluginManagement {
+    plugins {
+        id 'kotlin-android' version "$cm_kotlin_version"
+    }
+}
+
 include ':app'
 rootProject.name = "拷贝漫画"
