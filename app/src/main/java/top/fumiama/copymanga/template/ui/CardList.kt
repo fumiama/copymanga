@@ -13,7 +13,7 @@ import kotlinx.android.synthetic.main.line_horizonal_empty.view.*
 import kotlinx.android.synthetic.main.line_lazybooklines.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import top.fumiama.copymanga.tools.api.CMApi
+import top.fumiama.copymanga.api.Config
 import top.fumiama.copymanga.tools.ui.GlideHideLottieViewListener
 import top.fumiama.dmzj.copymanga.R
 import java.io.File
@@ -131,7 +131,7 @@ class CardList(
                     that?.context?.let { context ->
                         val waitMillis = cardLoadingWaits.getAndIncrement().toLong()*200
                         val g = Glide.with(context).load(
-                            GlideUrl(CMApi.imageProxy?.wrap(head)?:head, CMApi.myGlideHeaders)
+                            GlideUrl(Config.imageProxy?.wrap(head)?:head, Config.myGlideHeaders)
                         ).addListener(GlideHideLottieViewListener(WeakReference(it.laic)) {
                             if (exitCardList) return@GlideHideLottieViewListener
                             cardLoadingWaits.decrementAndGet()

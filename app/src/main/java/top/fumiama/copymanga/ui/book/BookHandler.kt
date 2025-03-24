@@ -39,7 +39,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.json.ThemeStructure
 import top.fumiama.copymanga.manga.Reader
-import top.fumiama.copymanga.tools.api.CMApi
+import top.fumiama.copymanga.api.Config
 import top.fumiama.copymanga.tools.ui.GlideBlurTransformation
 import top.fumiama.copymanga.tools.ui.GlideHideLottieViewListener
 import top.fumiama.copymanga.tools.ui.Navigate
@@ -88,7 +88,7 @@ class BookHandler(private val th: WeakReference<BookFragment>): Handler(Looper.m
         that?.apply {
             Glide.with(this).load(
                 if (book?.cover != null)
-                    GlideUrl(CMApi.imageProxy?.wrap(book?.cover!!)?:book?.cover!!, CMApi.myGlideHeaders)
+                    GlideUrl(Config.imageProxy?.wrap(book?.cover!!)?:book?.cover!!, Config.myGlideHeaders)
                 else book?.cachedCover
             )
                 .timeout(60000)
@@ -222,7 +222,7 @@ class BookHandler(private val th: WeakReference<BookFragment>): Handler(Looper.m
                     var line: View? = null
                     last += v.results.list.size
                     v.results.list.forEach {
-                        val f = CMApi.getZipFile(context?.getExternalFilesDir(""), comicName, keys[p], it.name)
+                        val f = Config.getZipFile(context?.getExternalFilesDir(""), comicName, keys[p], it.name)
                         //Log.d("MyBH", "i = $i, last=$last, add chapter ${it.name}, line is null: ${line == null}")
                         that?.isOnPause?.let { isOnPause ->
                             while (isOnPause && !exit) delay(500)
@@ -277,12 +277,12 @@ class BookHandler(private val th: WeakReference<BookFragment>): Handler(Looper.m
                     if(exit) return@withContext
                     last += v.results.list.size
                     v.results.list.forEach {
-                        urlArray += CMApi.getChapterInfoApiUrl(
+                        urlArray += Config.getChapterInfoApiUrl(
                             path,
                             it.uuid,
                             version
                         )?:""
-                        val f = CMApi.getZipFile(context?.getExternalFilesDir(""), comicName, keys[groupIndex], it.name)
+                        val f = Config.getZipFile(context?.getExternalFilesDir(""), comicName, keys[groupIndex], it.name)
                         Reader.fileArray += f
                         chapterNames += it.name
                         uuidArray += it.uuid

@@ -23,7 +23,6 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.collection.size
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
@@ -32,7 +31,6 @@ import androidx.core.view.WindowCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
-import androidx.navigation.contains
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
@@ -52,6 +50,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import top.fumiama.copymanga.api.Config
 import top.fumiama.copymanga.manga.Shelf
 import top.fumiama.copymanga.tools.ui.UITools
 import top.fumiama.copymanga.ui.book.BookFragment.Companion.bookHandler
@@ -172,7 +171,7 @@ class MainActivity : AppCompatActivity() {
                     )[it])
                 }
             }
-            if (getBoolean("settings_cat_general_sw_enable_transparent_systembar", false)) {
+            if (Config.general_enable_transparent_system_bar.value) {
                 WindowCompat.setDecorFitsSystemWindows(window, false)
                 window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
                 window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
@@ -255,23 +254,22 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    suspend fun refreshUserInfo() = withContext(Dispatchers.IO) {
-        getPreferences(MODE_PRIVATE)?.apply {
-            val name = getString("nickname", getString("username", ""))
-            val avatar = getString("avatar", "")
-            navttitle.apply { post {
-                if(name != "") text = name
-                else setText(R.string.noLogin)
-            } }
-            navhicon.apply ic@ { post {
-                if(avatar != "")
-                    Glide.with(this@MainActivity).load(avatar)
-                        .apply(RequestOptions.bitmapTransform(CircleCrop()))
-                        .timeout(60000)
-                        .into(this@ic)
-                else setImageResource(R.mipmap.ic_launcher)
-            } }
-        }
+    suspend fun refreshUserInfo(): Unit = withContext(Dispatchers.IO) {
+        var name = Config.nickname.value
+        if (name.isNullOrEmpty()) name = Config.username.value
+        val avatar = Config.avatar.value
+        navttitle.apply { post {
+            if(!name.isNullOrEmpty()) text = name
+            else setText(R.string.noLogin)
+        } }
+        navhicon.apply ic@ { post {
+            if(!avatar.isNullOrEmpty())
+                Glide.with(this@MainActivity).load(avatar)
+                    .apply(RequestOptions.bitmapTransform(CircleCrop()))
+                    .timeout(60000)
+                    .into(this@ic)
+            else setImageResource(R.mipmap.ic_launcher)
+        } }
     }
 
     private fun changeMenuList(latestDestination: Int) {
@@ -450,9 +448,7 @@ class MainActivity : AppCompatActivity() {
             get() {
                 if (field != null) return field
                 return mainWeakReference?.get()?.let {
-                    field = Shelf(
-                        it.getPreferences(Context.MODE_PRIVATE)
-                            .getString("token", "")?:return@let null) { id ->
+                    field = Shelf { id ->
                         return@Shelf it.getString(id)
                     }
                     field
@@ -462,10 +458,8 @@ class MainActivity : AppCompatActivity() {
             get() {
                 if (field != null) return field
                 return mainWeakReference?.get()?.let {
-                    it.getPreferences(MODE_PRIVATE)?.let { pref ->
-                        field = Member(pref) { id ->
-                            return@Member it.getString(id)
-                        }
+                    field = Member { id ->
+                        return@Member it.getString(id)
                     }
                     field
                 }

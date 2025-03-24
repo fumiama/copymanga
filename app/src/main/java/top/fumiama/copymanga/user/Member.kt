@@ -1,28 +1,24 @@
 package top.fumiama.copymanga.user
 
-import android.content.SharedPreferences
 import android.util.Base64
-import android.util.Log
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import top.fumiama.copymanga.api.Config
 import top.fumiama.copymanga.json.ComandyCapsule
 import top.fumiama.copymanga.json.LoginInfoStructure
-import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.copymanga.tools.http.Comandy
 import top.fumiama.copymanga.tools.http.DownloadTools
-import top.fumiama.copymanga.tools.http.DownloadTools.app_ver
-import top.fumiama.copymanga.tools.http.DownloadTools.pc_ua
-import top.fumiama.copymanga.tools.http.Proxy
 import top.fumiama.dmzj.copymanga.R
 import java.net.URLEncoder
 import java.nio.charset.Charset
 
-class Member(private val pref: SharedPreferences, private val getString: (Int) -> String) {
-    val hasLogin: Boolean get() = pref.getString("token", "")?.isNotEmpty()?:false
+class Member(private val getString: (Int) -> String) {
+    val hasLogin: Boolean get() = Config.token.value?.isNotEmpty()?:false
     suspend fun login(username: String, pwd: String, salt: Int): LoginInfoStructure = withContext(Dispatchers.IO) {
         var err = ""
-        if (!Proxy.useApiProxy && Comandy.useComandy) getComandyLoginConnection(username, pwd, salt).let { capsule ->
+        if (!Config.net_use_api_proxy.value && Comandy.useComandy)
+            getComandyLoginConnection(username, pwd, salt).let { capsule ->
             try {
                 val para = Gson().toJson(capsule)
                 Comandy.instance?.request(para)?.let { result ->
@@ -72,7 +68,7 @@ class Member(private val pref: SharedPreferences, private val getString: (Int) -
      * - **message**: 可以 toast 的信息
      */
     suspend fun info() : LoginInfoStructure = withContext(Dispatchers.IO) {
-        if (!pref.contains("token")) {
+        if (!hasLogin) {
             val l = LoginInfoStructure()
             l.code = 449
             l.message = getString(R.string.noLogin)
@@ -80,16 +76,13 @@ class Member(private val pref: SharedPreferences, private val getString: (Int) -
         }
         try {
             val data = DownloadTools.getHttpContent(
-                getString(R.string.memberInfoApiUrl).format(CMApi.myHostApiUrl).let {
-                    CMApi.apiProxy?.wrap(it)?:it
+                getString(R.string.memberInfoApiUrl).format(Config.myHostApiUrl.value).let {
+                    Config.apiProxy?.wrap(it)?:it
                 }
             ).decodeToString()
             try {
                 val l = Gson().fromJson(data, LoginInfoStructure::class.java)
-                if(l.code == 200) pref.edit()?.apply {
-                    putString("avatar", l.results.avatar)
-                    apply()
-                }
+                if(l.code == 200) Config.avatar.value = l.results.avatar
                 l
             } catch (e : Exception) {
                 val l = LoginInfoStructure()
@@ -106,28 +99,22 @@ class Member(private val pref: SharedPreferences, private val getString: (Int) -
     }
 
     suspend fun logout() = withContext(Dispatchers.IO) {
-        pref.edit()?.apply {
-            remove("token")
-            remove("user_id")
-            remove("username")
-            remove("nickname")
-            remove("avatar")
-            apply()
-        }
+        Config.token.value = ""
+        Config.user_id.value = null
+        Config.username.value = null
+        Config.nickname.value = null
+        Config.avatar.value = null
     }
 
     private suspend fun saveInfo(data: ByteArray) = data.inputStream().use { dataIn ->
         try {
             Gson().fromJson(dataIn.reader(), LoginInfoStructure::class.java)?.let { l ->
                 if(l.code == 200) {
-                    pref.edit()?.apply {
-                        putString("token", l.results?.token)
-                        putString("user_id", l.results?.user_id)
-                        putString("username", l.results?.username)
-                        putString("nickname", l.results?.nickname)
-                        apply()
-                        return@use info()
-                    }
+                    Config.token.value = l.results?.token
+                    Config.user_id.value = l.results?.user_id
+                    Config.username.value = l.results?.username
+                    Config.nickname.value = l.results.nickname
+                    return@use info()
                 }
                 return@use l
             }?: throw Exception(getString(R.string.login_parse_json_error))
@@ -137,35 +124,31 @@ class Member(private val pref: SharedPreferences, private val getString: (Int) -
     }
 
     private fun getLoginConnection(username: String, pwd: String, salt: Int) =
-        getString(R.string.loginApiUrl).format(CMApi.myHostApiUrl).let {
-            CMApi.apiProxy?.wrap(it)?:it
+        getString(R.string.loginApiUrl).format(Config.myHostApiUrl.value).let {
+            Config.apiProxy?.wrap(it)?:it
         }.let {
             DownloadTools.getApiConnection(it, "POST").apply {
-                pref.apply {
-                    doOutput = true
-                    setRequestProperty("content-type", "application/x-www-form-urlencoded;charset=utf-8")
-                    setRequestProperty("platform", "3")
-                    setRequestProperty("accept", "application/json")
-                    val r = if(!getBoolean("settings_cat_net_sw_use_foreign", false)) "1" else "0"
-                    val pwdEncoded = Base64.encode("$pwd-$salt".toByteArray(), Base64.DEFAULT).decodeToString()
-                    outputStream.write("username=${URLEncoder.encode(username, Charset.defaultCharset().name())}&password=$pwdEncoded&salt=$salt&platform=3&authorization=Token+&version=$app_ver&source=copyApp&region=$r&webp=1".toByteArray())
-                }
+                doOutput = true
+                setRequestProperty("content-type", "application/x-www-form-urlencoded;charset=utf-8")
+                setRequestProperty("platform", "3")
+                setRequestProperty("accept", "application/json")
+                val r = if(!Config.net_use_foreign.value) "1" else "0"
+                val pwdEncoded = Base64.encode("$pwd-$salt".toByteArray(), Base64.DEFAULT).decodeToString()
+                outputStream.write("username=${URLEncoder.encode(username, Charset.defaultCharset().name())}&password=$pwdEncoded&salt=$salt&platform=3&authorization=Token+&version=${Config.app_ver.value}&source=copyApp&region=$r&webp=1".toByteArray())
             }
         }
 
     private fun getComandyLoginConnection(username: String, pwd: String, salt: Int) =
-        getString(R.string.loginApiUrl).format(CMApi.myHostApiUrl).let {
-            CMApi.apiProxy?.wrap(it)?:it
+        getString(R.string.loginApiUrl).format(Config.myHostApiUrl.value).let {
+            Config.apiProxy?.wrap(it)?:it
         }.let {
-            DownloadTools.getComandyApiConnection(it, "POST", null, pc_ua).apply {
-                pref.apply {
-                    headers["content-type"] = "application/x-www-form-urlencoded;charset=utf-8"
-                    headers["platform"] = "3"
-                    headers["accept"] = "application/json"
-                    val r = if(!getBoolean("settings_cat_net_sw_use_foreign", false)) "1" else "0"
-                    val pwdEncoded = Base64.encode("$pwd-$salt".toByteArray(), Base64.DEFAULT).decodeToString()
-                    data = "username=${URLEncoder.encode(username, Charset.defaultCharset().name())}&password=$pwdEncoded&salt=$salt&platform=3&authorization=Token+&version=$app_ver&source=copyApp&region=$r&webp=1"
-                }
+            DownloadTools.getComandyApiConnection(it, "POST", null, Config.pc_ua).apply {
+                headers["content-type"] = "application/x-www-form-urlencoded;charset=utf-8"
+                headers["platform"] = "3"
+                headers["accept"] = "application/json"
+                val r = if(!Config.net_use_foreign.value) "1" else "0"
+                val pwdEncoded = Base64.encode("$pwd-$salt".toByteArray(), Base64.DEFAULT).decodeToString()
+                data = "username=${URLEncoder.encode(username, Charset.defaultCharset().name())}&password=$pwdEncoded&salt=$salt&platform=3&authorization=Token+&version=${Config.app_ver.value}&source=copyApp&region=$r&webp=1"
             }
         }
 }

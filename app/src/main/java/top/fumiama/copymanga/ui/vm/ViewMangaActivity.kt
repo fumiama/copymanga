@@ -29,7 +29,6 @@ import androidx.core.animation.doOnEnd
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.lifecycle.lifecycleScope
-import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
@@ -54,10 +53,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import top.fumiama.copymanga.MainActivity
+import top.fumiama.copymanga.api.Config
 import top.fumiama.copymanga.template.general.TitleActivityTemplate
 import top.fumiama.copymanga.template.http.PausableDownloader
-import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.copymanga.tools.http.DownloadTools
 import top.fumiama.copymanga.tools.thread.TimeThread
 import top.fumiama.copymanga.tools.ui.Font
@@ -151,14 +149,11 @@ class ViewMangaActivity : TitleActivityTemplate() {
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
-        val settingsPref = MainActivity.mainWeakReference?.get()?.let { PreferenceManager.getDefaultSharedPreferences(it) }
-        settingsPref?.getBoolean("settings_cat_vm_sw_always_dark_bg", false)?.let {
-            if (it) {
-                Log.d("MyVM", "force dark")
-                delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_YES
-            } else {
-                delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
-            }
+        if (Config.view_manga_always_dark_bg.value) {
+            Log.d("MyVM", "force dark")
+            delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_YES
+        } else {
+            delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
         }
         postponeEnterTransition()
         setContentView(R.layout.activity_viewmanga)
@@ -174,21 +169,21 @@ class ViewMangaActivity : TitleActivityTemplate() {
         pn = intent.getIntExtra("pn", 0)
         cut = pb["useCut"]
         r2l = pb["r2l"]
-        verticalLoadMaxCount = settingsPref?.getInt("settings_cat_vm_sb_vertical_max", 20)?.let { if(it > 0) it else 20 }?:20
+        verticalLoadMaxCount = Config.view_manga_vertical_max.value.let { if(it > 0) it else 20 }
         isVertical = pb["vertical"]
         notUseVP = pb["noVP"] || isVertical
         //url = intent.getStringExtra("url")
         mHandler = VMHandler(this@ViewMangaActivity, if(urlArray.isNotEmpty()) urlArray[position] else "", resources.getStringArray(R.array.weeks))
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
-                settingsPref?.getInt("settings_cat_vm_sb_quality", 100)?.let { q = if (it > 0) it else 100 }
+                Config.view_manga_quality.value.let { q = if (it > 0) it else 100 }
                 tt = TimeThread(mHandler, VMHandler.SET_NET_INFO, 10000)
                 tt.canDo = true
                 tt.start()
-                volTurnPage = settingsPref?.getBoolean("settings_cat_vm_sw_vol_turn", false)?:false
+                volTurnPage = Config.view_manga_vol_turn.value
                 am = getSystemService(Service.AUDIO_SERVICE) as AudioManager
-                if (!noCellarAlert) noCellarAlert = settingsPref?.getBoolean("settings_cat_net_sw_use_cellar", false) == true
-                fullyHideInfo = settingsPref?.getBoolean("settings_cat_vm_sw_hide_info", false) == true
+                if (!noCellarAlert) noCellarAlert = Config.view_manga_use_cellar.value
+                fullyHideInfo = Config.view_manga_hide_info.value
 
                 Log.d("MyVM", "Now ZipFile is $zipFile")
                 try {
@@ -205,7 +200,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
                 }
             }
         }
-        if (settingsPref?.getBoolean("settings_cat_general_sw_enable_transparent_systembar", false) == true) {
+        if (Config.general_enable_transparent_system_bar.value) {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R)
                 window.attributes.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
         }
@@ -262,7 +257,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
         getImgUrlArray()?.let {
             tasks = Array(it.size) { i ->
                 val u = it[i]?:return@Array null
-                return@Array DownloadTools.prepare(CMApi.resolution.wrap(CMApi.imageProxy?.wrap(u)?:u))
+                return@Array DownloadTools.prepare(Config.resolution.wrap(Config.imageProxy?.wrap(u)?:u))
             }
             tasksRunStatus = Array(it.size) { return@Array false }
         }
@@ -278,7 +273,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
                 forEachIndexed { i, it ->
                     mHandler.obtainMessage(VMHandler.SET_DL_TEXT, "$i/$size").sendToTarget()
                     if(it != null) try {
-                        DownloadTools.getHttpContent(CMApi.resolution.wrap(CMApi.imageProxy?.wrap(it)?:it), 1024)?.inputStream()?.let {
+                        DownloadTools.getHttpContent(Config.resolution.wrap(Config.imageProxy?.wrap(it)?:it), 1024)?.inputStream()?.let {
                             isCut[i] = canCut(it)
                         }?:run {
                             withContext(Dispatchers.Main) {
@@ -428,7 +423,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
 
     private suspend fun loadImgUrlInto(imgView: ScaleImageView, button: Button, url: String, useCut: Boolean, isLeft: Boolean, check: (() -> Boolean)? = null): Boolean {
         Log.d("MyVM", "Load from adt: $url")
-        val success = PausableDownloader(CMApi.resolution.wrap(CMApi.imageProxy?.wrap(url)?:url), 1000, false) { data ->
+        val success = PausableDownloader(Config.resolution.wrap(Config.imageProxy?.wrap(url)?:url), 1000, false) { data ->
             check?.let { it() }?.let { if(it) loadImg(imgView, BitmapFactory.decodeByteArray(data, 0, data.size), useCut, isLeft, false) }
         }.run()
         if (!success) button.apply { post {
@@ -918,7 +913,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
                         val thisOneB = holder.itemView.oneb
                         Glide.with(this@ViewMangaActivity.applicationContext)
                             .asBitmap()
-                            .load(GlideUrl(CMApi.resolution.wrap(CMApi.imageProxy?.wrap(it)?:it), CMApi.myGlideHeaders))
+                            .load(GlideUrl(Config.resolution.wrap(Config.imageProxy?.wrap(it)?:it), Config.myGlideHeaders))
                             .placeholder(BitmapDrawable(resources, getLoadingBitmap(pos)))
                             .timeout(60000)
                             .addListener(OneButtonRequestListener(thisOneB))
@@ -929,7 +924,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
                                 override fun onLoadCleared(placeholder: Drawable?) { }
                             })
                     } else Glide.with(this@ViewMangaActivity.applicationContext)
-                        .load(GlideUrl(CMApi.resolution.wrap(CMApi.imageProxy?.wrap(it)?:it), CMApi.myGlideHeaders))
+                        .load(GlideUrl(Config.resolution.wrap(Config.imageProxy?.wrap(it)?:it), Config.myGlideHeaders))
                         .timeout(60000)
                         .placeholder(BitmapDrawable(resources, getLoadingBitmap(pos)))
                         .addListener(OneButtonRequestListener(holder.itemView.oneb))

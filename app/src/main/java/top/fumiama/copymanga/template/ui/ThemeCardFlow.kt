@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.View
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.line_finish.*
-import top.fumiama.copymanga.tools.api.CMApi
+import top.fumiama.copymanga.api.Config
 import top.fumiama.dmzj.copymanga.R
 
 @ExperimentalStdlibApi
@@ -12,7 +12,7 @@ open class ThemeCardFlow(private val api: Int, nav: Int) : StatusCardFlow(0, nav
     private var theme = ""
     override fun getApiUrl() =
         getString(api).format(
-            CMApi.myHostApiUrl,
+            Config.myHostApiUrl.value,
             page * 21,
             sortWay[sortValue],
             theme

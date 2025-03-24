@@ -9,16 +9,16 @@ import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.json.BookInfoStructure
 import top.fumiama.copymanga.json.ThemeStructure
 import top.fumiama.copymanga.json.VolumeStructure
-import top.fumiama.copymanga.tools.api.CMApi
+import top.fumiama.copymanga.api.Config
 import top.fumiama.copymanga.tools.http.DownloadTools
 import top.fumiama.dmzj.copymanga.R
 import java.io.File
 
 class Book(val path: String, private val getString: (Int) -> String, private val exDir: File, private val loadCache: Boolean = false, private val mPassName: String? = null) {
-    private val mBookApiUrl = getString(R.string.bookInfoApiUrl).format(CMApi.myHostApiUrl, path).let {
-        CMApi.apiProxy?.wrap(it)?:it
+    private val mBookApiUrl = getString(R.string.bookInfoApiUrl).format(Config.myHostApiUrl.value, path).let {
+        Config.apiProxy?.wrap(it)?:it
     }
-    private val mUserAgent = getString(R.string.pc_ua).format(DownloadTools.app_ver)
+    private val mUserAgent = getString(R.string.pc_ua).format(Config.app_ver.value)
     private var mBook: BookInfoStructure? = null
     private var mGroupPathWords = arrayOf<String>()
     private var mKeys = arrayOf<String>()
@@ -139,7 +139,7 @@ class Book(val path: String, private val getString: (Int) -> String, private val
             val mangaFolder = File(exDir, name)
             if(!mangaFolder.exists()) mangaFolder.mkdirs()
             val f = File(mangaFolder, "head.jpg")
-            if(force || !f.exists()) (cover?.let { CMApi.imageProxy?.wrap(it) } ?:cover)?.let {
+            if(force || !f.exists()) (cover?.let { Config.imageProxy?.wrap(it) } ?:cover)?.let {
                 Thread {
                     DownloadTools.getHttpContent(it, -1)?.let { data ->
                         f.writeBytes(data)

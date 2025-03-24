@@ -7,7 +7,7 @@ import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.json.ChapterStructure
 import top.fumiama.copymanga.json.VolumeStructure
 import top.fumiama.copymanga.template.http.PausableDownloader
-import top.fumiama.copymanga.tools.api.CMApi
+import top.fumiama.copymanga.api.Config
 import top.fumiama.dmzj.copymanga.R
 
 class Volume(private val path: String, private val groupPathWord: String, getString: (Int) -> String, private val isExit: ()->Boolean, private val setProgress: ((Int) -> Unit)? = null) {
@@ -39,7 +39,7 @@ class Volume(private val path: String, private val groupPathWord: String, getStr
         return@withContext mVolume
     }
 
-    private fun getApiUrl(offset: Int) = mGroupInfoApiUrlTemplate.format(CMApi.myHostApiUrl, path, groupPathWord, offset)
+    private fun getApiUrl(offset: Int) = mGroupInfoApiUrlTemplate.format(Config.myHostApiUrl.value, path, groupPathWord, offset)
     private suspend fun download(re: Array<VolumeStructure?>, offset: Int, c: Int) = withContext(Dispatchers.IO) {
         Log.d("MyV", "下载偏移: $offset")
         getApiUrl(offset).let {

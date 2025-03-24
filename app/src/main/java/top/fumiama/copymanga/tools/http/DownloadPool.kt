@@ -1,10 +1,7 @@
 package top.fumiama.copymanga.tools.http
 
 import android.util.Log
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import top.fumiama.copymanga.tools.api.CMApi
+import top.fumiama.copymanga.api.Config
 import java.io.File
 import java.io.FileOutputStream
 import java.lang.Thread.sleep
@@ -100,7 +97,7 @@ class DownloadPool(folder: String) {
                     var s = false
                     while (!s && tryTimes-- > 0) {
                         val u = imgUrls[index]
-                        s = (DownloadTools.getHttpContent(CMApi.resolution.wrap(CMApi.imageProxy?.wrap(u)?:u), -1))?.let {
+                        s = (DownloadTools.getHttpContent(Config.resolution.wrap(Config.imageProxy?.wrap(u)?:u), -1))?.let {
                             zip.putNextEntry(ZipEntry("$index.${if(imgUrls[index].contains(".webp")) "webp" else "jpg"}"))
                             zip.write(it)
                             zip.closeEntry()

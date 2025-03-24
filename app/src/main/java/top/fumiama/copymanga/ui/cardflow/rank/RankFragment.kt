@@ -5,7 +5,7 @@ import com.google.android.material.tabs.TabLayout
 import kotlinx.android.synthetic.main.fragment_rank.*
 import kotlinx.android.synthetic.main.line_rank.view.*
 import top.fumiama.copymanga.template.ui.InfoCardLoader
-import top.fumiama.copymanga.tools.api.CMApi
+import top.fumiama.copymanga.api.Config
 import top.fumiama.copymanga.tools.ui.UITools
 import top.fumiama.dmzj.copymanga.R
 import java.lang.ref.WeakReference
@@ -48,7 +48,7 @@ class RankFragment : InfoCardLoader(R.layout.fragment_rank, R.id.action_nav_rank
 
     override fun getApiUrl() =
         getString(R.string.rankApiUrl).format(
-                CMApi.myHostApiUrl,
+                Config.myHostApiUrl.value,
                 page * 21,
                 sortWay[sortValue],
                 audienceWay[audience]

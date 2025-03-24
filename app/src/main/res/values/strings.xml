@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE resources [
     <!ENTITY hosturl "api.mangacopy.com">
-    <!ENTITY appver "2.2.0">
+    <!ENTITY appver "2.2.6">
     ]>
 <resources>
     <string name="app_name">拷贝漫画</string>

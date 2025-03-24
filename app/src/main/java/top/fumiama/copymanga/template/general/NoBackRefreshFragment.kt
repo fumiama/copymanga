@@ -8,10 +8,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.animation.doOnEnd
 import androidx.fragment.app.Fragment
-import androidx.preference.PreferenceManager
 import kotlinx.android.synthetic.main.content_main.*
-import kotlinx.coroutines.runBlocking
 import top.fumiama.copymanga.MainActivity
+import top.fumiama.copymanga.api.Config
 import top.fumiama.copymanga.tools.ui.UITools
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -20,9 +19,7 @@ open class NoBackRefreshFragment(private val layoutToLoad: Int): Fragment() {
     val rootView: View get() = _rootView!!
     var isFirstInflate = true
     var navBarHeight = 0
-    private val disableAnimation = MainActivity.mainWeakReference?.get()?.let {
-        PreferenceManager.getDefaultSharedPreferences(it)
-    }?.getBoolean("settings_cat_general_sw_disable_kanban_animation", false)?:false
+    private val disableAnimation get() = Config.general_disable_kanban_animation.value
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,

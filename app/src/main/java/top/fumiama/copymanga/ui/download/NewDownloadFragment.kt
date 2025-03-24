@@ -7,13 +7,13 @@ import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import androidx.preference.PreferenceManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
-import top.fumiama.copymanga.manga.MangaDlTools
+import top.fumiama.copymanga.api.Config.manga_dl_show_0m_manga
+import top.fumiama.copymanga.manga.Downloader
 import top.fumiama.copymanga.manga.Reader
 import top.fumiama.copymanga.template.general.MangaPagesFragmentTemplate
 import top.fumiama.copymanga.template.ui.CardList
@@ -32,13 +32,10 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
     private var isReverse = false
     private var isContentChanged = false
     private var exit = false
-    private var showAll = false
+    private val showAll get() = manga_dl_show_0m_manga.value
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         wn = WeakReference(this)
-        showAll = activity?.let {
-            PreferenceManager.getDefaultSharedPreferences(it)
-        }?.getBoolean("settings_cat_md_sw_show_0m_manga", false)?:false
     }
 
     override fun onPause() {
@@ -74,7 +71,7 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
             var size = sortedBookList?.size?:0
             if (size > 0) {
                 if (!showAll) {
-                    sortedBookList = MangaDlTools.getNonEmptyMangaList(sortedBookList) {
+                    sortedBookList = Downloader.getNonEmptyMangaList(sortedBookList) {
                         setProgress(40+20*it/100)
                     }
                 }

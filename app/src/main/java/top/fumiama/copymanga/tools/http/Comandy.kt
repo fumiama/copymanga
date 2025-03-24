@@ -2,13 +2,11 @@ package top.fumiama.copymanga.tools.http
 
 import android.os.Build
 import android.util.Log
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.edit
-import androidx.preference.PreferenceManager
 import com.google.gson.Gson
 import com.sun.jna.Library
 import com.sun.jna.Native
 import top.fumiama.copymanga.MainActivity
+import top.fumiama.copymanga.api.Config
 import top.fumiama.copymanga.json.ComandyVersion
 import top.fumiama.dmzj.copymanga.R
 import java.io.ByteArrayInputStream
@@ -43,16 +41,9 @@ interface Comandy : Library {
                     return true
                 }
                 if (mUseComandy != null) return mUseComandy!!
-                MainActivity.mainWeakReference?.get()?.let {
-                    PreferenceManager.getDefaultSharedPreferences(it).apply {
-                        val b = getBoolean("settings_cat_net_sw_use_comandy", false)
-                        Log.d("MyComandy", "use comandy: $b")
-                        mUseComandy = b
-                        return b
-                    }
-                }
-                mUseComandy = false
-                return false
+                val v = Config.net_use_comandy.value
+                mUseComandy = v
+                return v
             }
         private val libraryFile: File?
             get() {
@@ -82,7 +73,7 @@ interface Comandy : Library {
                             } catch (e: Exception) {
                                 e.printStackTrace()
                             }
-                            val myVersion = ma.getPreferences(AppCompatActivity.MODE_PRIVATE).getInt("comandy_version", 0)
+                            val myVersion = Config.comandy_version.value?:0
                             if (myVersion >= remoteVersion) {
                                 Log.d("MyComandy", "lib version $myVersion is latest")
                                 isInInit.set(false)
@@ -99,10 +90,7 @@ interface Comandy : Library {
                                     dataIn.copyTo(dataOut)
                                 }
                             }
-                            if (remoteVersion > 0) ma.getPreferences(AppCompatActivity.MODE_PRIVATE).edit {
-                                putInt("comandy_version", remoteVersion)
-                                apply()
-                            }
+                            if (remoteVersion > 0) Config.comandy_version.value = remoteVersion
                             Log.d("MyComandy", "update success")
                             isInInit.set(false)
                         } catch (e: Exception) {

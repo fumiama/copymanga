@@ -8,7 +8,7 @@ import top.fumiama.copymanga.template.http.PausableDownloader
 import top.fumiama.copymanga.tools.http.DownloadPool
 import java.io.File
 
-class MangaDlTools {
+class Downloader {
     private var pool: DownloadPool? = null
     private var grp: CharSequence = ""
     private var indexMap = hashMapOf<String, Int>()

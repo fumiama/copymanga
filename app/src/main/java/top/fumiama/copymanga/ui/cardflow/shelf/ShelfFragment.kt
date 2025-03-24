@@ -9,7 +9,7 @@ import kotlinx.android.synthetic.main.anchor_popular.view.*
 import kotlinx.android.synthetic.main.line_shelf.*
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.template.ui.InfoCardLoader
-import top.fumiama.copymanga.tools.api.CMApi
+import top.fumiama.copymanga.api.Config
 import top.fumiama.dmzj.copymanga.R
 
 @ExperimentalStdlibApi
@@ -26,7 +26,7 @@ class ShelfFragment : InfoCardLoader(R.layout.fragment_shelf, R.id.action_nav_su
 
     override fun getApiUrl() =
         getString(R.string.shelfApiUrl).format(
-            CMApi.myHostApiUrl,
+            Config.myHostApiUrl.value,
             page * 21,
             sortWay[sortValue]
         )

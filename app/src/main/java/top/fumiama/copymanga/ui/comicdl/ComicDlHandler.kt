@@ -11,7 +11,6 @@ import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
-import androidx.preference.PreferenceManager
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.button_tbutton.*
 import kotlinx.android.synthetic.main.button_tbutton.view.*
@@ -25,12 +24,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import top.fumiama.copymanga.api.Config
 import top.fumiama.copymanga.json.ChapterStructure
 import top.fumiama.copymanga.json.ComicStructureOld
 import top.fumiama.copymanga.json.VolumeStructure
-import top.fumiama.copymanga.manga.MangaDlTools
+import top.fumiama.copymanga.manga.Downloader
 import top.fumiama.copymanga.manga.Reader
-import top.fumiama.copymanga.tools.api.CMApi
 import top.fumiama.copymanga.tools.ui.UITools
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment.Companion.exit
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment.Companion.json
@@ -65,13 +64,13 @@ class ComicDlHandler(
     private var tbtnlist: Array<ChapterToggleButton> = arrayOf()
     private var tbtncnt = 0
     private var isNewTitle = false
-    val mangaDlTools = MangaDlTools()
+    val downloader = Downloader()
     private var multiSelect = false
     private var finishMap = arrayOf<Boolean?>()
     var downloading = false
     private var urlArray = arrayOf<String>()
     private var uuidArray = arrayOf<String>()
-    private val maxBatch = that?.activity?.let { PreferenceManager.getDefaultSharedPreferences(it) }?.getInt("settings_cat_md_sb_max_batch", 16)?:16
+    private val maxBatch = Config.manga_dl_max_batch.value
 
     @SuppressLint("SetTextI18n")
     override fun handleMessage(msg: Message) {
@@ -170,7 +169,7 @@ class ComicDlHandler(
         if (multiSelect) {
             for (i in tbtnlist) {
                 if (i.isChecked) {
-                    val f = CMApi.getZipFile(that?.context?.getExternalFilesDir(""), comicName, i.caption?:"null", i.chapterName)
+                    val f = Config.getZipFile(that?.context?.getExternalFilesDir(""), comicName, i.caption?:"null", i.chapterName)
                     if (f.exists()) {
                         deleteChapter(f, i)
                         checkedChapter--
@@ -225,7 +224,7 @@ class ComicDlHandler(
             else{
                 that!!.pdwn.progress = 0
                 if (downloading || checkedChapter == 0) {
-                   mangaDlTools.wait = !mangaDlTools.wait!!
+                   downloader.wait = !downloader.wait!!
                 } else that?.lifecycleScope?.launch {
                     downloading = true
                     sendEmptyMessage(9)
@@ -238,7 +237,7 @@ class ComicDlHandler(
             sendEmptyMessage(4)
             return@setOnLongClickListener true
         }
-        mangaDlTools.onDownloadedListener = object :MangaDlTools.OnDownloadedListener {
+        downloader.onDownloadedListener = object :Downloader.OnDownloadedListener {
             override fun handleMessage(index: Int, isSuccess: Boolean, message: String) {
                 that?.lifecycleScope?.launch {
                     if(isSuccess) onZipDownloadFinish(index)
@@ -287,7 +286,7 @@ class ComicDlHandler(
                     while (totalInDownload.get() >= maxBatch) delay(1000)
                     totalInDownload.incrementAndGet()
                     launch {
-                        mangaDlTools.downloadChapterInVol(
+                        downloader.downloadChapterInVol(
                             it,
                             i.chapterName,
                             i.caption?:"null",
@@ -308,7 +307,7 @@ class ComicDlHandler(
             updateProgressBar()
             that?.apply {
                 cdwn.postDelayed({
-                    if (mangaDlTools.exit) return@postDelayed
+                    if (downloader.exit) return@postDelayed
                     if (dldChapter == checkedChapter) {
                         checkedChapter = 0
                         setProgress2(0, 233)
@@ -341,7 +340,7 @@ class ComicDlHandler(
     }
     private suspend fun addButtons(chapters: Array<ChapterStructure>, caption: String, version: Int) = withContext(Dispatchers.IO) {
         chapters.forEach { chapter ->
-            val u = CMApi.getChapterInfoApiUrl(chapter.comic_path_word, chapter.uuid, version)?:""
+            val u = Config.getChapterInfoApiUrl(chapter.comic_path_word, chapter.uuid, version)?:""
             addButton(chapter.name, chapter.uuid, caption, u)
             urlArray += u
         }
@@ -372,7 +371,7 @@ class ComicDlHandler(
             that?.ltbtn?.invalidate()
 
             withContext(Dispatchers.IO) {
-                val zipf = CMApi.getZipFile(that!!.context?.getExternalFilesDir(""), comicName, caption, title)
+                val zipf = Config.getZipFile(that!!.context?.getExternalFilesDir(""), comicName, caption, title)
                 Log.d("MyCD", "Get zipf: $zipf")
                 Reader.fileArray += zipf
                 if (zipf.exists()) withContext(Dispatchers.Main) {
@@ -440,7 +439,7 @@ class ComicDlHandler(
                     }
                     isNewTitle = true
                     for (chapter in group.chapters) {
-                        val newUrl = CMApi.getChapterInfoApiUrl(
+                        val newUrl = Config.getChapterInfoApiUrl(
                             chapter.url.substringAfter("/comic/").substringBefore('/'),
                             chapter.url.substringAfterLast('/'), version,
                         )?:""

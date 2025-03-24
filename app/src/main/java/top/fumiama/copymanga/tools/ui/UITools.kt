@@ -8,15 +8,16 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.view.View
 import android.widget.Toast
-import androidx.preference.PreferenceManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import top.fumiama.copymanga.api.Config
 import top.fumiama.dmzj.copymanga.R
 import java.lang.ref.WeakReference
 import kotlin.math.sqrt
 
 class UITools(that: Context?, w: WeakReference<Activity>? = null) {
-    private val zis = that
+    private val weakZis = WeakReference(that)
+    private val zis get() = weakZis.get()
     private val weak = w
     constructor(w: WeakReference<Activity>): this(w.get()?.applicationContext, w)
     val transportStringNull = zis?.getString(R.string.TRANSPORT_NULL) ?: "TRANSPORT_NULL"
@@ -27,16 +28,16 @@ class UITools(that: Context?, w: WeakReference<Activity>? = null) {
                 zis?.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             return cm.getNetworkCapabilities(cm.activeNetwork)?.let {
                 when {
-                    it.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> return@let zis.getString(
-                        R.string.TRANSPORT_WIFI)
-                    it.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> return@let zis.getString(
-                        R.string.TRANSPORT_CELLULAR)
-                    it.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> return@let zis.getString(
-                        R.string.TRANSPORT_BLUETOOTH)
-                    it.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> return@let zis.getString(
-                        R.string.TRANSPORT_ETHERNET)
-                    it.hasTransport(NetworkCapabilities.TRANSPORT_LOWPAN) -> return@let zis.getString(
-                        R.string.TRANSPORT_LOWPAN)
+                    it.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> return@let zis?.getString(
+                        R.string.TRANSPORT_WIFI)?:""
+                    it.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> return@let zis?.getString(
+                        R.string.TRANSPORT_CELLULAR)?:""
+                    it.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> return@let zis?.getString(
+                        R.string.TRANSPORT_BLUETOOTH)?:""
+                    it.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> return@let zis?.getString(
+                        R.string.TRANSPORT_ETHERNET)?:""
+                    it.hasTransport(NetworkCapabilities.TRANSPORT_LOWPAN) -> return@let zis?.getString(
+                        R.string.TRANSPORT_LOWPAN)?:""
                     it.hasTransport(NetworkCapabilities.TRANSPORT_VPN) -> return@let "VPN"
                     else -> return@let transportStringNull
                 }
@@ -99,11 +100,8 @@ class UITools(that: Context?, w: WeakReference<Activity>? = null) {
         val margin = marginLeftDp.toDouble()
         val marginPx = dp2px(marginLeftDp)?:16
         val screenWidth = zis?.resources?.displayMetrics?.widthPixels?:1080
-        val numPerRow = ((px2dp(screenWidth)?:400).toDouble() / (widthDp + 2 * margin) + 0.5).toInt().let {
-            it + (zis?.let {
-                a -> PreferenceManager.getDefaultSharedPreferences(a).getInt("settings_cat_general_sb_card_per_row", 0)
-            } ?: 0)
-        }.let { if(it <= 0) 3 else it }
+        val numPerRow = (((px2dp(screenWidth)?:400).toDouble() / (widthDp + 2 * margin) + 0.5).toInt()
+                + Config.general_card_per_row.value).let { if(it <= 0) 3 else it }
         val w = (screenWidth - marginPx*numPerRow*2)/numPerRow
         val totalWidth = screenWidth/numPerRow
         return listOf(numPerRow, w, totalWidth)

@@ -1,16 +1,13 @@
 package top.fumiama.copymanga.tools.http
 
-import android.content.Context
 import android.util.Base64
 import android.util.Log
-import androidx.preference.PreferenceManager
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity
+import top.fumiama.copymanga.api.Config
 import top.fumiama.copymanga.json.ComandyCapsule
-import top.fumiama.dmzj.copymanga.R
-import java.lang.IllegalArgumentException
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.concurrent.Callable
@@ -18,13 +15,6 @@ import java.util.concurrent.FutureTask
 import java.util.concurrent.atomic.AtomicInteger
 
 object DownloadTools {
-    val app_ver = MainActivity.mainWeakReference?.get()?.let { main ->
-        PreferenceManager.getDefaultSharedPreferences(main)
-            ?.getString("settings_cat_general_et_app_version", main.getString(R.string.app_ver))
-            ?:main.getString(R.string.app_ver)
-    }!!
-    val pc_ua = MainActivity.mainWeakReference?.get()!!.getString(R.string.pc_ua).format(app_ver)
-    val referer = MainActivity.mainWeakReference?.get()!!.getString(R.string.referer).format(app_ver)
     val failTimes = AtomicInteger(0)
     fun getApiConnection(url: String, method: String = "GET", refer: String? = null, ua: String? = null, timeout: Int = 20000) =
         url.let {
@@ -38,16 +28,10 @@ object DownloadTools {
                 refer?.let { setRequestProperty("referer", it) }
                 setRequestProperty("source", "copyApp")
                 setRequestProperty("webp", "1")
-                MainActivity.mainWeakReference?.get()?.let {
-                    PreferenceManager.getDefaultSharedPreferences(it).apply {
-                        setRequestProperty("region", if(!getBoolean("settings_cat_net_sw_use_foreign", false)) "1" else "0")
-                    }
-                    it.getPreferences(Context.MODE_PRIVATE).apply {
-                        setRequestProperty("version", app_ver)
-                        getString("token", "")?.let { tk ->
-                            setRequestProperty("authorization", "Token $tk")
-                        }
-                    }
+                setRequestProperty("region", if(!Config.net_use_foreign.value) "1" else "0")
+                setRequestProperty("version", Config.app_ver.value)
+                Config.token.value?.let { tk ->
+                    setRequestProperty("authorization", "Token $tk")
                 }
                 setRequestProperty("platform", "3")
             }
@@ -67,14 +51,10 @@ object DownloadTools {
             capsule.headers["source"] = "copyApp"
             capsule.headers["webp"] = "1"
             MainActivity.mainWeakReference?.get()?.let {
-                PreferenceManager.getDefaultSharedPreferences(it).apply {
-                    capsule.headers["region"] = if(!getBoolean("settings_cat_net_sw_use_foreign", false)) "1" else "0"
-                }
-                it.getPreferences(Context.MODE_PRIVATE).apply {
-                    capsule.headers["version"] = app_ver
-                    getString("token", "")?.let { tk ->
-                        capsule.headers["authorization"] = "Token $tk"
-                    }
+                capsule.headers["region"] = if(!Config.net_use_foreign.value) "1" else "0"
+                capsule.headers["version"] = Config.app_ver.value
+                Config.token.value?.let { tk ->
+                    capsule.headers["authorization"] = "Token $tk"
                 }
             }
             capsule.headers["platform"] = "3"
@@ -105,7 +85,7 @@ object DownloadTools {
             capsule
         }
 
-    suspend fun getHttpContent(u: String, refer: String? = null, ua: String? = pc_ua): ByteArray =
+    suspend fun getHttpContent(u: String, refer: String? = null, ua: String? = Config.pc_ua): ByteArray =
         withContext(Dispatchers.IO) {
             if (!u.startsWith("https://copymanga.azurewebsites.net") && Comandy.useComandy) {
                 getComandyApiConnection(u, "GET", refer, ua).let { capsule ->
@@ -150,7 +130,7 @@ object DownloadTools {
         FutureTask(if (!u.startsWith("https://copymanga.azurewebsites.net") && Comandy.useComandy) Callable{
             try {
                 Comandy.instance?.request(Gson().toJson(
-                    getComandyNormalConnection(u, "GET", pc_ua))
+                    getComandyNormalConnection(u, "GET", Config.pc_ua))
                 )?.let { result ->
                     Gson().fromJson(result, ComandyCapsule::class.java)?.let {
                         if (it.code != 200) null
@@ -164,7 +144,7 @@ object DownloadTools {
         } else Callable {
             var ret: ByteArray? = null
             try {
-                val connection = getNormalConnection(u, "GET", pc_ua)
+                val connection = getNormalConnection(u, "GET", Config.pc_ua)
                 val ci = connection.inputStream
                 if(readSize > 0) {
                     ret = ByteArray(readSize)
@@ -186,7 +166,7 @@ object DownloadTools {
         }
     }*/
 
-    fun requestWithBody(url: String, method: String, body: ByteArray, refer: String? = referer, ua: String? = pc_ua, contentType: String? = "application/x-www-form-urlencoded;charset=utf-8"): ByteArray? {
+    fun requestWithBody(url: String, method: String, body: ByteArray, refer: String? = Config.referer, ua: String? = Config.pc_ua, contentType: String? = "application/x-www-form-urlencoded;charset=utf-8"): ByteArray? {
         Log.d("MyDT", "$method Http: $url")
         var ret: ByteArray? = null
         val task = FutureTask(if(!url.startsWith("https://copymanga.azurewebsites.net") && Comandy.useComandy) Callable{

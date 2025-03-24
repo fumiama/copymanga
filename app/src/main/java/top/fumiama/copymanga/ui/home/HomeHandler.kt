@@ -31,7 +31,7 @@ import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.json.ComicStructure
 import top.fumiama.copymanga.json.IndexStructure
 import top.fumiama.copymanga.template.http.AutoDownloadHandler
-import top.fumiama.copymanga.tools.api.CMApi
+import top.fumiama.copymanga.api.Config
 import top.fumiama.copymanga.tools.ui.GlideHideLottieViewListener
 import top.fumiama.copymanga.tools.ui.Navigate
 import top.fumiama.copymanga.tools.ui.UITools
@@ -40,7 +40,7 @@ import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicInteger
 
 class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadHandler(
-    that.get()?.getString(R.string.mainPageApiUrl)!!.format(CMApi.myHostApiUrl),
+    that.get()?.getString(R.string.mainPageApiUrl)!!.format(Config.myHostApiUrl.value),
     IndexStructure::class.java,
     that.get()
 ) {
@@ -369,7 +369,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
             if(img.startsWith("http")) {
                 //Log.d("MyHH", "load card image: $img")
                 val waitMillis = cardLoadingWaits.getAndIncrement().toLong()*200
-                val g = Glide.with(it).load(GlideUrl(CMApi.imageProxy?.wrap(img)?:img, CMApi.myGlideHeaders))
+                val g = Glide.with(it).load(GlideUrl(Config.imageProxy?.wrap(img)?:img, Config.myGlideHeaders))
                     .addListener(GlideHideLottieViewListener(WeakReference(cv.laic)) {
                         cardLoadingWaits.decrementAndGet()
                     }).timeout(60000)

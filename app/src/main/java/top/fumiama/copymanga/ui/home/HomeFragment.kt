@@ -32,7 +32,7 @@ import top.fumiama.copymanga.MainActivity.Companion.ime
 import top.fumiama.copymanga.json.BookListStructure
 import top.fumiama.copymanga.template.general.NoBackRefreshFragment
 import top.fumiama.copymanga.template.http.PausableDownloader
-import top.fumiama.copymanga.tools.api.CMApi
+import top.fumiama.copymanga.api.Config
 import top.fumiama.copymanga.tools.ui.GlideHideLottieViewListener
 import top.fumiama.copymanga.tools.ui.Navigate
 import top.fumiama.dmzj.copymanga.R
@@ -204,7 +204,7 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                     if(it.isEmpty()) return@let
                     //Log.d("MyHomeFVP", "Load img: $it")
                     Glide.with(this@HomeFragment).load(
-                        GlideUrl(CMApi.imageProxy?.wrap(it)?:it, CMApi.myGlideHeaders)
+                        GlideUrl(Config.imageProxy?.wrap(it)?:it, Config.myGlideHeaders)
                     )
                         .addListener(GlideHideLottieViewListener(WeakReference(holder.itemView.lai)))
                         .timeout(60000).into(holder.itemView.vpi)
@@ -276,7 +276,7 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                         cic.isClickable = false
                         context?.let {
                             Glide.with(it)
-                                .load(GlideUrl(CMApi.imageProxy?.wrap(cover)?:cover, CMApi.myGlideHeaders))
+                                .load(GlideUrl(Config.imageProxy?.wrap(cover)?:cover, Config.myGlideHeaders))
                                 .addListener(GlideHideLottieViewListener(WeakReference(laic)))
                                 .timeout(60000).into(imic)
                         }
@@ -295,7 +295,7 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
             suspend fun refresh(q: CharSequence) = withContext(Dispatchers.IO) {
                 query = q.toString()
                 activity?.apply {
-                    PausableDownloader(getString(R.string.searchApiUrl).format(CMApi.myHostApiUrl, 0, query, type)) {
+                    PausableDownloader(getString(R.string.searchApiUrl).format(Config.myHostApiUrl.value, 0, query, type)) {
                         results = Gson().fromJson(it.decodeToString(), BookListStructure::class.java)
                         count = results?.results?.total?:0
                         withContext(Dispatchers.Main) {

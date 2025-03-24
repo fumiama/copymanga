@@ -50,7 +50,7 @@ class ComicDlFragment: NoBackRefreshFragment(R.layout.fragment_dlcomic) {
         super.onDestroy()
         //mainWeakReference?.get()?.menuMain?.let { setMenuInvisible(it) }
         handler?.downloading = false
-        handler?.mangaDlTools?.exit = true
+        handler?.downloader?.exit = true
         handler?.dl?.dismiss()
         exit = true
         handler = null

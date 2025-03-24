@@ -14,7 +14,7 @@ import top.fumiama.copymanga.json.FilterStructure
 import top.fumiama.copymanga.json.ThemeStructure
 import top.fumiama.copymanga.template.http.PausableDownloader
 import top.fumiama.copymanga.template.ui.StatusCardFlow
-import top.fumiama.copymanga.tools.api.CMApi
+import top.fumiama.copymanga.api.Config
 import top.fumiama.dmzj.copymanga.R
 
 @ExperimentalStdlibApi
@@ -25,7 +25,7 @@ class SortFragment : StatusCardFlow(0, R.id.action_nav_sort_to_nav_book, R.layou
 
     override fun getApiUrl() =
         getString(R.string.sortApiUrl).format(
-                CMApi.myHostApiUrl,
+                Config.myHostApiUrl.value,
                 page * 21,
                 sortWay[sortValue],
                 if(theme >= 0 && theme < (filter?.results?.theme?.size ?: 0)) (filter?.results?.theme?.get(theme)?.path_word ?: "") else "",
@@ -42,7 +42,7 @@ class SortFragment : StatusCardFlow(0, R.id.action_nav_sort_to_nav_book, R.layou
         super.setListeners()
         lifecycleScope.launch {
             setProgress(5)
-            PausableDownloader(getString(R.string.filterApiUrl).format(CMApi.myHostApiUrl)) {
+            PausableDownloader(getString(R.string.filterApiUrl).format(Config.myHostApiUrl.value)) {
                 if(ad?.exit == true) return@PausableDownloader
                 it.let {
                     it.inputStream().use { i ->

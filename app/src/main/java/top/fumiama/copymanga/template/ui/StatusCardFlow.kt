@@ -3,9 +3,7 @@ package top.fumiama.copymanga.template.ui
 import android.animation.ObjectAnimator
 import android.view.View
 import kotlinx.android.synthetic.main.anchor_popular.view.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import top.fumiama.copymanga.tools.api.CMApi
+import top.fumiama.copymanga.api.Config
 import top.fumiama.dmzj.copymanga.R
 
 @ExperimentalStdlibApi
@@ -20,7 +18,7 @@ open class StatusCardFlow(private val api: Int, nav: Int, inflateRes: Int,
 
     override fun getApiUrl() =
         getString(api).format(
-            CMApi.myHostApiUrl,
+            Config.myHostApiUrl.value,
             page * 21,
             sortWay[sortValue]
         )

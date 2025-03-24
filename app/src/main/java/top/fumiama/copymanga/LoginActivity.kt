@@ -7,9 +7,9 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
-import androidx.preference.PreferenceManager
 import kotlinx.android.synthetic.main.activity_login.*
 import kotlinx.coroutines.launch
+import top.fumiama.copymanga.api.Config
 import top.fumiama.dmzj.copymanga.R
 import kotlin.random.Random
 
@@ -18,11 +18,10 @@ class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
-        val pref = MainActivity.mainWeakReference?.get()?.getPreferences(MODE_PRIVATE) ?: return
-        val isLogout = pref.getString("token", null) != null
+        val isLogout = !Config.token.value.isNullOrEmpty()
         if (isLogout) {
             alblogin.setText(R.string.logout)
-            altusrnm.setText(pref.getString("username", "N/A"))
+            altusrnm.setText(Config.username.value)
         }
         alblogin.setOnClickListener {
             lifecycleScope.launch {
@@ -61,14 +60,12 @@ class LoginActivity : AppCompatActivity() {
                 Toast.makeText(this@LoginActivity, l?.message, Toast.LENGTH_LONG).show()
             }
         }
-        PreferenceManager.getDefaultSharedPreferences(this)?.apply {
-            if (getBoolean("settings_cat_general_sw_enable_transparent_systembar", false)) {
-                WindowCompat.setDecorFitsSystemWindows(window, false)
-                window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-                window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
-                window.statusBarColor = 0
-                window.navigationBarColor = 0
-            }
+        if (Config.general_enable_transparent_system_bar.value) {
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
+            window.statusBarColor = 0
+            window.navigationBarColor = 0
         }
     }
 }
