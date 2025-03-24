@@ -11,8 +11,8 @@ android {
         applicationId 'top.fumiama.copymanga'
         minSdkVersion 23
         targetSdkVersion 34
-        versionCode 65
-        versionName '2.3.7'
+        versionCode 66
+        versionName '2.3.8'
         resourceConfigurations += ['zh', 'zh-rCN']
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
