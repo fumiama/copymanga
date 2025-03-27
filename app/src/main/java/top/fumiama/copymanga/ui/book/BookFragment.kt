@@ -17,10 +17,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity
-import top.fumiama.copymanga.manga.Book
-import top.fumiama.copymanga.manga.Reader
-import top.fumiama.copymanga.template.general.NoBackRefreshFragment
-import top.fumiama.copymanga.tools.ui.Navigate
+import top.fumiama.copymanga.api.manga.Book
+import top.fumiama.copymanga.api.manga.Reader
+import top.fumiama.copymanga.view.template.NoBackRefreshFragment
+import top.fumiama.copymanga.view.interaction.Navigate
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment
 import top.fumiama.dmzj.copymanga.R
 import java.lang.ref.WeakReference

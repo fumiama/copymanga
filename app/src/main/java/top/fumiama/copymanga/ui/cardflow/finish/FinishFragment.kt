@@ -2,7 +2,7 @@ package top.fumiama.copymanga.ui.cardflow.finish
 
 import android.os.Bundle
 import android.view.View
-import top.fumiama.copymanga.template.ui.StatusCardFlow
+import top.fumiama.copymanga.view.template.StatusCardFlow
 import top.fumiama.dmzj.copymanga.R
 import kotlinx.android.synthetic.main.line_finish.*
 

@@ -92,8 +92,8 @@
     <string name="apiProxyApiUrl">https://copymanga.azurewebsites.net/api/api?code=%1$s&amp;url=%2$s</string>
     <string name="imgResolutionKeyID">settings_cat_net_sb_image_resolution</string>
 
-    <string name="comandy_version_url">https://gitea.seku.su/api/v1/repos/fumiama/comandy/releases/tags/default</string>
-    <string name="comandy_download_url">"https://gitea.seku.su/fumiama/comandy/releases/download/default/%1$s_libcomandy.so.gz"</string>
+    <string name="comandy_version_url">https://gitea.seku.su/api/v1/repos/fumiama/%1$s/releases/tags/default</string>
+    <string name="comandy_download_url">"https://gitea.seku.su/fumiama/%1$s/releases/download/default/%2$s_%3$s.gz"</string>
 
     <string name="complete">已完结</string>
 

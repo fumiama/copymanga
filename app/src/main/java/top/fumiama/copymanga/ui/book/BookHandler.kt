@@ -38,11 +38,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.json.ThemeStructure
-import top.fumiama.copymanga.manga.Reader
+import top.fumiama.copymanga.api.manga.Reader
 import top.fumiama.copymanga.api.Config
-import top.fumiama.copymanga.tools.ui.GlideBlurTransformation
-import top.fumiama.copymanga.tools.ui.GlideHideLottieViewListener
-import top.fumiama.copymanga.tools.ui.Navigate
+import top.fumiama.copymanga.view.operation.GlideBlurTransformation
+import top.fumiama.copymanga.view.operation.GlideHideLottieViewListener
+import top.fumiama.copymanga.view.interaction.Navigate
 import top.fumiama.dmzj.copymanga.R
 import java.lang.ref.WeakReference
 

@@ -54,12 +54,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.api.Config
-import top.fumiama.copymanga.template.general.TitleActivityTemplate
-import top.fumiama.copymanga.template.http.PausableDownloader
-import top.fumiama.copymanga.tools.http.DownloadTools
+import top.fumiama.copymanga.view.template.TitleActivityTemplate
+import top.fumiama.copymanga.net.template.PausableDownloader
+import top.fumiama.copymanga.net.DownloadTools
 import top.fumiama.copymanga.tools.thread.TimeThread
-import top.fumiama.copymanga.tools.ui.Font
-import top.fumiama.copymanga.views.ScaleImageView
+import top.fumiama.copymanga.view.Font
+import top.fumiama.copymanga.view.ScaleImageView
 import top.fumiama.dmzj.copymanga.R
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream

@@ -7,8 +7,8 @@ import top.fumiama.copymanga.tools.file.PreferenceInt
 import top.fumiama.copymanga.tools.file.PreferenceString
 import top.fumiama.copymanga.tools.file.UserPreferenceInt
 import top.fumiama.copymanga.tools.file.UserPreferenceString
-import top.fumiama.copymanga.tools.http.Proxy
-import top.fumiama.copymanga.tools.http.Resolution
+import top.fumiama.copymanga.net.Proxy
+import top.fumiama.copymanga.net.Resolution
 import top.fumiama.dmzj.copymanga.R
 import java.io.File
 
@@ -54,12 +54,14 @@ object Config {
         }
 
     val myHostApiUrl = PreferenceString("settings_cat_net_et_api_url", R.string.hostUrl)
+    val navTextInfo = UserPreferenceString("navTextInfo", R.string.navTextInfo)
     val proxy_key = PreferenceString(R.string.imgProxyKeyID)
     val app_ver = PreferenceString("settings_cat_general_et_app_version", R.string.app_ver)
     val token = UserPreferenceString("token", "", null)
     val pc_ua get() = MainActivity.mainWeakReference?.get()?.getString(R.string.pc_ua)?.format(app_ver.value)?:""
     val referer get() = MainActivity.mainWeakReference?.get()?.getString(R.string.referer)?.format(app_ver.value)?:""
     val comandy_version = UserPreferenceInt("comandy_version", 0)
+    val comancry_version = UserPreferenceInt("comancry_version", 0)
     val user_id = UserPreferenceString("user_id")
     val username = UserPreferenceString("username")
     val nickname = UserPreferenceString("nickname")
@@ -76,6 +78,7 @@ object Config {
     val net_use_foreign = PreferenceBoolean("settings_cat_net_sw_use_foreign", false)
     private val net_use_img_proxy = PreferenceBoolean("settings_cat_net_sw_use_img_proxy", false)
     val net_use_api_proxy = PreferenceBoolean("settings_cat_net_sw_use_api_proxy", false)
+    val net_img_resolution = PreferenceString(R.string.imgResolutionKeyID)
 
     val view_manga_always_dark_bg = PreferenceBoolean("settings_cat_vm_sw_always_dark_bg", false)
     val view_manga_vertical_max = PreferenceInt("settings_cat_vm_sb_vertical_max", 20)

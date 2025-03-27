@@ -1,7 +1,7 @@
 package top.fumiama.copymanga.ui.vm
 
 import android.widget.Toast
-import top.fumiama.copymanga.manga.Reader
+import top.fumiama.copymanga.api.manga.Reader
 import top.fumiama.dmzj.copymanga.R
 import java.lang.ref.WeakReference
 

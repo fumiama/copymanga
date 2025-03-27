@@ -11,8 +11,8 @@ android {
         applicationId 'top.fumiama.copymanga'
         minSdkVersion 23
         targetSdkVersion 34
-        versionCode 66
-        versionName '2.3.8'
+        versionCode 67
+        versionName '2.4.0'
         resourceConfigurations += ['zh', 'zh-rCN']
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -26,6 +26,12 @@ android {
 
     signingConfigs {
         release {
+            enableV1Signing true
+            enableV2Signing true
+            enableV3Signing true
+            enableV4Signing true
+        }
+        debug {
             enableV1Signing true
             enableV2Signing true
             enableV3Signing true
@@ -45,12 +51,14 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-        debug{
-            minifyEnabled true
-            shrinkResources true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }*/
+        debug{
+            //minifyEnabled true
+            //shrinkResources true
+            //vcsInfo.include false
+            //proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug
+        }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
@@ -68,6 +76,21 @@ android {
         }
     }
     namespace 'top.fumiama.dmzj.copymanga'
+}
+
+Properties props = new Properties()
+def propFile = file('signing.properties')
+if (propFile.canRead()){
+    props.load(new FileInputStream(propFile))
+
+    if (props!=null && props.containsKey('STORE_FILE') && props.containsKey('STORE_PASSWORD') &&
+            props.containsKey('KEY_ALIAS') && props.containsKey('KEY_PASSWORD')) {
+
+        android.signingConfigs.debug.storeFile = file(props['STORE_FILE'])
+        android.signingConfigs.debug.storePassword = props['STORE_PASSWORD']
+        android.signingConfigs.debug.keyAlias = props['KEY_ALIAS']
+        android.signingConfigs.debug.keyPassword = props['KEY_PASSWORD']
+    }
 }
 
 dependencies {

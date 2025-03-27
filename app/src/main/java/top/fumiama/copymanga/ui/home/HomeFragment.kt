@@ -30,11 +30,11 @@ import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.MainActivity.Companion.ime
 import top.fumiama.copymanga.json.BookListStructure
-import top.fumiama.copymanga.template.general.NoBackRefreshFragment
-import top.fumiama.copymanga.template.http.PausableDownloader
+import top.fumiama.copymanga.view.template.NoBackRefreshFragment
+import top.fumiama.copymanga.net.template.PausableDownloader
 import top.fumiama.copymanga.api.Config
-import top.fumiama.copymanga.tools.ui.GlideHideLottieViewListener
-import top.fumiama.copymanga.tools.ui.Navigate
+import top.fumiama.copymanga.view.operation.GlideHideLottieViewListener
+import top.fumiama.copymanga.view.interaction.Navigate
 import top.fumiama.dmzj.copymanga.R
 import java.lang.ref.WeakReference
 

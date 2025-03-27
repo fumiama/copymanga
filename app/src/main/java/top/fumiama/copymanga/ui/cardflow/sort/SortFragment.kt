@@ -12,8 +12,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.json.FilterStructure
 import top.fumiama.copymanga.json.ThemeStructure
-import top.fumiama.copymanga.template.http.PausableDownloader
-import top.fumiama.copymanga.template.ui.StatusCardFlow
+import top.fumiama.copymanga.net.template.PausableDownloader
+import top.fumiama.copymanga.view.template.StatusCardFlow
 import top.fumiama.copymanga.api.Config
 import top.fumiama.dmzj.copymanga.R
 

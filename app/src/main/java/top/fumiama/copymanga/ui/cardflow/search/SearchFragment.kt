@@ -2,7 +2,7 @@ package top.fumiama.copymanga.ui.cardflow.search
 
 import android.os.Bundle
 import android.util.Log
-import top.fumiama.copymanga.template.ui.InfoCardLoader
+import top.fumiama.copymanga.view.template.InfoCardLoader
 import top.fumiama.copymanga.api.Config
 import top.fumiama.dmzj.copymanga.R
 

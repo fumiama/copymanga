@@ -20,9 +20,9 @@ import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.json.Chapter2Return
 import top.fumiama.copymanga.json.ChapterWithContent
 import top.fumiama.copymanga.json.ComicStructure
-import top.fumiama.copymanga.template.http.AutoDownloadHandler
-import top.fumiama.copymanga.template.http.PausableDownloader
-import top.fumiama.copymanga.views.ScaleImageView
+import top.fumiama.copymanga.net.template.AutoDownloadHandler
+import top.fumiama.copymanga.net.template.PausableDownloader
+import top.fumiama.copymanga.view.ScaleImageView
 import top.fumiama.dmzj.copymanga.R
 import java.io.File
 import java.lang.ref.WeakReference

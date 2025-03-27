@@ -11,8 +11,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import top.fumiama.copymanga.tools.ui.UITools
-import top.fumiama.copymanga.views.AutoHideEditTextPreferenceDialogFragmentCompat
+import top.fumiama.copymanga.view.interaction.UITools
+import top.fumiama.copymanga.view.AutoHideEditTextPreferenceDialogFragmentCompat
 import top.fumiama.dmzj.copymanga.R
 
 class SettingsFragment: PreferenceFragmentCompat() {

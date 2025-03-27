@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:background="?attr/colorSurface">
 
-    <top.fumiama.copymanga.views.LazyScrollView
+    <top.fumiama.copymanga.view.LazyScrollView
         android:id="@+id/dllazys"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -15,7 +15,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"/>
-    </top.fumiama.copymanga.views.LazyScrollView>
+    </top.fumiama.copymanga.view.LazyScrollView>
 
     <include
         android:id="@+id/dlsdwn"

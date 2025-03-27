@@ -14,11 +14,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity
-import top.fumiama.copymanga.manga.Downloader
-import top.fumiama.copymanga.manga.Reader
-import top.fumiama.copymanga.template.general.NoBackRefreshFragment
+import top.fumiama.copymanga.api.manga.Downloader
+import top.fumiama.copymanga.api.manga.Reader
+import top.fumiama.copymanga.view.template.NoBackRefreshFragment
 import top.fumiama.copymanga.tools.file.FileUtils
-import top.fumiama.copymanga.tools.ui.Navigate
+import top.fumiama.copymanga.view.interaction.Navigate
 import top.fumiama.dmzj.copymanga.R
 import java.io.File
 import java.lang.ref.WeakReference

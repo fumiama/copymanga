@@ -8,7 +8,7 @@ import androidx.navigation.fragment.findNavController
 import kotlinx.android.synthetic.main.anchor_popular.view.*
 import kotlinx.android.synthetic.main.line_shelf.*
 import top.fumiama.copymanga.MainActivity
-import top.fumiama.copymanga.template.ui.InfoCardLoader
+import top.fumiama.copymanga.view.template.InfoCardLoader
 import top.fumiama.copymanga.api.Config
 import top.fumiama.dmzj.copymanga.R
 

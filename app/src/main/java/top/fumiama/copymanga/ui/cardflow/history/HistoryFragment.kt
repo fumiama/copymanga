@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.navigation.fragment.findNavController
 import top.fumiama.copymanga.MainActivity
-import top.fumiama.copymanga.template.ui.InfoCardLoader
+import top.fumiama.copymanga.view.template.InfoCardLoader
 import top.fumiama.copymanga.api.Config
 import top.fumiama.dmzj.copymanga.R
 

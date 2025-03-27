@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <top.fumiama.copymanga.views.ScaleImageView
+    <top.fumiama.copymanga.view.ScaleImageView
         android:id="@+id/onei"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

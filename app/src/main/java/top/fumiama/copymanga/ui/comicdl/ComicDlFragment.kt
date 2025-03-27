@@ -14,7 +14,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.json.VolumeStructure
-import top.fumiama.copymanga.template.general.NoBackRefreshFragment
+import top.fumiama.copymanga.view.template.NoBackRefreshFragment
 import top.fumiama.dmzj.copymanga.R
 import java.io.File
 import java.lang.ref.WeakReference

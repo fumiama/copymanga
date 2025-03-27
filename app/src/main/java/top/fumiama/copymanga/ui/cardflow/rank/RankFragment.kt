@@ -4,9 +4,9 @@ import android.os.Bundle
 import com.google.android.material.tabs.TabLayout
 import kotlinx.android.synthetic.main.fragment_rank.*
 import kotlinx.android.synthetic.main.line_rank.view.*
-import top.fumiama.copymanga.template.ui.InfoCardLoader
+import top.fumiama.copymanga.view.template.InfoCardLoader
 import top.fumiama.copymanga.api.Config
-import top.fumiama.copymanga.tools.ui.UITools
+import top.fumiama.copymanga.view.interaction.UITools
 import top.fumiama.dmzj.copymanga.R
 import java.lang.ref.WeakReference
 

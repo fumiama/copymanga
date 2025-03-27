@@ -30,11 +30,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.json.ComicStructure
 import top.fumiama.copymanga.json.IndexStructure
-import top.fumiama.copymanga.template.http.AutoDownloadHandler
+import top.fumiama.copymanga.net.template.AutoDownloadHandler
 import top.fumiama.copymanga.api.Config
-import top.fumiama.copymanga.tools.ui.GlideHideLottieViewListener
-import top.fumiama.copymanga.tools.ui.Navigate
-import top.fumiama.copymanga.tools.ui.UITools
+import top.fumiama.copymanga.view.operation.GlideHideLottieViewListener
+import top.fumiama.copymanga.view.interaction.Navigate
+import top.fumiama.copymanga.view.interaction.UITools
 import top.fumiama.dmzj.copymanga.R
 import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicInteger

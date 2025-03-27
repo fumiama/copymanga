@@ -15,7 +15,7 @@
         android:layout_marginTop="@dimen/search_layout_padding"
         android:isScrollContainer="true">
 
-        <top.fumiama.copymanga.views.ScrollRefreshView
+        <top.fumiama.copymanga.view.ScrollRefreshView
             android:id="@+id/fhov"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -32,7 +32,7 @@
                 android:orientation="vertical">
 
             </LinearLayout>
-        </top.fumiama.copymanga.views.ScrollRefreshView>
+        </top.fumiama.copymanga.view.ScrollRefreshView>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <com.lapism.search.widget.MaterialSearchView

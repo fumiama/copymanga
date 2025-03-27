@@ -25,7 +25,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.core.view.WindowCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -51,16 +50,16 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.api.Config
-import top.fumiama.copymanga.manga.Shelf
-import top.fumiama.copymanga.tools.ui.UITools
+import top.fumiama.copymanga.api.manga.Shelf
+import top.fumiama.copymanga.view.interaction.UITools
 import top.fumiama.copymanga.ui.book.BookFragment.Companion.bookHandler
 import top.fumiama.copymanga.ui.book.BookHandler
 import top.fumiama.copymanga.ui.cardflow.rank.RankFragment
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment
 import top.fumiama.copymanga.ui.download.DownloadFragment
 import top.fumiama.copymanga.ui.download.NewDownloadFragment
-import top.fumiama.copymanga.update.Update
-import top.fumiama.copymanga.user.Member
+import top.fumiama.copymanga.api.update.Update
+import top.fumiama.copymanga.api.user.Member
 import top.fumiama.dmzj.copymanga.BuildConfig
 import top.fumiama.dmzj.copymanga.R
 import java.io.File
@@ -236,7 +235,7 @@ class MainActivity : AppCompatActivity() {
             }
             true
         }
-        navtinfo.text = getPreferences(MODE_PRIVATE).getString("navTextInfo", getString(R.string.navTextInfo))
+        navtinfo.text = Config.navTextInfo.value
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 
@@ -421,10 +420,7 @@ class MainActivity : AppCompatActivity() {
         MaterialDialog(this).show {
             input(prefill = (it as TextView).text) { _, charSequence ->
                 it.text = charSequence
-                getPreferences(MODE_PRIVATE).edit {
-                    putString("navTextInfo", charSequence.toString())
-                    apply()
-                }
+                Config.navTextInfo.value = charSequence.toString()
             }
             positiveButton(android.R.string.ok)
             title(R.string.navTextInfoInputHint)
