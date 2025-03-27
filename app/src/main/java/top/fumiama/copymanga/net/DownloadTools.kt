@@ -9,6 +9,7 @@ import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.api.Config
 import top.fumiama.copymanga.json.ComandyCapsule
+import top.fumiama.copymanga.lib.Comancry
 import top.fumiama.copymanga.lib.Comandy
 import java.io.ByteArrayOutputStream
 import java.io.InputStream

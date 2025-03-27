@@ -37,6 +37,8 @@ import top.fumiama.copymanga.view.operation.GlideHideLottieViewListener
 import top.fumiama.copymanga.view.interaction.Navigate
 import top.fumiama.dmzj.copymanga.R
 import java.lang.ref.WeakReference
+import java.net.URLEncoder
+import java.nio.charset.Charset
 
 class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
     lateinit var homeHandler: HomeHandler
@@ -293,7 +295,7 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
             override fun getItemCount() = (results?.results?.list?.size?:0) + if (query?.isNotEmpty() == true) 1 else 0
 
             suspend fun refresh(q: CharSequence) = withContext(Dispatchers.IO) {
-                query = q.toString()
+                query = URLEncoder.encode(q.toString(), Charset.defaultCharset().name())
                 activity?.apply {
                     PausableDownloader(getString(R.string.searchApiUrl).format(Config.myHostApiUrl.value, 0, query, type)) {
                         results = Gson().fromJson(it.decodeToString(), BookListStructure::class.java)

@@ -1,4 +1,4 @@
-package top.fumiama.copymanga.tools.thread
+package top.fumiama.copymanga.view.interaction
 
 import android.os.Handler
 

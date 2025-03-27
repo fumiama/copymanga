@@ -60,6 +60,8 @@ import top.fumiama.copymanga.ui.download.DownloadFragment
 import top.fumiama.copymanga.ui.download.NewDownloadFragment
 import top.fumiama.copymanga.api.update.Update
 import top.fumiama.copymanga.api.user.Member
+import top.fumiama.copymanga.lib.Comancry
+import top.fumiama.copymanga.lib.Comandy
 import top.fumiama.dmzj.copymanga.BuildConfig
 import top.fumiama.dmzj.copymanga.R
 import java.io.File
@@ -405,7 +407,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun showAbout() {
         val dl = android.app.AlertDialog.Builder(this)
-        dl.setMessage(R.string.app_description)
+        val comandy = "网络增强: ${Comandy.instance.status}, 版本 ${Config.comandy_version.value}"
+        val comancry = "API代理: ${Comancry.instance.status}, 版本 ${Config.comancry_version.value}"
+        dl.setMessage("${getString(R.string.app_description)}\n" +
+                "\n$comandy\n" +
+                "$comancry\n\n"+ File("/proc/self/cmdline").readText() + "\n" +
+                "安装位置: ${applicationInfo.sourceDir}")
         dl.setTitle("${getString(R.string.action_info)} ${BuildConfig.VERSION_NAME}")
         dl.setIcon(R.mipmap.ic_launcher)
         dl.setPositiveButton(android.R.string.ok) { _, _ -> }

@@ -12,8 +12,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.json.ComandyVersion
-import top.fumiama.copymanga.tools.file.PreferenceBoolean
-import top.fumiama.copymanga.tools.file.UserPreferenceInt
+import top.fumiama.copymanga.storage.PreferenceBoolean
+import top.fumiama.copymanga.storage.UserPreferenceInt
 import top.fumiama.copymanga.net.DownloadTools
 import top.fumiama.copymanga.net.Client
 import top.fumiama.dmzj.copymanga.R
@@ -24,13 +24,13 @@ import java.util.zip.GZIPInputStream
 
 open class LazyLibrary<T: Library>(
     private val clazz: Class<T>,
-    private val name: String,
+    val name: String,
     private val functionName: String,
-    private val isInUse: PreferenceBoolean,
+    val isInUse: PreferenceBoolean,
     private val version: UserPreferenceInt
 ) {
     private val repoName = name.substring(3).substringBeforeLast(".")
-    private var isInInit = AtomicBoolean(false)
+    var isInInit = AtomicBoolean(false)
     private var mInstance: T? = null
     suspend fun getInstance(): T? {
         //Log.d("MyLazyLibrary", "get instance @$field")
@@ -39,22 +39,6 @@ open class LazyLibrary<T: Library>(
         //Log.d("MyLazyLibrary", "init instance @$field")
         return mInstance
     }
-    private var mEnabled: Boolean? = null
-    val enabled: Boolean
-        get() {
-            if (isInInit.get()) {
-                Log.d("MyLazyLibrary", "$name block enabled for isInInit")
-                return false
-            }
-            if (mEnabled != true && DownloadTools.failTimes.get() >= 2) {
-                mEnabled = true
-                return true
-            }
-            if (mEnabled != null) return mEnabled!!
-            val v = isInUse.value
-            mEnabled = v
-            return v
-        }
     private var mLibraryFile: File? = null
     private suspend fun libraryFile(): File?  {
         if (isInInit.get()) return null

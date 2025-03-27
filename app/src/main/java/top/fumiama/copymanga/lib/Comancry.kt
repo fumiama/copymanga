@@ -9,6 +9,18 @@ class Comancry: LazyLibrary<ComancryMethods>(
     ComancryMethods::class.java, "libcomancry.so", "API代理",
     Config.net_use_api_proxy, Config.comancry_version
 ) {
+    val enabled: Boolean
+        get() {
+            if (isInInit.get()) {
+                Log.d("MyComancry", "$name block enabled for isInInit")
+                return false
+            }
+            return isInUse.value
+        }
+    val status: String get() = if(enabled) {
+        if (isInUse.value) "生效(手动)" else "生效(自动)"
+    } else "无效"
+
     suspend fun decrypt(sd: String, data: ByteArray): String? {
         // 将 ByteArray 转换为 char*
         val nativeMemory = Memory(data.size.toLong())

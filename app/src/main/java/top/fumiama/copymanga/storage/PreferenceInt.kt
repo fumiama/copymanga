@@ -1,16 +1,16 @@
-package top.fumiama.copymanga.tools.file
+package top.fumiama.copymanga.storage
 
 import android.util.Log
 import androidx.preference.PreferenceManager
 import top.fumiama.copymanga.MainActivity
 
-data class PreferenceBoolean(private val key: String, private var default: Boolean) {
-    val value: Boolean
+data class PreferenceInt(private val key: String, private var default: Int) {
+    val value: Int
         get() {
             MainActivity.mainWeakReference?.get()?.let {
                 PreferenceManager.getDefaultSharedPreferences(it).apply {
-                    getBoolean(key, default).let { v ->
-                        Log.d("MyPB", "get key $key value $v")
+                    getInt(key, default).let { v ->
+                        Log.d("MyPI", "get key $key value $v")
                         return v
                     }
                 }

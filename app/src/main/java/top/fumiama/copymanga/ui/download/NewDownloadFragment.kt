@@ -17,7 +17,7 @@ import top.fumiama.copymanga.api.manga.Downloader
 import top.fumiama.copymanga.api.manga.Reader
 import top.fumiama.copymanga.view.template.MangaPagesFragmentTemplate
 import top.fumiama.copymanga.view.template.CardList
-import top.fumiama.copymanga.tools.file.FileUtils
+import top.fumiama.copymanga.storage.FileUtils
 import top.fumiama.copymanga.view.interaction.Navigate
 import top.fumiama.copymanga.view.interaction.UITools
 import top.fumiama.dmzj.copymanga.R

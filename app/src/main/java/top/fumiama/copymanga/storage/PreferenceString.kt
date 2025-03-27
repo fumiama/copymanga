@@ -1,4 +1,4 @@
-package top.fumiama.copymanga.tools.file
+package top.fumiama.copymanga.storage
 
 import android.util.Log
 import androidx.preference.PreferenceManager

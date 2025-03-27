@@ -2,11 +2,11 @@ package top.fumiama.copymanga.api
 
 import com.bumptech.glide.load.model.LazyHeaders
 import top.fumiama.copymanga.MainActivity
-import top.fumiama.copymanga.tools.file.PreferenceBoolean
-import top.fumiama.copymanga.tools.file.PreferenceInt
-import top.fumiama.copymanga.tools.file.PreferenceString
-import top.fumiama.copymanga.tools.file.UserPreferenceInt
-import top.fumiama.copymanga.tools.file.UserPreferenceString
+import top.fumiama.copymanga.storage.PreferenceBoolean
+import top.fumiama.copymanga.storage.PreferenceInt
+import top.fumiama.copymanga.storage.PreferenceString
+import top.fumiama.copymanga.storage.UserPreferenceInt
+import top.fumiama.copymanga.storage.UserPreferenceString
 import top.fumiama.copymanga.net.Proxy
 import top.fumiama.copymanga.net.Resolution
 import top.fumiama.dmzj.copymanga.R

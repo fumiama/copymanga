@@ -57,7 +57,7 @@ import top.fumiama.copymanga.api.Config
 import top.fumiama.copymanga.view.template.TitleActivityTemplate
 import top.fumiama.copymanga.net.template.PausableDownloader
 import top.fumiama.copymanga.net.DownloadTools
-import top.fumiama.copymanga.tools.thread.TimeThread
+import top.fumiama.copymanga.view.interaction.TimeThread
 import top.fumiama.copymanga.view.Font
 import top.fumiama.copymanga.view.ScaleImageView
 import top.fumiama.dmzj.copymanga.R
