@@ -68,13 +68,13 @@ class Book(val path: String, private val getString: (Int) -> String, private val
                     isDownload = true
                     Config.apiProxy?.comancry(mBookApiUrl) { url ->
                         DownloadTools.getHttpContent(url, null, mUserAgent)
-                    }
+                    }?:DownloadTools.getHttpContent(mBookApiUrl, null, mUserAgent)
                 }
             } else {
                 isDownload = true
                 Config.apiProxy?.comancry(mBookApiUrl) { url ->
                     DownloadTools.getHttpContent(url, null, mUserAgent)
-                }
+                }?:DownloadTools.getHttpContent(mBookApiUrl, null, mUserAgent)
             }?:DownloadTools.getHttpContent(mBookApiUrl, null, mUserAgent)
             mBook = data.inputStream().use {
                 Gson().fromJson(it.reader(), BookInfoStructure::class.java)

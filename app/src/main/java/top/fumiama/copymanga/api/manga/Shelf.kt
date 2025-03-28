@@ -25,11 +25,13 @@ class Shelf(private val getString: (Int) -> String) {
             append("")
             append(Config.token.value)
         }
-        val re = Config.apiProxy?.comancry(addApiUrl) { url ->
+        val re = (Config.apiProxy?.comancry(addApiUrl) { url ->
             DownloadTools.requestWithBody(
                 url, "POST", body.encodeToByteArray()
             )
-        }?.decodeToString() ?: return@withContext "空回应"
+        }?:DownloadTools.requestWithBody(
+            addApiUrl, "POST", body.encodeToByteArray()
+        ))?.decodeToString() ?: return@withContext "空回应"
         return@withContext try {
             Gson().fromJson(re, ReturnBase::class.java).message
         } catch (e: Exception) {
@@ -50,11 +52,13 @@ class Shelf(private val getString: (Int) -> String) {
             append("authorization=Token+")
             append(Config.token.value)
         }
-        val re = Config.apiProxy?.comancry(delApiUrl) { url ->
+        val re = (Config.apiProxy?.comancry(delApiUrl) { url ->
             DownloadTools.requestWithBody(
                 url, "DELETE", body.encodeToByteArray()
             )
-        }?.decodeToString() ?: return@withContext "空回应"
+        }?:DownloadTools.requestWithBody(
+            delApiUrl, "DELETE", body.encodeToByteArray()
+        ))?.decodeToString() ?: return@withContext "空回应"
         return@withContext try {
             Gson().fromJson(re, ReturnBase::class.java).message
         } catch (e: Exception) {
@@ -64,9 +68,10 @@ class Shelf(private val getString: (Int) -> String) {
 
     suspend fun query(pathWord: String): BookQueryStructure? = withContext(Dispatchers.IO) {
         try {
-            Config.apiProxy?.comancry(queryApiUrlTemplate.format(Config.myHostApiUrl.value, pathWord)) { url ->
+            val queryUrl = queryApiUrlTemplate.format(Config.myHostApiUrl.value, pathWord)
+            (Config.apiProxy?.comancry(queryUrl) { url ->
                 DownloadTools.getHttpContent(url, Config.referer)
-            }?.let {
+            }?:DownloadTools.getHttpContent(queryUrl, Config.referer)).let {
                 Gson().fromJson(it.decodeToString(), BookQueryStructure::class.java)
             }
         } catch (e: Exception) {

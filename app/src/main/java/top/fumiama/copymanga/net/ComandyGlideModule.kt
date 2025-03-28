@@ -85,7 +85,7 @@ class ComandyGlideModule: AppGlideModule() {
         }
 
         override fun handles(model: GlideUrl): Boolean {
-            return Comandy.instance.enabled && runBlocking { Comandy.instance.getInstance() } != null && model.toURL().let {
+            return Comandy.instance.enabled && model.toURL().let {
                 it.protocol == "https" && it.host != "copymanga.azurewebsites.net"
             }
         }
@@ -103,7 +103,9 @@ class ComandyGlideModule: AppGlideModule() {
         }
 
         override fun handles(model: String): Boolean {
-            return Comandy.instance.enabled && runBlocking { Comandy.instance.getInstance() } != null && model.startsWith("https://")
+            return Comandy.instance.enabled &&
+                    model.startsWith("https://") &&
+                    !model.startsWith("https://copymanga.azurewebsites.net")
         }
 
     }

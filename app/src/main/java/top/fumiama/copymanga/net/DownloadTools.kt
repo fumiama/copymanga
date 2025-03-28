@@ -9,11 +9,11 @@ import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.api.Config
 import top.fumiama.copymanga.json.ComandyCapsule
-import top.fumiama.copymanga.lib.Comancry
 import top.fumiama.copymanga.lib.Comandy
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
+import java.lang.Thread.sleep
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.concurrent.Callable
@@ -123,18 +123,43 @@ object DownloadTools {
                 getComandyApiConnection(u, "GET", refer, ua).let { capsule ->
                     val para = Gson().toJson(capsule)
                     //Log.d("MyDT", "comandy request: $para")
-                    Comandy.instance.getInstance()?.request(para)?.let { result ->
-                        //Log.d("MyDT", "comandy reply: $result")
-                        Gson().fromJson(result, ComandyCapsule::class.java)!!.let {
-                            if (it.code != 200) throw IllegalArgumentException("HTTP${it.code} ${
-                                it.data?.let { d -> Base64.decode(d, Base64.DEFAULT).decodeToString() }
-                            }")
-                            Base64.decode(it.data, Base64.DEFAULT)
+                    Comandy.instance.getInstance()?.let { ins ->
+                        var completed = false
+                        p?.let {
+                            Thread {
+                                Log.d("MyDT", "launch comandy get progress, completed: $completed for url $u")
+                                var prev = 0
+                                while (!completed) {
+                                    sleep(50)
+                                    val progress = ins.progress(para)
+                                    Log.d("MyDT", "comandy get progress $progress for url $u")
+                                    if (progress > prev) {
+                                        it.notify(progress)
+                                        prev = progress
+                                        if (progress >= 100) break
+                                    }
+                                }
+                                Log.d("MyDT", "quit comandy get progress, completed: $completed for url $u")
+                            }.start()
                         }
+                        val r = ins.request(para)?.let { result ->
+                            completed = true
+                            p?.notify(100)
+                            //Log.d("MyDT", "comandy reply: $result")
+                            Gson().fromJson(result, ComandyCapsule::class.java)!!.let {
+                                if (it.code != 200) throw IllegalArgumentException("HTTP${it.code} ${
+                                    it.data?.let { d -> Base64.decode(d, Base64.DEFAULT).decodeToString() }
+                                }")
+                                Base64.decode(it.data, Base64.DEFAULT)
+                            }
+                        }
+                        completed = true
+                        p?.notify(100)
+                        r
                     }
                 }.let { if(it?.isNotEmpty() == true ) return@withContext it }
+                failTimes.incrementAndGet()
             }
-            failTimes.incrementAndGet()
             getApiConnection(u, "GET", refer, ua).let {
                 val sz = it.getHeaderFieldInt("Content-Length", 0)
                 val ret = if (sz > 0 && p != null) {
@@ -144,7 +169,6 @@ object DownloadTools {
                 }
                 it.disconnect()
                 Log.d("MyDT", "getHttpContent: ${ret.size} bytes")
-                failTimes.decrementAndGet()
                 ret
             }
         }
@@ -157,7 +181,6 @@ object DownloadTools {
             task.get()
         } catch (ex: Exception) {
             ex.printStackTrace()
-            if (Comandy.instance.enabled) failTimes.incrementAndGet()
             null
         }
     }
@@ -167,12 +190,38 @@ object DownloadTools {
         Log.d("MyDT", "prepareHttp: $u")
         FutureTask(if (!u.startsWith("https://copymanga.azurewebsites.net") && Comandy.instance.enabled) Callable{
             try {
-                runBlocking { Comandy.instance.getInstance() }?.request(Gson().toJson(
-                    getComandyNormalConnection(u, "GET", Config.pc_ua))
-                )?.let { result ->
-                    Gson().fromJson(result, ComandyCapsule::class.java)?.let {
-                        if (it.code != 200) null
-                        else it.data?.let { d -> Base64.decode(d, Base64.DEFAULT) }
+                runBlocking { Comandy.instance.getInstance() }?.let { ins ->
+                    runBlocking {
+                        val para = Gson().toJson(getComandyNormalConnection(u, "GET", Config.pc_ua))
+                        var completed = false
+                        p?.let {
+                            Thread {
+                                Log.d("MyDT", "launch comandy get progress, completed: $completed for url $u")
+                                var prev = 0
+                                while (!completed) {
+                                    sleep(50)
+                                    val progress = ins.progress(para)
+                                    Log.d("MyDT", "comandy get progress $progress for url $u")
+                                    if (progress > prev) {
+                                        it.notify(progress)
+                                        prev = progress
+                                        if (progress >= 100) break
+                                    }
+                                }
+                                Log.d("MyDT", "quit comandy get progress, completed: $completed for url $u")
+                            }.start()
+                        }
+                        val r = ins.request(para)?.let { result ->
+                            completed = true
+                            p?.notify(100)
+                            Gson().fromJson(result, ComandyCapsule::class.java)?.let {
+                                if (it.code != 200) null
+                                else it.data?.let { d -> Base64.decode(d, Base64.DEFAULT) }
+                            }
+                        }
+                        completed = true
+                        p?.notify(100)
+                        r
                     }
                 }
             } catch (ex: Exception) {
@@ -224,17 +273,16 @@ object DownloadTools {
                 }
             } catch (ex: Exception) {
                 ex.printStackTrace()
+                failTimes.incrementAndGet()
                 ex.message?.encodeToByteArray()
             }
         }
         else Callable {
-            failTimes.incrementAndGet()
             try {
                 getApiConnection(url, method, refer, ua).apply {
                     outputStream.write(body)
                     ret = inputStream.readBytes()
                     disconnect()
-                    failTimes.decrementAndGet()
                 }
             } catch (ex: Exception) {
                 ex.printStackTrace()

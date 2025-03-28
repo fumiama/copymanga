@@ -9,7 +9,7 @@ class Comancry: LazyLibrary<ComancryMethods>(
     ComancryMethods::class.java, "libcomancry.so", "API代理",
     Config.net_use_api_proxy, Config.comancry_version
 ) {
-    val enabled: Boolean
+    private val enabled: Boolean
         get() {
             if (isInInit.get()) {
                 Log.d("MyComancry", "$name block enabled for isInInit")

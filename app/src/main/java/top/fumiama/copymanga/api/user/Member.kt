@@ -48,12 +48,11 @@ class Member(private val getString: (Int) -> String) {
             return@withContext l
         }
         try {
-            val data = Config.apiProxy?.comancry(
-                getString(R.string.memberInfoApiUrl)
-                    .format(Config.myHostApiUrl.value)
-            ) {
+            val u = getString(R.string.memberInfoApiUrl)
+                .format(Config.myHostApiUrl.value)
+            val data = (Config.apiProxy?.comancry(u) {
                 DownloadTools.getHttpContent(it)
-            }?.decodeToString()
+            }?:DownloadTools.getHttpContent(u)).decodeToString()
             try {
                 val l = Gson().fromJson(data, LoginInfoStructure::class.java)
                 if (l.code == 200) Config.avatar.value = l.results.avatar
@@ -98,62 +97,68 @@ class Member(private val getString: (Int) -> String) {
     }
 
     private suspend fun postLogin(username: String, pwd: String, salt: Int): ByteArray? =
-        Config.apiProxy?.comancry(getString(R.string.loginApiUrl).format(Config.myHostApiUrl.value)) {
-            DownloadTools.getApiConnection(it, "POST").let { c ->
-                c.doOutput = true
-                c.setRequestProperty(
-                    "content-type",
-                    "application/x-www-form-urlencoded;charset=utf-8"
-                )
-                c.setRequestProperty("platform", "3")
-                c.setRequestProperty("accept", "application/json")
-                val r = if (!Config.net_use_foreign.value) "1" else "0"
-                val pwdEncoded =
-                    Base64.encode("$pwd-$salt".toByteArray(), Base64.DEFAULT).decodeToString()
-                c.outputStream.write(
-                    "username=${
-                        URLEncoder.encode(
-                            username,
-                            Charset.defaultCharset().name()
-                        )
-                    }&password=$pwdEncoded&salt=$salt&platform=3&authorization=Token+&version=${Config.app_ver.value}&source=copyApp&region=$r&webp=1".toByteArray()
-                )
-                c.outputStream.close()
-                val b = c.inputStream.readBytes()
-                c.inputStream.close()
-                b
+        getString(R.string.loginApiUrl).format(Config.myHostApiUrl.value).let { u ->
+            val use: suspend (String) -> ByteArray? = { it: String ->
+                DownloadTools.getApiConnection(it, "POST").let { c ->
+                    c.doOutput = true
+                    c.setRequestProperty(
+                        "content-type",
+                        "application/x-www-form-urlencoded;charset=utf-8"
+                    )
+                    c.setRequestProperty("platform", "3")
+                    c.setRequestProperty("accept", "application/json")
+                    val r = if (!Config.net_use_foreign.value) "1" else "0"
+                    val pwdEncoded =
+                        Base64.encode("$pwd-$salt".toByteArray(), Base64.DEFAULT).decodeToString()
+                    c.outputStream.write(
+                        "username=${
+                            URLEncoder.encode(
+                                username,
+                                Charset.defaultCharset().name()
+                            )
+                        }&password=$pwdEncoded&salt=$salt&platform=3&authorization=Token+&version=${Config.app_ver.value}&source=copyApp&region=$r&webp=1".toByteArray()
+                    )
+                    c.outputStream.close()
+                    val b = c.inputStream.readBytes()
+                    c.inputStream.close()
+                    b
+                }
             }
+            Config.apiProxy?.comancry(u, use)?:use(u)
         }
 
 
     private suspend fun postComandyLogin(username: String, pwd: String, salt: Int) =
-        Config.apiProxy?.comancry(getString(R.string.loginApiUrl).format(Config.myHostApiUrl.value)) {
-            DownloadTools.getComandyApiConnection(it, "POST", null, Config.pc_ua).apply {
-                headers["content-type"] = "application/x-www-form-urlencoded;charset=utf-8"
-                headers["platform"] = "3"
-                headers["accept"] = "application/json"
-                val r = if (!Config.net_use_foreign.value) "1" else "0"
-                val pwdEncoded =
-                    Base64.encode("$pwd-$salt".toByteArray(), Base64.DEFAULT).decodeToString()
-                data = "username=${
-                    URLEncoder.encode(
-                        username,
-                        Charset.defaultCharset().name()
-                    )
-                }&password=$pwdEncoded&salt=$salt&platform=3&authorization=Token+&version=${Config.app_ver.value}&source=copyApp&region=$r&webp=1"
-            }.let { capsule ->
-                try {
-                    val para = Gson().toJson(capsule)
-                    Comandy.instance.getInstance()?.request(para)?.let { result ->
-                        Gson().fromJson(result, ComandyCapsule::class.java)!!.let {
-                            if (it.code != 200) null
-                            else Base64.decode(it.data, Base64.DEFAULT)
+        getString(R.string.loginApiUrl).format(Config.myHostApiUrl.value).let { u ->
+            val use: suspend (String) -> ByteArray? = { it: String ->
+                DownloadTools.getComandyApiConnection(it, "POST", null, Config.pc_ua).apply {
+                    headers["content-type"] = "application/x-www-form-urlencoded;charset=utf-8"
+                    headers["platform"] = "3"
+                    headers["accept"] = "application/json"
+                    val r = if (!Config.net_use_foreign.value) "1" else "0"
+                    val pwdEncoded =
+                        Base64.encode("$pwd-$salt".toByteArray(), Base64.DEFAULT).decodeToString()
+                    data = "username=${
+                        URLEncoder.encode(
+                            username,
+                            Charset.defaultCharset().name()
+                        )
+                    }&password=$pwdEncoded&salt=$salt&platform=3&authorization=Token+&version=${Config.app_ver.value}&source=copyApp&region=$r&webp=1"
+                }.let { capsule ->
+                    try {
+                        val para = Gson().toJson(capsule)
+                        Comandy.instance.getInstance()?.request(para)?.let { result ->
+                            Gson().fromJson(result, ComandyCapsule::class.java)!!.let {
+                                if (it.code != 200) null
+                                else Base64.decode(it.data, Base64.DEFAULT)
+                            }
                         }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        null
                     }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    null
                 }
             }
+            Config.apiProxy?.comancry(u, use)?:use(u)
         }
 }

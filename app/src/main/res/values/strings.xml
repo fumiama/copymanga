@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE resources [
-    <!ENTITY hosturl "api.mangacopy.com">
+    <!ENTITY hosturl "www.copy-manga.com">
     <!ENTITY appver "2.2.6">
     ]>
 <resources>
@@ -164,11 +164,11 @@
     <string name="settings_cat_net_sm_use_comandy">使用经过优化的请求方法访问服务器</string>
     <string name="settings_cat_net_et_title_api_url">请求API网址</string>
     <string name="settings_cat_net_et_summary_api_url">一般无需更改，除非拷贝漫画官方更改网址，默认：&hosturl;</string>
-    <string name="settings_cat_net_sw_use_api_proxy">使用API代理（重启生效）</string>
+    <string name="settings_cat_net_sw_use_api_proxy">使用API代理（需要密钥）</string>
     <string name="settings_cat_net_sm_use_api_proxy">作者自建的API代理，可缓解国内图书详情加载问题，但不保证100%解决，也不保证一直可用</string>
-    <string name="settings_cat_net_sw_use_img_proxy">使用图床代理（重启生效）</string>
+    <string name="settings_cat_net_sw_use_img_proxy">使用图床代理（需要密钥）</string>
     <string name="settings_cat_net_sm_use_img_proxy">作者自建的图床代理，可缓解国内图片无法加载问题，但不保证100%解决，也不保证一直可用</string>
-    <string name="settings_cat_net_et_title_img_proxy">代理密钥（重启生效）</string>
+    <string name="settings_cat_net_et_title_img_proxy">代理密钥</string>
     <string name="settings_cat_net_et_summary_img_proxy">为避免滥用，该密钥需加群（559748702）获得，且随时可能会刷新</string>
 
     <string name="settings_cat_vm">漫画浏览</string>

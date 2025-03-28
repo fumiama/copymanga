@@ -79,11 +79,7 @@ open class AutoDownloadHandler(
             try {
                 val data = Config.apiProxy?.comancry(url) {
                     DownloadTools.getHttpContent(it)
-                }
-                if (data == null) {
-                    delay(2000)
-                    continue
-                }
+                }?:DownloadTools.getHttpContent(url)
                 if(exit) return@withContext
                 val fi = data.inputStream()
                 val pass = setGsonItem(Gson().fromJson(fi.reader(), jsonClass))

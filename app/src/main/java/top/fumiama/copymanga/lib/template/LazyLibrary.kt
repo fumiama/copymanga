@@ -102,7 +102,9 @@ open class LazyLibrary<T: Library>(
                                     if (remoteVersion > 0) version.value = remoteVersion
                                     Log.d("MyLazyLibrary", "update success")
                                     isInInit.set(false)
-                                    info.dismiss()
+                                    withContext(Dispatchers.Main) {
+                                        info.dismiss()
+                                    }
                                 } catch (e: Exception) {
                                     e.printStackTrace()
                                     if(f.exists()) f.delete()

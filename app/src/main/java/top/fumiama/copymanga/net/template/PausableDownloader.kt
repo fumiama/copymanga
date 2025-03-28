@@ -14,13 +14,9 @@ class PausableDownloader(private val url: String, private val waitMilliseconds: 
         var c = 0
         while (!exit && c++ < 3) {
             try {
-                val data = if (isApi) Config.apiProxy?.comancry(url) {
+                val data = (if (isApi) Config.apiProxy?.comancry(url) {
                     DownloadTools.getHttpContent(it, Config.referer)
-                } else DownloadTools.getHttpContent(url, Config.referer)
-                if (data == null) {
-                    delay(3000)
-                    continue
-                }
+                } else null)?:DownloadTools.getHttpContent(url, Config.referer)
                 whenFinish?.let { it(data) }
                 return@withContext true
             } catch (e: Exception) {
