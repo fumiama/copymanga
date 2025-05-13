@@ -11,8 +11,8 @@ android {
         applicationId 'top.fumiama.copymanga'
         minSdkVersion 23
         targetSdkVersion 34
-        versionCode 69
-        versionName '2.4.2'
+        versionCode 70
+        versionName '2.4.3'
         resourceConfigurations += ['zh', 'zh-rCN']
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -114,13 +114,13 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:4.16.0'
     //noinspection KaptUsageInsteadOfKsp
     kapt 'com.github.bumptech.glide:compiler:4.16.0'
-    implementation 'com.google.code.gson:gson:2.12.1'
+    implementation 'com.google.code.gson:gson:2.13.1'
     implementation 'com.github.vovaksenov99:OverscrollableScrollView:1.0'
     implementation 'com.github.liaoinstan.SpringView:library:0a24d3e9dd'
     implementation 'com.github.zawadz88:MaterialPopupMenu:4.1.0'
     implementation files('libs/com.lapism/search-2.4.1.aar') // https://stackoverflow.com/a/63029110/28801553
     //noinspection GradleDependency
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
-    implementation 'com.airbnb.android:lottie:6.6.4'
+    implementation 'com.airbnb.android:lottie:6.6.6'
     implementation 'net.java.dev.jna:jna:5.17.0@aar'
 }

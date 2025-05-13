@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE resources [
-    <!ENTITY hosturl "www.copy-manga.com">
-    <!ENTITY appver "2.2.6">
+    <!ENTITY hosturl "www.copy20.com">
+    <!ENTITY appver "2.2.9">
     ]>
 <resources>
     <string name="app_name">拷贝漫画</string>
@@ -123,7 +123,6 @@
     <string name="text_format_hit">热度 %1$d</string>
     <string name="text_format_stat">状态 %1$s</string>
     <string name="text_format_region">区域 %1$s</string>
-    <string name="text_format_img_type">画幅 %1$s</string>
     <string name="text_format_cloud_read_to">云读至%1$s</string>
 
     <string name="topics_series">专题系列</string>

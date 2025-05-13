@@ -16,6 +16,7 @@ import top.fumiama.copymanga.json.HistoryBookListStructure
 import top.fumiama.copymanga.json.ShelfStructure
 import top.fumiama.copymanga.json.TypeBookListStructure
 import top.fumiama.copymanga.net.template.PausableDownloader
+import top.fumiama.copymanga.strings.Chinese
 import top.fumiama.copymanga.view.interaction.Navigate
 import java.lang.ref.WeakReference
 
@@ -66,7 +67,7 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
                                 Log.d("MyICL", "load @ $i")
                                 if(ad?.exit == true) return@PausableDownloader
                                 cardList?.addCard(
-                                    book?.comic?.name?:"null", "\n云读至${book?.last_chapter_name}", book?.comic?.cover,
+                                    book?.comic?.name?:"null", "\n云读至${book?.last_chapter_name?.let { Chinese.fixEncodingIfNeeded(it) }}", book?.comic?.cover,
                                     book?.comic?.path_word, null, null,
                                     book?.comic?.status==1
                                 )
@@ -88,7 +89,7 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
                                 Log.d("MyICL", "load @ $i")
                                 if(ad?.exit == true) return@PausableDownloader
                                 cardList?.addCard(
-                                    book?.comic?.name?:"null", "\n${book?.last_browse?.last_browse_name?.let { "读到$it" }?:"未读"}", book?.comic?.cover,
+                                    book?.comic?.name?:"null", "\n${book?.last_browse?.last_browse_name?.let { "读到${Chinese.fixEncodingIfNeeded(it)}" }?:"未读"}", book?.comic?.cover,
                                     book?.comic?.path_word, null, null,
                                     book?.comic?.status==1,
                                     book.comic?.browse?.chapter_uuid != book.comic?.last_chapter_id

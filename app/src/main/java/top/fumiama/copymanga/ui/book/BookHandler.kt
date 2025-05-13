@@ -78,6 +78,7 @@ class BookHandler(private val th: WeakReference<BookFragment>): Handler(Looper.m
             oa.start()
         }
         complete = true
+        that?.setReadTo()
         that?.setStartRead()
         that?.setAddToShelf()
         Log.d("MyBH", "Set complete: true")
@@ -126,7 +127,7 @@ class BookHandler(private val th: WeakReference<BookFragment>): Handler(Looper.m
             // tic?.visibility = View.GONE
             activity?.toolbar?.title = book?.name
             btauth?.text = that?.getString(R.string.text_format_region)?.format(book?.region?:"未知")
-            bttag?.text = that?.getString(R.string.text_format_img_type)?.format(book?.imageType?:"未知")
+            // bttag?.text = that?.getString(R.string.text_format_img_type)?.format(book?.imageType?:"未知")
             bthit?.text = that?.getString(R.string.text_format_hit)?.format(book?.popular?:-1)
             btsub?.text = that?.getString(R.string.text_format_stat)?.format(book?.status?:"未知")
             bttime?.text = book?.updateTime?:"未知"

@@ -3,15 +3,18 @@ package top.fumiama.copymanga.ui.book
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Context.MODE_PRIVATE
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.color.MaterialColors
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.card_book.*
 import kotlinx.android.synthetic.main.fragment_book.*
+import kotlinx.android.synthetic.main.line_bookinfo_text.*
 import kotlinx.android.synthetic.main.line_booktandb.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -19,6 +22,7 @@ import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.api.manga.Book
 import top.fumiama.copymanga.api.manga.Reader
+import top.fumiama.copymanga.strings.Chinese
 import top.fumiama.copymanga.view.template.NoBackRefreshFragment
 import top.fumiama.copymanga.view.interaction.Navigate
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment
@@ -98,6 +102,7 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
         activity?.apply {
             toolbar.title = book?.name
         }
+        setReadTo()
         setStartRead()
     }
 
@@ -118,21 +123,35 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
         activity?.apply {
             book?.name?.let { name ->
                 getPreferences(MODE_PRIVATE).getInt(name, -1).let { p ->
-                    this@BookFragment.lbbstart.apply {
-                        var i = 0
-                        if(p >= 0) mBookHandler!!.chapterNames.let {
-                            i = if (p >= it.size) it.size-1 else p
-                            text = it[i]
-                        }
-                        setOnClickListener {
-                            mBookHandler?.apply {
-                                Reader.start2viewManga(name, i, urlArray, uuidArray)
-                            }
+                    var i = 0
+                    if(p >= 0) mBookHandler!!.chapterNames.let {
+                        i = if (p >= it.size) it.size-1 else p
+                    }
+                    this@BookFragment.lbbstart.setOnClickListener {
+                        mBookHandler?.apply {
+                            Reader.start2viewManga(name, i, urlArray, uuidArray)
                         }
                     }
                 }
             }
         }
+    }
+
+    fun setReadTo() {
+        var chapter = "未读"
+        if(!mBookHandler?.chapterNames.isNullOrEmpty()) {
+            activity?.apply {
+                book?.name?.let { name ->
+                    getPreferences(MODE_PRIVATE).getInt(name, -1).let { p ->
+                        if(p >= 0) mBookHandler!!.chapterNames.let {
+                            chapter = it[if (p >= it.size) it.size-1 else p]
+                        }
+                    }
+                }
+            }
+        }
+        chapter = "读至 $chapter"
+        this@BookFragment.bttag.text = chapter
     }
 
     private suspend fun prepareHandler() = withContext(Dispatchers.IO) {
@@ -175,7 +194,7 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
             mBookHandler?.collect = b.results?.collect?:-2
             Log.d("MyBF", "get collect of ${book?.path} = ${mBookHandler?.collect}")
             tic.text = b.results?.browse?.chapter_name?.let { name ->
-                getString(R.string.text_format_cloud_read_to).format(name)
+                getString(R.string.text_format_cloud_read_to).format(Chinese.fixEncodingIfNeeded(name))
             }
         }
     }
@@ -187,7 +206,11 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
             queryCollect()
             mBookHandler?.collect?.let { collect ->
                 if (collect > 0) {
-                    this@BookFragment.lbbsub.setText(R.string.button_sub_subscribed)
+                    this@BookFragment.lbbsub.apply {
+                        setText(R.string.button_sub_subscribed)
+                        val color = MaterialColors.getColor(this, R.attr.colorButtonNormal)
+                        backgroundTintList = ColorStateList.valueOf(color)
+                    }
                 }
             }
             book?.uuid?.let { uuid ->
@@ -199,7 +222,11 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
                                 val re = MainActivity.shelf?.del(collect)
                                 Toast.makeText(context, re, Toast.LENGTH_SHORT).show()
                                 if (re == "请求成功") {
-                                    this@BookFragment.lbbsub.setText(R.string.button_sub)
+                                    this@BookFragment.lbbsub.apply {
+                                        setText(R.string.button_sub)
+                                        val color = MaterialColors.getColor(this, R.attr.colorPrimarySurface)
+                                        backgroundTintList = ColorStateList.valueOf(color)
+                                    }
                                 }
                             }
                             return@clickLaunch
@@ -208,7 +235,11 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
                         Toast.makeText(context, re, Toast.LENGTH_SHORT).show()
                         if (re == "修改成功") {
                             queryCollect()
-                            this@BookFragment.lbbsub.setText(R.string.button_sub_subscribed)
+                            this@BookFragment.lbbsub.apply {
+                                setText(R.string.button_sub_subscribed)
+                                val color = MaterialColors.getColor(this, R.attr.colorButtonNormal)
+                                backgroundTintList = ColorStateList.valueOf(color)
+                            }
                         }
                     }
                 }

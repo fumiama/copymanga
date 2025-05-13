@@ -96,13 +96,14 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                     var lastChangeTime = 0L
                     override fun onQueryTextChange(newText: CharSequence): Boolean {
                         if (newText.contentEquals("__notice_focus_change__") || newText.contentEquals(lastSearch)) return true
+                        lastSearch = newText.toString()
                         postDelayed({
                             lifecycleScope.launch {
+                                if (!newText.contentEquals(lastSearch)) return@launch
                                 val diff = System.currentTimeMillis() - lastChangeTime
                                 if(diff > 500) {
                                     if (newText.isNotEmpty()) {
                                         Log.d("MyHF", "new text: $newText")
-                                        lastSearch = newText.toString()
                                         adapter.refresh(newText)
                                     }
                                 }
@@ -295,9 +296,10 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
             override fun getItemCount() = (results?.results?.list?.size?:0) + if (query?.isNotEmpty() == true) 1 else 0
 
             suspend fun refresh(q: CharSequence) = withContext(Dispatchers.IO) {
-                query = URLEncoder.encode(q.toString(), Charset.defaultCharset().name())
+                query = q.toString()
                 activity?.apply {
-                    PausableDownloader(getString(R.string.searchApiUrl).format(Config.myHostApiUrl.value, 0, query, type)) {
+                    PausableDownloader(getString(R.string.searchApiUrl).format(Config.myHostApiUrl.value, 0,
+                        URLEncoder.encode(q.toString(), Charset.defaultCharset().name()), type)) {
                         results = Gson().fromJson(it.decodeToString(), BookListStructure::class.java)
                         count = results?.results?.total?:0
                         withContext(Dispatchers.Main) {
