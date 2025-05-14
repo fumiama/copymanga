@@ -15,7 +15,7 @@
 </div>
 
 
-<div align=center> <a href="#"> <img src="https://counter.seku.su/cmoe?name=copymanga&theme=gb" /> </a> </div>
+<div align=center> <a href="#"> <img src="https://counter.seku.su/cmoe?name=copymanga&theme=r34" /> </a> </div>
 
 
 ## 提示
