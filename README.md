@@ -7,10 +7,10 @@
     alt="Get it on F-Droid"
     height="80">](https://f-droid.org/packages/top.fumiama.copymanga)
 
-  [![qgroup-559748702](https://img.shields.io/badge/-1群-orange?style=for-the-badge&labelColor=white&logo=qq)](https://qm.qq.com/q/yYPB2Xn1cs)
+  [![qgroup-559748702](https://img.shields.io/badge/-1群-red?style=for-the-badge&labelColor=white&logo=qq)](https://qm.qq.com/q/yYPB2Xn1cs)
   [![qgroup-941632512](https://img.shields.io/badge/-2群-orange?style=for-the-badge&labelColor=white&logo=qq)](https://qm.qq.com/q/iVp4xKJctO)
-  [![qguild-copymanga3p](https://img.shields.io/badge/-频道-orange?style=for-the-badge&labelColor=white&logo=qq)](https://pd.qq.com/s/h8255c7t8)
-  [![t.me/cpmanga3p](https://img.shields.io/badge/-cpmanga3p-4488ff?style=for-the-badge&labelColor=white&logo=telegram)](https://t.me/cpmanga3p)
+  [![qguild-copymanga3p](https://img.shields.io/badge/-频道-green?style=for-the-badge&labelColor=white&logo=qq)](https://pd.qq.com/s/h8255c7t8)
+  [![t.me/cpmanga3p](https://img.shields.io/badge/-cpmanga3p-blue?style=for-the-badge&labelColor=white&logo=telegram)](https://t.me/cpmanga3p)
 
 </div>
 
