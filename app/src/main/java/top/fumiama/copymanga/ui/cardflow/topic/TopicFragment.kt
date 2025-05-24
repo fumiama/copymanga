@@ -18,13 +18,13 @@ import top.fumiama.dmzj.copymanga.R
 class TopicFragment : InfoCardLoader(R.layout.fragment_topic, R.id.action_nav_topic_to_nav_book) {
     private var type = 1
     override fun getApiUrl() =
-        getString(R.string.topicContentApiUrl).format(Config.myHostApiUrl.value, arguments?.getString("path"), type, offset)
+        getString(R.string.topicContentApiUrl).format(Config.myHostApiUrl.random(), arguments?.getString("path"), type, offset)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         lifecycleScope.launch {
             setProgress(5)
-            PausableDownloader(getString(R.string.topicApiUrl).format(Config.myHostApiUrl.value, arguments?.getString("path"))) { data ->
+            PausableDownloader(getString(R.string.topicApiUrl).format(Config.myHostApiUrl.random(), arguments?.getString("path"))) { data ->
                 setProgress(10)
                 withContext(Dispatchers.IO) {
                     if(ad?.exit == true) return@withContext

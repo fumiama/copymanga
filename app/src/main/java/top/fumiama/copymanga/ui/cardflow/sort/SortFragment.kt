@@ -25,7 +25,7 @@ class SortFragment : StatusCardFlow(0, R.id.action_nav_sort_to_nav_book, R.layou
 
     override fun getApiUrl() =
         getString(R.string.sortApiUrl).format(
-                Config.myHostApiUrl.value,
+                Config.myHostApiUrl.random(),
                 page * 21,
                 sortWay[sortValue],
                 if(theme >= 0 && theme < (filter?.results?.theme?.size ?: 0)) (filter?.results?.theme?.get(theme)?.path_word ?: "") else "",
@@ -42,7 +42,7 @@ class SortFragment : StatusCardFlow(0, R.id.action_nav_sort_to_nav_book, R.layou
         super.setListeners()
         lifecycleScope.launch {
             setProgress(5)
-            PausableDownloader(getString(R.string.filterApiUrl).format(Config.myHostApiUrl.value)) {
+            PausableDownloader(getString(R.string.filterApiUrl).format(Config.myHostApiUrl.random())) {
                 if(ad?.exit == true) return@PausableDownloader
                 it.let {
                     it.inputStream().use { i ->

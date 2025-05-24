@@ -17,6 +17,7 @@ import com.bumptech.glide.module.AppGlideModule
 import com.bumptech.glide.signature.ObjectKey
 import com.google.gson.Gson
 import kotlinx.coroutines.runBlocking
+import top.fumiama.copymanga.api.Config.proxyUrl
 import top.fumiama.copymanga.json.ComandyCapsule
 import top.fumiama.copymanga.lib.Comandy
 import java.nio.ByteBuffer
@@ -86,7 +87,7 @@ class ComandyGlideModule: AppGlideModule() {
 
         override fun handles(model: GlideUrl): Boolean {
             return Comandy.instance.enabled && model.toURL().let {
-                it.protocol == "https" && it.host != "copymanga.azurewebsites.net"
+                it.protocol == "https" && it.host != proxyUrl
             }
         }
 
@@ -105,7 +106,7 @@ class ComandyGlideModule: AppGlideModule() {
         override fun handles(model: String): Boolean {
             return Comandy.instance.enabled &&
                     model.startsWith("https://") &&
-                    !model.startsWith("https://copymanga.azurewebsites.net")
+                    !model.startsWith("https://$proxyUrl")
         }
 
     }

@@ -30,7 +30,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class VMHandler(activity: ViewMangaActivity, private val chapterUrl: String, private val weeks: Array<String>) : AutoDownloadHandler(
-    chapterUrl, Chapter2Return::class.java, activity
+    { chapterUrl }, Chapter2Return::class.java, activity
 ) {
     var manga: Chapter2Return? = null
     private val wv = WeakReference(activity)

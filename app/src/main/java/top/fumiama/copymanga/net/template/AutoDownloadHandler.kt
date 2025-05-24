@@ -19,7 +19,7 @@ import java.io.File
 import java.security.MessageDigest
 
 open class AutoDownloadHandler(
-    private val url: String, private val jsonClass: Class<*>,
+    private val url: () -> String, private val jsonClass: Class<*>,
     private val context: LifecycleOwner?,
     private val loadFromCache: Boolean = false,
     private val customCacheFile: File? = null): Handler(Looper.myLooper()!!) {
@@ -57,7 +57,7 @@ open class AutoDownloadHandler(
             toString()
         }
     private suspend fun downloadCoroutine() = withContext(Dispatchers.IO) {
-        val cacheName = toHexStr(MessageDigest.getInstance("MD5").digest(url.encodeToByteArray()))
+        val cacheName = toHexStr(MessageDigest.getInstance("MD5").digest(url().encodeToByteArray()))
         val cacheFile = customCacheFile?:(mainWeakReference?.get()?.externalCacheDir?.let { File(it, cacheName) })
         if(loadFromCache) {
             cacheFile?.let {
@@ -77,9 +77,9 @@ open class AutoDownloadHandler(
         var cnt = 0
         while (cnt++ <= 3) {
             try {
-                val data = Config.apiProxy?.comancry(url) {
+                val data = Config.apiProxy?.comancry(url()) {
                     DownloadTools.getHttpContent(it)
-                }?:DownloadTools.getHttpContent(url)
+                }?:DownloadTools.getHttpContent(url())
                 if(exit) return@withContext
                 val fi = data.inputStream()
                 val pass = setGsonItem(Gson().fromJson(fi.reader(), jsonClass))

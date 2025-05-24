@@ -16,7 +16,7 @@ class Comandy: LazyLibrary<ComandyMethods>(
                 Log.d("MyComandy", "$name block enabled for isInInit")
                 return false
             }
-            if (mEnabled != true && DownloadTools.failTimes.get() >= 3) {
+            if (mEnabled != true && DownloadTools.failTimes.get() >= 16) {
                 mEnabled = true
                 return true
             }

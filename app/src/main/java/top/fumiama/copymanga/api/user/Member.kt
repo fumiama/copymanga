@@ -49,7 +49,7 @@ class Member(private val getString: (Int) -> String) {
         }
         try {
             val u = getString(R.string.memberInfoApiUrl)
-                .format(Config.myHostApiUrl.value)
+                .format(Config.myHostApiUrl.random())
             val data = (Config.apiProxy?.comancry(u) {
                 DownloadTools.getHttpContent(it)
             }?:DownloadTools.getHttpContent(u)).decodeToString()
@@ -97,7 +97,7 @@ class Member(private val getString: (Int) -> String) {
     }
 
     private suspend fun postLogin(username: String, pwd: String, salt: Int): ByteArray? =
-        getString(R.string.loginApiUrl).format(Config.myHostApiUrl.value).let { u ->
+        getString(R.string.loginApiUrl).format(Config.myHostApiUrl.random()).let { u ->
             val use: suspend (String) -> ByteArray? = { it: String ->
                 DownloadTools.getApiConnection(it, "POST").let { c ->
                     c.doOutput = true
@@ -129,7 +129,7 @@ class Member(private val getString: (Int) -> String) {
 
 
     private suspend fun postComandyLogin(username: String, pwd: String, salt: Int) =
-        getString(R.string.loginApiUrl).format(Config.myHostApiUrl.value).let { u ->
+        getString(R.string.loginApiUrl).format(Config.myHostApiUrl.random()).let { u ->
             val use: suspend (String) -> ByteArray? = { it: String ->
                 DownloadTools.getComandyApiConnection(it, "POST", null, Config.pc_ua).apply {
                     headers["content-type"] = "application/x-www-form-urlencoded;charset=utf-8"

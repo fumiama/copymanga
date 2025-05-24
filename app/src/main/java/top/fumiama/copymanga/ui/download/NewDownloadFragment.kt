@@ -1,25 +1,33 @@
 package top.fumiama.copymanga.ui.download
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.activity.result.ActivityResultLauncher
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import kotlinx.android.synthetic.main.dialog_progress.view.*
+import kotlinx.android.synthetic.main.line_header.view.*
+import kotlinx.android.synthetic.main.line_lazybooklines.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
+import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.api.Config.manga_dl_show_0m_manga
 import top.fumiama.copymanga.api.manga.Downloader
 import top.fumiama.copymanga.api.manga.Reader
-import top.fumiama.copymanga.view.template.MangaPagesFragmentTemplate
-import top.fumiama.copymanga.view.template.CardList
+import top.fumiama.copymanga.net.Client
 import top.fumiama.copymanga.storage.FileUtils
+import top.fumiama.copymanga.storage.FileUtils.compressToUserFile
 import top.fumiama.copymanga.view.interaction.Navigate
 import top.fumiama.copymanga.view.interaction.UITools
+import top.fumiama.copymanga.view.template.CardList
+import top.fumiama.copymanga.view.template.MangaPagesFragmentTemplate
 import top.fumiama.dmzj.copymanga.R
 import java.io.File
 import java.lang.ref.WeakReference
@@ -27,25 +35,48 @@ import java.lang.ref.WeakReference
 @OptIn(ExperimentalStdlibApi::class)
 class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownload, forceLoad = true) {
     private var sortedBookList: List<File>? = null
-    private val oldDlCardName = mainWeakReference?.get()?.getString(R.string.old_download_card_name)!!
-    private val extDir = mainWeakReference?.get()?.getExternalFilesDir("")
+    private val oldDlCardName by lazy { getString(R.string.old_download_card_name) }
+    private val extDir by lazy { activity?.getExternalFilesDir("") }
     private var isReverse = false
     private var isContentChanged = false
     private var exit = false
     private val showAll get() = manga_dl_show_0m_manga.value
+    private var compressIntoFile: ActivityResultLauncher<String>? = null
+    private var compressName = ""
+    private var compressFile: File? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         wn = WeakReference(this)
+
+        compressIntoFile = FileUtils.registerZipExportLauncher(this@NewDownloadFragment) { uri ->
+            val progressBar = layoutInflater.inflate(R.layout.dialog_progress, null, false)
+            val progressHandler = object : Client.Progress{
+                override fun notify(progressPercentage: Int) {
+                    progressBar?.dpp?.progress = progressPercentage
+                }
+            }
+            val info = (activity as MainActivity).toolsBox.buildAlertWithView("压缩${compressName}.zip", progressBar!!, "隐藏")
+            val f = compressFile!!
+            Thread{
+                uri?.let { context?.let { ctx -> compressToUserFile(ctx, f, it) {
+                    progressHandler.notify(it)
+                    if (it >= 100) activity?.runOnUiThread { info.dismiss() }
+                } } }
+            }.start()
+        }
     }
 
     override fun onPause() {
         super.onPause()
         exit = true
+        wn = null
     }
 
     override fun onResume() {
         super.onResume()
         exit = false
+        wn = WeakReference(this)
     }
 
     override fun onDestroy() {
@@ -54,6 +85,7 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
         exit = true
     }
 
+    @SuppressLint("SetTextI18n")
     override suspend fun addPage(): Unit = withContext(Dispatchers.IO) {
         super.addPage()
         if(isRefresh) {
@@ -105,8 +137,18 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
             cnt = 1
         }
         val size = sortedBookList?.size?:0
-        sortedBookList?.let {
-            for(i in it.listIterator(page)) {
+        sortedBookList?.let { lst ->
+            withContext(Dispatchers.Main) {
+                mysp?.footerView?.lht?.text = "$page+"
+                activity?.findViewById<Toolbar>(R.id.toolbar)?.let { appbar ->
+                    appbar.title.let { title ->
+                        if (!title.endsWith(")")) {
+                            appbar.title = "$title (${lst.size})"
+                        }
+                    }
+                }
+            }
+            for(i in lst.listIterator(page)) {
                 if(cardList?.exitCardList != false) return@withContext
                 page++ // page is actually count
                 val chosenJson = File(i, "info.bin")
@@ -120,14 +162,16 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
                     chosenJson.exists() -> continue // unsupported old folder
                     newJson.exists() -> {
                         if(cardList?.exitCardList != false) return@withContext
-                        cardList?.addCard(i.name, bookSize)
+                        cardList?.addCard(i.name, "\n本地读至 ${activity?.let { a ->
+                            Reader.getLocalReadingProgress(a, i.name, Reader.getComicChapterNamesInFolder(i))
+                        }}$bookSize")
                         cnt++
                     }
                 }
                 setProgress(80+20*(cnt-1)/size)
                 if (cnt >= 21) break
             }
-            if(page >= it.size) {
+            if(page >= lst.size) {
                 isEnd = true
             }
         }
@@ -155,7 +199,7 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
                     AlertDialog.Builder(context)
                         .setIcon(R.drawable.ic_launcher_foreground)
                         .setTitle(R.string.new_download_card_option_hint)
-                        .setItems(arrayOf("删除数据文件夹", "直接前往下载页")) { d, p ->
+                        .setItems(arrayOf("删除数据文件夹", "直接前往下载页", "导出压缩包")) { d, p ->
                             d.cancel()
                             when (p) {
                                 0 -> {
@@ -174,10 +218,14 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
                                         .show()
                                 }
                                 1 -> callDownloadFragment(name)
+                                2 -> {
+                                    compressName = name
+                                    compressFile = chosenFile
+                                    compressIntoFile?.launch("${name}.zip")
+                                }
                             }
                         }
                         .show()
-
                     true
                 }
             }
@@ -218,6 +266,10 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
                 }
             }
         )
+    }
+
+    fun importMangaFromZip() {
+
     }
 
     companion object {

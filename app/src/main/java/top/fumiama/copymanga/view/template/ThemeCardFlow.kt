@@ -12,7 +12,7 @@ open class ThemeCardFlow(private val api: Int, nav: Int) : StatusCardFlow(0, nav
     private var theme = ""
     override fun getApiUrl() =
         getString(api).format(
-            Config.myHostApiUrl.value,
+            Config.myHostApiUrl.random(),
             page * 21,
             sortWay[sortValue],
             theme

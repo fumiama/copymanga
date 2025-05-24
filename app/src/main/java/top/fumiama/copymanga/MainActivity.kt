@@ -23,6 +23,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
@@ -80,6 +81,19 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(null)
+
+        val darkModePrefKey = getString(R.string.darkModeKeyID)
+        PreferenceManager.getDefaultSharedPreferences(this)?.apply {
+            if (contains(darkModePrefKey)) getString(darkModePrefKey, "0")?.toInt()?.let {
+                if (it > 0) {
+                    AppCompatDelegate.setDefaultNightMode(listOf(
+                        AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM,
+                        AppCompatDelegate.MODE_NIGHT_NO,
+                        AppCompatDelegate.MODE_NIGHT_YES,
+                    )[it])
+                }
+            }
+        }
 
         // must init before setContentView because HomeF need them to init
         mainWeakReference = WeakReference(this)
@@ -172,13 +186,13 @@ class MainActivity : AppCompatActivity() {
                     )[it])
                 }
             }
-            if (Config.general_enable_transparent_system_bar.value) {
-                WindowCompat.setDecorFitsSystemWindows(window, false)
-                window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-                window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
-                window.statusBarColor = 0
-                window.navigationBarColor = 0
-            }
+        }
+        if (Config.general_enable_transparent_system_bar.value) {
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
+            window.statusBarColor = 0
+            window.navigationBarColor = 0
         }
     }
 
@@ -197,7 +211,11 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             R.id.action_download -> {
-                bookHandler.get()?.sendEmptyMessage(BookHandler.NAVIGATE_TO_DOWNLOAD)
+                if (NewDownloadFragment.wn != null) {
+                    //TODO: fill it
+                } else {
+                    bookHandler.get()?.sendEmptyMessage(BookHandler.NAVIGATE_TO_DOWNLOAD)
+                }
                 true
             }
             R.id.action_sort -> {
@@ -412,7 +430,7 @@ class MainActivity : AppCompatActivity() {
         dl.setMessage("${getString(R.string.app_description)}\n" +
                 "\n$comandy\n" +
                 "$comancry\n\n"+ File("/proc/self/cmdline").readText() + "\n" +
-                "安装位置: ${applicationInfo.sourceDir}")
+                "当前API: ${Config.myHostApiUrl.joinToString(", ")}")
         dl.setTitle("${getString(R.string.action_info)} ${BuildConfig.VERSION_NAME}")
         dl.setIcon(R.mipmap.ic_launcher)
         dl.setPositiveButton(android.R.string.ok) { _, _ -> }

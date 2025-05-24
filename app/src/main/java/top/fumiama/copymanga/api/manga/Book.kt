@@ -15,7 +15,7 @@ import top.fumiama.dmzj.copymanga.R
 import java.io.File
 
 class Book(val path: String, private val getString: (Int) -> String, private val exDir: File, private val loadCache: Boolean = false, private val mPassName: String? = null) {
-    private val mBookApiUrl = getString(R.string.bookInfoApiUrl).format(Config.myHostApiUrl.value, path)
+    private val mBookApiUrl = getString(R.string.bookInfoApiUrl).format(Config.myHostApiUrl.random(), path)
     private val mUserAgent = getString(R.string.pc_ua).format(Config.app_ver.value)
     private var mBook: BookInfoStructure? = null
     private var mGroupPathWords = arrayOf<String>()
@@ -37,12 +37,6 @@ class Book(val path: String, private val getString: (Int) -> String, private val
     val author: Array<ThemeStructure>? get() = mBook?.results?.comic?.author
     val theme: Array<ThemeStructure>? get() = mBook?.results?.comic?.theme
     val keys get() = mKeys
-    val imageType: String
-        get() = when(mBook?.results?.comic?.img_type) {
-            1 -> "条漫"
-            2 -> "普通"
-            else -> "未知类型${mBook?.results?.comic?.img_type}"
-        }
     val popular get() = mBook?.results?.comic?.popular?:0
     val status get() = mBook?.results?.comic?.status?.display?:"未知"
     val updateTime get() = mBook?.results?.comic?.datetime_updated?:"未知"

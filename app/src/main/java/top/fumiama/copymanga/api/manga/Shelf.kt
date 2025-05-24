@@ -10,7 +10,7 @@ import top.fumiama.copymanga.net.DownloadTools
 import top.fumiama.dmzj.copymanga.R
 
 class Shelf(private val getString: (Int) -> String) {
-    private val apiUrl: String get() = getString(R.string.shelfOperateApiUrl).format(Config.myHostApiUrl.value)
+    private val apiUrl: String get() = getString(R.string.shelfOperateApiUrl).format(Config.myHostApiUrl.random())
     private val queryApiUrlTemplate = getString(R.string.bookUserQueryApiUrl)
     private val addApiUrl get() = "$apiUrl?platform=3"
     private val delApiUrl get() = "${apiUrl}s?platform=3"
@@ -68,7 +68,7 @@ class Shelf(private val getString: (Int) -> String) {
 
     suspend fun query(pathWord: String): BookQueryStructure? = withContext(Dispatchers.IO) {
         try {
-            val queryUrl = queryApiUrlTemplate.format(Config.myHostApiUrl.value, pathWord)
+            val queryUrl = queryApiUrlTemplate.format(Config.myHostApiUrl.random(), pathWord)
             (Config.apiProxy?.comancry(queryUrl) { url ->
                 DownloadTools.getHttpContent(url, Config.referer)
             }?:DownloadTools.getHttpContent(queryUrl, Config.referer)).let {

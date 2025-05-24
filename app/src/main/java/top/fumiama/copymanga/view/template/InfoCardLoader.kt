@@ -1,12 +1,16 @@
 package top.fumiama.copymanga.view.template
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.gson.Gson
+import kotlinx.android.synthetic.main.line_header.view.*
+import kotlinx.android.synthetic.main.line_lazybooklines.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -18,6 +22,7 @@ import top.fumiama.copymanga.json.TypeBookListStructure
 import top.fumiama.copymanga.net.template.PausableDownloader
 import top.fumiama.copymanga.strings.Chinese
 import top.fumiama.copymanga.view.interaction.Navigate
+import top.fumiama.dmzj.copymanga.R
 import java.lang.ref.WeakReference
 
 @ExperimentalStdlibApi
@@ -26,6 +31,7 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
     private val subUrl get() = getApiUrl()
     var ad: PausableDownloader? = null
 
+    @SuppressLint("SetTextI18n")
     override suspend fun addPage(): Unit = withContext(Dispatchers.IO) {
         super.addPage()
         setProgress(20)
@@ -38,6 +44,16 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
                 val bookList = Gson().fromJson(data.decodeToString(), TypeBookListStructure::class.java)
                 bookList?.apply {
                     Log.d("MyICL", "offset:${results.offset}, total:${results.total}")
+                    withContext(Dispatchers.Main) {
+                        mysp?.footerView?.lht?.text = "${results.offset}+"
+                        activity?.findViewById<Toolbar>(R.id.toolbar)?.let { appbar ->
+                            appbar.title.let {
+                                if (!it.endsWith(")")) {
+                                    appbar.title = "$it (${results.total})"
+                                }
+                            }
+                        }
+                    }
                     if(results.offset < results.total) {
                         if(code == 200) {
                             val size = results?.list?.size?:0
@@ -60,6 +76,16 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
                 val bookList = Gson().fromJson(data.decodeToString(), HistoryBookListStructure::class.java)
                 bookList?.apply {
                     Log.d("MyICL", "offset:${results?.offset}, total:${results?.total}")
+                    withContext(Dispatchers.Main) {
+                        mysp?.footerView?.lht?.text = "${results.offset}+"
+                        activity?.findViewById<Toolbar>(R.id.toolbar)?.let { appbar ->
+                            appbar.title.let {
+                                if (!it.endsWith(")")) {
+                                    appbar.title = "$it (${results.total})"
+                                }
+                            }
+                        }
+                    }
                     if(results.offset < results.total) {
                         if(code == 200) {
                             val size = results?.list?.size?:0
@@ -82,6 +108,16 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
                 val bookList = Gson().fromJson(data.decodeToString(), ShelfStructure::class.java)
                 bookList?.apply {
                     Log.d("MyICL", "offset:${results?.offset}, total:${results?.total}")
+                    withContext(Dispatchers.Main) {
+                        mysp?.footerView?.lht?.text = "${results.offset}+"
+                        activity?.findViewById<Toolbar>(R.id.toolbar)?.let { appbar ->
+                            appbar.title.let {
+                                if (!it.endsWith(")")) {
+                                    appbar.title = "$it (${results.total})"
+                                }
+                            }
+                        }
+                    }
                     if(results.offset < results.total) {
                         if(code == 200) {
                             val size = results?.list?.size?:0
@@ -105,6 +141,16 @@ open class InfoCardLoader(inflateRes:Int, private val navId:Int, private val isT
                 val bookList = Gson().fromJson(data.decodeToString(), BookListStructure::class.java)
                 bookList?.apply {
                     Log.d("MyICL", "offset:${results?.offset}, total:${results?.total}")
+                    withContext(Dispatchers.Main) {
+                        mysp?.footerView?.lht?.text = "${results.offset}+"
+                        activity?.findViewById<Toolbar>(R.id.toolbar)?.let { appbar ->
+                            appbar.title.let {
+                                if (!it.endsWith(")")) {
+                                    appbar.title = "$it (${results.total})"
+                                }
+                            }
+                        }
+                    }
                     if(results.offset < results.total) {
                         if(code == 200) {
                             val size = results?.list?.size?:0

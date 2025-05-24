@@ -48,7 +48,7 @@ class RankFragment : InfoCardLoader(R.layout.fragment_rank, R.id.action_nav_rank
 
     override fun getApiUrl() =
         getString(R.string.rankApiUrl).format(
-                Config.myHostApiUrl.value,
+                Config.myHostApiUrl.random(),
                 page * 21,
                 sortWay[sortValue],
                 audienceWay[audience]

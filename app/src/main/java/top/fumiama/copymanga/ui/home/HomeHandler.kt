@@ -39,8 +39,9 @@ import top.fumiama.dmzj.copymanga.R
 import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicInteger
 
-class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadHandler(
-    that.get()?.getString(R.string.mainPageApiUrl)!!.format(Config.myHostApiUrl.value),
+class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadHandler({
+        that.get()?.getString(R.string.mainPageApiUrl)!!.format(Config.myHostApiUrl.random())
+    },
     IndexStructure::class.java,
     that.get()
 ) {

@@ -218,13 +218,16 @@ class BookHandler(private val th: WeakReference<BookFragment>): Handler(Looper.m
                 }
                 var last = i-1
                 val comicName = name?:return@withContext
+                val init = i
+                Log.d("MyBH", "i = $i, last=$last, add comic $comicName, volume $p")
                 volumes[p].let { v ->
                     if(exit) return@withContext
                     var line: View? = null
                     last += v.results.list.size
-                    v.results.list.forEach {
+                    val inv = Config.view_manga_inverse_chapters.value
+                    (if(!inv) v.results.list.toList() else v.results.list.reversed()).forEach {
                         val f = Config.getZipFile(context?.getExternalFilesDir(""), comicName, keys[p], it.name)
-                        //Log.d("MyBH", "i = $i, last=$last, add chapter ${it.name}, line is null: ${line == null}")
+                        Log.d("MyBH", "i = $i, last=$last, add chapter ${it.name}, line is null: ${line == null}")
                         that?.isOnPause?.let { isOnPause ->
                             while (isOnPause && !exit) delay(500)
                             if (exit) return@withContext
@@ -236,7 +239,7 @@ class BookHandler(private val th: WeakReference<BookFragment>): Handler(Looper.m
                                     lct.text = it.name
                                     if (f.exists()) lci.setBackgroundResource(R.drawable.ic_success)
                                     Log.d("MyBH", "add last single chapter ${it.name}")
-                                    val index = i
+                                    val index = if (!inv) i else init
                                     setOnClickListener { Reader.start2viewManga(comicName, index, urlArray, uuidArray) }
                                 }
                                 line?.let { l -> addVolumesView(fbl, l) }
@@ -245,14 +248,14 @@ class BookHandler(private val th: WeakReference<BookFragment>): Handler(Looper.m
                                 line?.l2cl?.apply {
                                     lct.text = it.name
                                     if (f.exists()) lci.setBackgroundResource(R.drawable.ic_success)
-                                    val index = i
+                                    val index = if (!inv) i else (init+last-i)
                                     setOnClickListener { Reader.start2viewManga(comicName, index, urlArray, uuidArray) }
                                 }
                             }
                         } else line?.l2cr?.apply {
                             lct.text = it.name
                             if (f.exists()) lci.setBackgroundResource(R.drawable.ic_success)
-                            val index = i
+                            val index = if (!inv) i else (init+last-i)
                             setOnClickListener { Reader.start2viewManga(comicName, index, urlArray, uuidArray) }
                             line?.let { l -> addVolumesView(fbl, l) }
                             line = null

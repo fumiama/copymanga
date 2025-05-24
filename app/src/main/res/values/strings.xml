@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE resources [
-    <!ENTITY hosturl "www.copy20.com">
-    <!ENTITY appver "2.2.9">
+    <!ENTITY hosturl "api.copy-manga.com">
+    <!ENTITY appver "2.3.0">
+    <!ENTITY proxyurl "copymanga.azurewebsites.net">
     ]>
 <resources>
     <string name="app_name">拷贝漫画</string>
@@ -66,6 +67,7 @@
     <string name="mainPageApiUrl">https://%1$s/api/v3/h5/homeIndex?platform=3</string>
     <string name="referUrl">https://%1$s</string>
     <string name="hostUrl">&hosturl;</string>
+    <string name="proxyUrl">&proxyurl;</string>
     <string name="rankApiUrl">https://%1$s/api/v3/ranks?limit=21&amp;offset=%2$d&amp;date_type=%3$s&amp;audience_type=%4$s&amp;platform=3</string>
     <string name="searchApiUrl">https://%1$s/api/v3/search/comic?limit=21&amp;offset=%2$d&amp;q=%3$s&amp;q_type=%4$s&amp;platform=3</string>
     <string name="filterApiUrl">https://%1$s/api/v3/h5/filter/comic/tags?platform=3</string>
@@ -87,10 +89,15 @@
     <string name="shelfApiUrl">https://%1$s/api/v3/member/collect/comics?limit=21&amp;offset=%2$d&amp;free_type=1&amp;ordering=%3$s&amp;platform=3</string>
     <string name="shelfOperateApiUrl">https://%1$s/api/v3/member/collect/comic</string>
 
-    <string name="imgProxyApiUrl">https://copymanga.azurewebsites.net/api/img?code=%1$s&amp;url=%2$s</string>
-    <string name="imgProxyKeyID">settings_cat_net_et_img_proxy_code</string>
-    <string name="apiProxyApiUrl">https://copymanga.azurewebsites.net/api/api?code=%1$s&amp;url=%2$s</string>
+    <string name="imgProxyApiUrl">https://&proxyurl;/api/img?code=%1$s&amp;url=%2$s</string>
+    <string name="imgProxyCodeKeyID">settings_cat_net_et_img_proxy_code</string>
+    <string name="apiProxyApiUrl">https://&proxyurl;/api/api?code=%1$s&amp;url=%2$s</string>
     <string name="imgResolutionKeyID">settings_cat_net_sb_image_resolution</string>
+
+    <string name="darkModeKeyID">settings_cat_general_lp_dark_mode</string>
+    <string name="reverseProxyKeyID">settings_cat_net_et_reverse_proxy</string>
+    <string name="apiProxyKeyID">settings_cat_net_sw_use_api_proxy</string>
+    <string name="imgProxyKeyID">settings_cat_net_sw_use_img_proxy</string>
 
     <string name="comandy_version_url">https://gitea.seku.su/api/v1/repos/fumiama/%1$s/releases/tags/default</string>
     <string name="comandy_download_url">"https://gitea.seku.su/fumiama/%1$s/releases/download/default/%2$s_%3$s.gz"</string>
@@ -141,6 +148,8 @@
     <string name="caption">标签</string>
 
     <string name="settings_cat_general">通用</string>
+    <string name="settings_cat_general_lp_title_dark_mode">主题</string>
+    <string name="settings_cat_general_lp_summary_dark_mode">默认跟随系统</string>
     <string name="settings_cat_general_sb_title_startup_menu">启动时显示</string>
     <string name="settings_cat_general_sb_summary_startup_menu">默认主页</string>
     <string name="settings_cat_general_et_title_app_version">拷贝版本号</string>
@@ -163,14 +172,18 @@
     <string name="settings_cat_net_sm_use_comandy">使用经过优化的请求方法访问服务器</string>
     <string name="settings_cat_net_et_title_api_url">请求API网址</string>
     <string name="settings_cat_net_et_summary_api_url">一般无需更改，除非拷贝漫画官方更改网址，默认：&hosturl;</string>
+    <string name="settings_cat_net_et_title_reverse_proxy">反向代理</string>
+    <string name="settings_cat_net_et_summary_reverse_proxy">您可以自建反向代理并填写在此处以解决网络不畅</string>
     <string name="settings_cat_net_sw_use_api_proxy">使用API代理（需要密钥）</string>
     <string name="settings_cat_net_sm_use_api_proxy">作者自建的API代理，可缓解国内图书详情加载问题，但不保证100%解决，也不保证一直可用</string>
     <string name="settings_cat_net_sw_use_img_proxy">使用图床代理（需要密钥）</string>
     <string name="settings_cat_net_sm_use_img_proxy">作者自建的图床代理，可缓解国内图片无法加载问题，但不保证100%解决，也不保证一直可用</string>
     <string name="settings_cat_net_et_title_img_proxy">代理密钥</string>
-    <string name="settings_cat_net_et_summary_img_proxy">为避免滥用，该密钥需加群（559748702）获得，且随时可能会刷新</string>
+    <string name="settings_cat_net_et_summary_img_proxy">为避免滥用，该密钥随时可能会刷新</string>
 
     <string name="settings_cat_vm">漫画浏览</string>
+    <string name="settings_cat_vm_sw_inverse_chapters">倒序排列章节</string>
+    <string name="settings_cat_vm_sm_inverse_chapters">打开后详情页将从后往前排列每一话</string>
     <string name="settings_cat_vm_sw_always_dark_bg">深色阅读背景</string>
     <string name="settings_cat_vm_sm_always_dark_bg">打开后阅览漫画的背景色永远为黑色</string>
     <string name="settings_cat_vm_sw_hide_info">隐藏底部时间栏</string>

@@ -8,6 +8,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.api.Config
+import top.fumiama.copymanga.api.Config.proxyUrl
 import top.fumiama.copymanga.json.ComandyCapsule
 import top.fumiama.copymanga.lib.Comandy
 import java.io.ByteArrayOutputStream
@@ -16,34 +17,40 @@ import java.io.OutputStream
 import java.lang.Thread.sleep
 import java.net.HttpURLConnection
 import java.net.URL
+import java.text.SimpleDateFormat
+import java.util.*
 import java.util.concurrent.Callable
 import java.util.concurrent.FutureTask
 import java.util.concurrent.atomic.AtomicInteger
 
 object DownloadTools {
     val failTimes = AtomicInteger(0)
-    fun getApiConnection(url: String, method: String = "GET", refer: String? = null, ua: String? = null, timeout: Int = 20000) =
-        url.let {
-            val connection = URL(url).openConnection() as HttpURLConnection
-            connection.requestMethod = method
-            connection.connectTimeout = timeout
-            connection.readTimeout = timeout
-            connection.apply {
-                setRequestProperty("host", url.substringAfter("://").substringBefore("/"))
-                ua?.let { setRequestProperty("user-agent", it) }
-                refer?.let { setRequestProperty("referer", it) }
-                setRequestProperty("source", "copyApp")
-                setRequestProperty("webp", "1")
-                setRequestProperty("region", if(!Config.net_use_foreign.value) "1" else "0")
-                setRequestProperty("version", Config.app_ver.value)
-                Config.token.value?.let { tk ->
-                    setRequestProperty("authorization", "Token $tk")
-                }
-                setRequestProperty("platform", "3")
+    fun getApiConnection(url: String, method: String = "GET", refer: String? = null, ua: String? = null, timeout: Int = 20000): HttpURLConnection {
+        val connection = URL(url).openConnection() as HttpURLConnection
+        connection.requestMethod = method
+        connection.connectTimeout = timeout
+        connection.readTimeout = timeout
+        connection.apply {
+            /*setRequestProperty("host",  if (url.startsWith("https://copymanga.azurewebsites.net")) {
+                Uri.parse(url).getQueryParameter("url")?.substringAfter("://")?.substringBefore("/")?:""
+            } else {
+                url.substringAfter("://").substringBefore("/")
+            })*/
+            ua?.let { setRequestProperty("user-agent", it) }
+            refer?.let { setRequestProperty("referer", it) }
+            setRequestProperty("source", "copyApp")
+            setRequestProperty("webp", "1")
+            setRequestProperty("region", if(!Config.net_use_foreign.value) "1" else "0")
+            setRequestProperty("version", Config.app_ver.value)
+            setRequestProperty("dt", SimpleDateFormat("yyyy.MM.dd", Locale.getDefault()).format(Calendar.getInstance().time))
+            Config.token.value?.let { tk ->
+                setRequestProperty("authorization", "Token $tk")
             }
-            Log.d("MyDT", "getConnection: $url\n${connection.requestProperties.map { "${it.key}: ${it.value}" }.joinToString("\n")}")
-            connection
+            setRequestProperty("platform", "3")
         }
+        Log.d("MyDT", "getConnection: $url\n${connection.requestProperties.map { "${it.key}: ${it.value}" }.joinToString("\n")}")
+        return connection
+    }
 
     fun getComandyApiConnection(url: String, method: String = "GET", refer: String? = null, ua: String? = null) =
         run {
@@ -51,7 +58,11 @@ object DownloadTools {
             capsule.url = url
             capsule.method = method
             capsule.headers = hashMapOf()
-            capsule.headers["host"] = url.substringAfter("://").substringBefore("/")
+            /*capsule.headers["host"] = if (url.startsWith("https://copymanga.azurewebsites.net")) {
+                Uri.parse(url).getQueryParameter("url")?.substringAfter("://")?.substringBefore("/")?:""
+            } else {
+                url.substringAfter("://").substringBefore("/")
+            }*/
             ua?.let { capsule.headers["user-agent"] = it }
             refer?.let { capsule.headers["referer"] = it }
             capsule.headers["source"] = "copyApp"
@@ -64,6 +75,7 @@ object DownloadTools {
                 }
             }
             capsule.headers["platform"] = "3"
+            capsule.headers["dt"] = SimpleDateFormat("yyyy.MM.dd", Locale.getDefault()).format(Calendar.getInstance().time)
             Log.d("MyDT", "getComandyConnection: $url\n${capsule.headers.map { "${it.key}: ${it.value}" }.joinToString("\n")}")
             capsule
         }
@@ -119,7 +131,7 @@ object DownloadTools {
 
     suspend fun getHttpContent(u: String, refer: String? = null, ua: String? = Config.pc_ua, p: Client.Progress? = null): ByteArray =
         withContext(Dispatchers.IO) {
-            if (!u.startsWith("https://copymanga.azurewebsites.net") && Comandy.instance.enabled) {
+            if (!u.startsWith("https://$proxyUrl") && Comandy.instance.enabled) {
                 getComandyApiConnection(u, "GET", refer, ua).let { capsule ->
                     val para = Gson().toJson(capsule)
                     //Log.d("MyDT", "comandy request: $para")
@@ -188,7 +200,7 @@ object DownloadTools {
     // prepare p only take effect when readSize is -1
     fun prepare(u: String, readSize: Int = -1, p: Client.Progress? = null) = run {
         Log.d("MyDT", "prepareHttp: $u")
-        FutureTask(if (!u.startsWith("https://copymanga.azurewebsites.net") && Comandy.instance.enabled) Callable{
+        FutureTask(if (!u.startsWith("https://$proxyUrl") && Comandy.instance.enabled) Callable{
             try {
                 runBlocking { Comandy.instance.getInstance() }?.let { ins ->
                     runBlocking {
@@ -261,7 +273,7 @@ object DownloadTools {
     fun requestWithBody(url: String, method: String, body: ByteArray, refer: String? = Config.referer, ua: String? = Config.pc_ua, contentType: String? = "application/x-www-form-urlencoded;charset=utf-8"): ByteArray? {
         Log.d("MyDT", "$method Http: $url")
         var ret: ByteArray? = null
-        val task = FutureTask(if(!url.startsWith("https://copymanga.azurewebsites.net") && Comandy.instance.enabled) Callable{
+        val task = FutureTask(if(!url.startsWith("https://$proxyUrl") && Comandy.instance.enabled) Callable{
             try {
                 val capsule = getComandyApiConnection(url, method, refer, ua)
                 contentType?.let { capsule.headers["content-type"] = it }

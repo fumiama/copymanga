@@ -38,4 +38,14 @@
         <item>5</item>
         <item>6</item>
     </string-array>
+    <string-array name="themes">
+        <item>跟随系统</item>
+        <item>浅色</item>
+        <item>深色</item>
+    </string-array>
+    <string-array name="themes_ids">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
 </resources>

@@ -44,6 +44,7 @@ class Proxy(id: Int, private val apiRegex: Regex) {
                 ?:u
             Log.d("MyP", "[M] comancry: $wu, sd: $sourceDir")
             return use(wu)?.let { data ->
+                Log.d("MyP", "[M] comancry: decrypt ${data.size} bytes data")
                 Comancry.instance.decrypt(sourceDir, data)?.encodeToByteArray()
             }
         }

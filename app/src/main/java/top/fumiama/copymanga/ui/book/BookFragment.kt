@@ -140,17 +140,11 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
     fun setReadTo() {
         var chapter = "未读"
         if(!mBookHandler?.chapterNames.isNullOrEmpty()) {
-            activity?.apply {
+            chapter = "读至 ${activity?.let { a ->
                 book?.name?.let { name ->
-                    getPreferences(MODE_PRIVATE).getInt(name, -1).let { p ->
-                        if(p >= 0) mBookHandler!!.chapterNames.let {
-                            chapter = it[if (p >= it.size) it.size-1 else p]
-                        }
-                    }
-                }
-            }
+                Reader.getLocalReadingProgress(a, name, mBookHandler!!.chapterNames)
+            } }}"
         }
-        chapter = "读至 $chapter"
         this@BookFragment.bttag.text = chapter
     }
 
