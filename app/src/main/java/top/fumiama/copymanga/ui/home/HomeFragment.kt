@@ -299,7 +299,7 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
                 query = q.toString()
                 activity?.apply {
                     PausableDownloader(getString(R.string.searchApiUrl).format(Config.myHostApiUrl.random(), 0,
-                        URLEncoder.encode(q.toString(), Charset.defaultCharset().name()), type)) {
+                        URLEncoder.encode(q.toString(), Charset.defaultCharset().name()), type, Config.platform.value)) {
                         results = Gson().fromJson(it.decodeToString(), BookListStructure::class.java)
                         count = results?.results?.total?:0
                         withContext(Dispatchers.Main) {

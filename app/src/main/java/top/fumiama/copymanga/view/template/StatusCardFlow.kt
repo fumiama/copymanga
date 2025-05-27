@@ -20,7 +20,8 @@ open class StatusCardFlow(private val api: Int, nav: Int, inflateRes: Int,
         getString(api).format(
             Config.myHostApiUrl.random(),
             page * 21,
-            sortWay[sortValue]
+            sortWay[sortValue],
+            Config.platform.value,
         )
 
     override fun setListeners() {

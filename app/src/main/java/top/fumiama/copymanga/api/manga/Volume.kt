@@ -39,7 +39,7 @@ class Volume(private val path: String, private val groupPathWord: String, getStr
         return@withContext mVolume
     }
 
-    private fun getApiUrl(offset: Int) = mGroupInfoApiUrlTemplate.format(Config.myHostApiUrl.random(), path, groupPathWord, offset)
+    private fun getApiUrl(offset: Int) = mGroupInfoApiUrlTemplate.format(Config.myHostApiUrl.random(), path, groupPathWord, offset, Config.platform.value)
     private suspend fun download(re: Array<VolumeStructure?>, offset: Int, c: Int) = withContext(Dispatchers.IO) {
         Log.d("MyV", "下载偏移: $offset")
         getApiUrl(offset).let {

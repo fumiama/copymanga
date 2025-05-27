@@ -47,6 +47,17 @@
             app:enableCopying="true"
             app:iconSpaceReserved="false"
             app:key="settings_cat_general_et_app_version" />
+        <EditTextPreference
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:defaultValue="@string/platform"
+            android:selectAllOnFocus="false"
+            android:singleLine="true"
+            android:title="@string/settings_cat_general_et_title_platform"
+            android:summary="@string/settings_cat_general_et_summary_platform"
+            app:enableCopying="true"
+            app:iconSpaceReserved="false"
+            app:key="settings_cat_general_et_platform" />
         <SeekBarPreference
             android:defaultValue="0"
             android:max="8"

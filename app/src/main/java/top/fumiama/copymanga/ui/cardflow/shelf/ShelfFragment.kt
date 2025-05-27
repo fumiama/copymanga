@@ -28,7 +28,8 @@ class ShelfFragment : InfoCardLoader(R.layout.fragment_shelf, R.id.action_nav_su
         getString(R.string.shelfApiUrl).format(
             Config.myHostApiUrl.random(),
             page * 21,
-            sortWay[sortValue]
+            sortWay[sortValue],
+            Config.platform.value,
         )
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -12,8 +12,8 @@ import top.fumiama.dmzj.copymanga.R
 class Shelf(private val getString: (Int) -> String) {
     private val apiUrl: String get() = getString(R.string.shelfOperateApiUrl).format(Config.myHostApiUrl.random())
     private val queryApiUrlTemplate = getString(R.string.bookUserQueryApiUrl)
-    private val addApiUrl get() = "$apiUrl?platform=3"
-    private val delApiUrl get() = "${apiUrl}s?platform=3"
+    private val addApiUrl get() = "$apiUrl?platform=${Config.platform.value}"
+    private val delApiUrl get() = "${apiUrl}s?platform=${Config.platform.value}"
     suspend fun add(comicId: String): String = withContext(Dispatchers.IO) {
         if (comicId.isEmpty()) {
             return@withContext "空漫画ID"
@@ -68,7 +68,7 @@ class Shelf(private val getString: (Int) -> String) {
 
     suspend fun query(pathWord: String): BookQueryStructure? = withContext(Dispatchers.IO) {
         try {
-            val queryUrl = queryApiUrlTemplate.format(Config.myHostApiUrl.random(), pathWord)
+            val queryUrl = queryApiUrlTemplate.format(Config.myHostApiUrl.random(), pathWord, Config.platform.value)
             (Config.apiProxy?.comancry(queryUrl) { url ->
                 DownloadTools.getHttpContent(url, Config.referer)
             }?:DownloadTools.getHttpContent(queryUrl, Config.referer)).let {

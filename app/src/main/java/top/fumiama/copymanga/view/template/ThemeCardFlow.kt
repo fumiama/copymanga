@@ -15,7 +15,8 @@ open class ThemeCardFlow(private val api: Int, nav: Int) : StatusCardFlow(0, nav
             Config.myHostApiUrl.random(),
             page * 21,
             sortWay[sortValue],
-            theme
+            theme,
+            Config.platform.value,
         )
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -49,7 +49,7 @@ class Member(private val getString: (Int) -> String) {
         }
         try {
             val u = getString(R.string.memberInfoApiUrl)
-                .format(Config.myHostApiUrl.random())
+                .format(Config.myHostApiUrl.random(), Config.platform.value)
             val data = (Config.apiProxy?.comancry(u) {
                 DownloadTools.getHttpContent(it)
             }?:DownloadTools.getHttpContent(u)).decodeToString()
@@ -97,7 +97,7 @@ class Member(private val getString: (Int) -> String) {
     }
 
     private suspend fun postLogin(username: String, pwd: String, salt: Int): ByteArray? =
-        getString(R.string.loginApiUrl).format(Config.myHostApiUrl.random()).let { u ->
+        getString(R.string.loginApiUrl).format(Config.myHostApiUrl.random(), Config.platform.value).let { u ->
             val use: suspend (String) -> ByteArray? = { it: String ->
                 DownloadTools.getApiConnection(it, "POST").let { c ->
                     c.doOutput = true
@@ -105,7 +105,7 @@ class Member(private val getString: (Int) -> String) {
                         "content-type",
                         "application/x-www-form-urlencoded;charset=utf-8"
                     )
-                    c.setRequestProperty("platform", "3")
+                    c.setRequestProperty("platform", Config.platform.value)
                     c.setRequestProperty("accept", "application/json")
                     val r = if (!Config.net_use_foreign.value) "1" else "0"
                     val pwdEncoded =
@@ -116,7 +116,7 @@ class Member(private val getString: (Int) -> String) {
                                 username,
                                 Charset.defaultCharset().name()
                             )
-                        }&password=$pwdEncoded&salt=$salt&platform=3&authorization=Token+&version=${Config.app_ver.value}&source=copyApp&region=$r&webp=1".toByteArray()
+                        }&password=$pwdEncoded&salt=$salt&platform=${Config.platform.value}&authorization=Token+&version=${Config.app_ver.value}&source=copyApp&region=$r&webp=1".toByteArray()
                     )
                     c.outputStream.close()
                     val b = c.inputStream.readBytes()
@@ -129,11 +129,11 @@ class Member(private val getString: (Int) -> String) {
 
 
     private suspend fun postComandyLogin(username: String, pwd: String, salt: Int) =
-        getString(R.string.loginApiUrl).format(Config.myHostApiUrl.random()).let { u ->
+        getString(R.string.loginApiUrl).format(Config.myHostApiUrl.random(), Config.platform.value).let { u ->
             val use: suspend (String) -> ByteArray? = { it: String ->
                 DownloadTools.getComandyApiConnection(it, "POST", null, Config.pc_ua).apply {
                     headers["content-type"] = "application/x-www-form-urlencoded;charset=utf-8"
-                    headers["platform"] = "3"
+                    headers["platform"] = Config.platform.value
                     headers["accept"] = "application/json"
                     val r = if (!Config.net_use_foreign.value) "1" else "0"
                     val pwdEncoded =
@@ -143,7 +143,7 @@ class Member(private val getString: (Int) -> String) {
                             username,
                             Charset.defaultCharset().name()
                         )
-                    }&password=$pwdEncoded&salt=$salt&platform=3&authorization=Token+&version=${Config.app_ver.value}&source=copyApp&region=$r&webp=1"
+                    }&password=$pwdEncoded&salt=$salt&platform=${Config.platform.value}&authorization=Token+&version=${Config.app_ver.value}&source=copyApp&region=$r&webp=1"
                 }.let { capsule ->
                     try {
                         val para = Gson().toJson(capsule)

@@ -46,7 +46,7 @@ object DownloadTools {
             Config.token.value?.let { tk ->
                 setRequestProperty("authorization", "Token $tk")
             }
-            setRequestProperty("platform", "3")
+            setRequestProperty("platform", Config.platform.value)
         }
         Log.d("MyDT", "getConnection: $url\n${connection.requestProperties.map { "${it.key}: ${it.value}" }.joinToString("\n")}")
         return connection
@@ -74,7 +74,7 @@ object DownloadTools {
                     capsule.headers["authorization"] = "Token $tk"
                 }
             }
-            capsule.headers["platform"] = "3"
+            capsule.headers["platform"] = Config.platform.value
             capsule.headers["dt"] = SimpleDateFormat("yyyy.MM.dd", Locale.getDefault()).format(Calendar.getInstance().time)
             Log.d("MyDT", "getComandyConnection: $url\n${capsule.headers.map { "${it.key}: ${it.value}" }.joinToString("\n")}")
             capsule

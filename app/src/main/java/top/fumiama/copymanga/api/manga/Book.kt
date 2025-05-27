@@ -15,7 +15,7 @@ import top.fumiama.dmzj.copymanga.R
 import java.io.File
 
 class Book(val path: String, private val getString: (Int) -> String, private val exDir: File, private val loadCache: Boolean = false, private val mPassName: String? = null) {
-    private val mBookApiUrl = getString(R.string.bookInfoApiUrl).format(Config.myHostApiUrl.random(), path)
+    private val mBookApiUrl = getString(R.string.bookInfoApiUrl).format(Config.myHostApiUrl.random(), path, Config.platform.value)
     private val mUserAgent = getString(R.string.pc_ua).format(Config.app_ver.value)
     private var mBook: BookInfoStructure? = null
     private var mGroupPathWords = arrayOf<String>()

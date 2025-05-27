@@ -55,7 +55,7 @@ object Config {
                         "region",
                         if (net_use_foreign.value) "1" else "0"
                     )
-                    .addHeader("platform", "3")
+                    .addHeader("platform", platform.value)
                     .build()
             return field
         }
@@ -78,7 +78,7 @@ object Config {
                     mHostApiUrlsMutex.withLock {
                         if (mHostApiUrls.isNotEmpty()) return@runBlocking
                         try {
-                            val u = getString(R.string.networkApiUrl).format(networkApiUrl.value)
+                            val u = getString(R.string.networkApiUrl).format(networkApiUrl.value, platform.value)
                             val r = Gson().fromJson((apiProxy?.comancry(u) {
                                 DownloadTools.getHttpContent(it, referer, pc_ua)
                             }?:DownloadTools.getHttpContent(u, referer, pc_ua)).decodeToString(), NetworkStructure::class.java)
@@ -107,6 +107,7 @@ object Config {
     val navTextInfo = UserPreferenceString("navTextInfo", R.string.navTextInfo)
     val proxy_key = PreferenceString(R.string.imgProxyCodeKeyID)
     val app_ver = PreferenceString("settings_cat_general_et_app_version", R.string.app_ver)
+    val platform = PreferenceString("settings_cat_general_et_platform", R.string.platform)
     val token = UserPreferenceString("token", "", null)
     val pc_ua get() = MainActivity.mainWeakReference?.get()?.getString(R.string.pc_ua)?.format(app_ver.value)?:""
     val referer get() = MainActivity.mainWeakReference?.get()?.getString(R.string.referer)?.format(app_ver.value)?:""
@@ -143,5 +144,5 @@ object Config {
 
     fun getChapterInfoApiUrl(path: String?, uuid: String?, version: Int) =
         MainActivity.mainWeakReference?.get()?.getString(R.string.chapterInfoApiUrl)
-            ?.format(myHostApiUrl.random(), path, if (version >= 2) "$version" else "" , uuid)
+            ?.format(myHostApiUrl.random(), path, if (version >= 2) "$version" else "" , uuid, platform.value)
 }
