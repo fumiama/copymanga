@@ -1,7 +1,7 @@
 <div align="center">
   <img src="app/src/main/res/drawable-nodpi/kohima.webp" width = "256" height = "256" alt="Kohima"><br>
   <h1>copymanga 拷贝漫画</h1>
-  拷贝漫画的第三方APP，优化阅读/下载体验<br><br>
+  拷贝漫画的第三方APP，仅提供基础功能，更多丰富功能请移步官方版本<br><br>
 
   [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
     alt="Get it on F-Droid"
