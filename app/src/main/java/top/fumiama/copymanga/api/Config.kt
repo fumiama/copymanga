@@ -1,14 +1,8 @@
 package top.fumiama.copymanga.api
 
-import android.util.Log
 import com.bumptech.glide.load.model.LazyHeaders
-import com.google.gson.Gson
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import top.fumiama.copymanga.MainActivity
-import top.fumiama.copymanga.json.NetworkStructure
-import top.fumiama.copymanga.net.DownloadTools
+import top.fumiama.copymanga.api.network.Api
 import top.fumiama.copymanga.net.Proxy
 import top.fumiama.copymanga.net.Resolution
 import top.fumiama.copymanga.storage.PreferenceBoolean
@@ -61,49 +55,9 @@ object Config {
         }
 
     val proxyUrl = MainActivity.mainWeakReference?.get()?.getString(R.string.proxyUrl)!!
-    private val reverseProxyUrl = PreferenceString(R.string.reverseProxyKeyID)
-    private val networkApiUrl = PreferenceString("settings_cat_net_et_api_url", R.string.hostUrl)
-    private var mHostApiUrls: Array<String> = arrayOf()
-    private var mHostApiUrlsMutex = Mutex()
-    val myHostApiUrl: Array<String>
-        get() {
-            if (mHostApiUrls.isNotEmpty()) return mHostApiUrls
-            if (reverseProxyUrl.value.isNotEmpty() && reverseProxyUrl.value != proxyUrl) {
-                mHostApiUrls = arrayOf(reverseProxyUrl.value)
-                Log.d("MyC", "myHostApiUrl set reverse proxy to ${mHostApiUrls[0]}")
-                return mHostApiUrls
-            }
-            MainActivity.mainWeakReference?.get()?.apply {
-                runBlocking {
-                    mHostApiUrlsMutex.withLock {
-                        if (mHostApiUrls.isNotEmpty()) return@runBlocking
-                        try {
-                            val u = getString(R.string.networkApiUrl).format(networkApiUrl.value, platform.value)
-                            val r = Gson().fromJson((apiProxy?.comancry(u) {
-                                DownloadTools.getHttpContent(it, referer, pc_ua)
-                            }?:DownloadTools.getHttpContent(u, referer, pc_ua)).decodeToString(), NetworkStructure::class.java)
-                            if (r != null) {
-                                Log.d("MyC", "myHostApiUrl get code ${r.code} msg ${r.message}")
-                                if (r.code == 200 && r.results != null) {
-                                    // need header umstring
-                                    // r.results.api.forEach { it.forEach { api -> if (!api.isNullOrEmpty() && api !in field) field += api } }
-                                    r.results.share.forEach { api -> if (!api.isNullOrEmpty() && api !in mHostApiUrls) mHostApiUrls += api }
-                                }
-                            }
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            mHostApiUrls = arrayOf(networkApiUrl.value)
-                        }
-                        if (mHostApiUrls.isEmpty()) {
-                            mHostApiUrls = arrayOf(networkApiUrl.value)
-                            Log.d("MyC", "myHostApiUrl set default ${mHostApiUrls[0]}")
-                        }
-                    }
-                }
-            }
-            Log.d("MyC", "myHostApiUrl get hosts ${mHostApiUrls.joinToString(", ")}")
-            return mHostApiUrls
-        }
+    val reverseProxyUrl = PreferenceString(R.string.reverseProxyKeyID)
+    val networkApiUrl = PreferenceString("settings_cat_net_et_api_url", R.string.hostUrl)
+    val myHostApiUrl = Api()
     val navTextInfo = UserPreferenceString("navTextInfo", R.string.navTextInfo)
     val proxy_key = PreferenceString(R.string.imgProxyCodeKeyID)
     val app_ver = PreferenceString("settings_cat_general_et_app_version", R.string.app_ver)
@@ -130,6 +84,7 @@ object Config {
     private val net_use_img_proxy = PreferenceBoolean("settings_cat_net_sw_use_img_proxy", false)
     val net_use_api_proxy = PreferenceBoolean("settings_cat_net_sw_use_api_proxy", false)
     val net_img_resolution = PreferenceString(R.string.imgResolutionKeyID)
+    val net_umstring = PreferenceString("settings_cat_net_et_umstring")
 
     val view_manga_inverse_chapters = PreferenceBoolean("settings_cat_vm_sw_inverse_chapters", false)
     val view_manga_always_dark_bg = PreferenceBoolean("settings_cat_vm_sw_always_dark_bg", false)
@@ -144,5 +99,5 @@ object Config {
 
     fun getChapterInfoApiUrl(path: String?, uuid: String?, version: Int) =
         MainActivity.mainWeakReference?.get()?.getString(R.string.chapterInfoApiUrl)
-            ?.format(myHostApiUrl.random(), path, if (version >= 2) "$version" else "" , uuid, platform.value)
+            ?.format(path, if (version >= 2) "$version" else "" , uuid, platform.value)
 }

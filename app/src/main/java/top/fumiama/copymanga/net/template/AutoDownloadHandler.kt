@@ -12,9 +12,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
-import top.fumiama.copymanga.json.ReturnBase
 import top.fumiama.copymanga.api.Config
-import top.fumiama.copymanga.net.DownloadTools
+import top.fumiama.copymanga.json.ReturnBase
 import java.io.File
 import java.security.MessageDigest
 
@@ -77,16 +76,12 @@ open class AutoDownloadHandler(
         var cnt = 0
         while (cnt++ <= 3) {
             try {
-                val data = Config.apiProxy?.comancry(url()) {
-                    DownloadTools.getHttpContent(it)
-                }?:DownloadTools.getHttpContent(url())
+                val data = Config.myHostApiUrl.get(url())
                 if(exit) return@withContext
-                val fi = data.inputStream()
-                val pass = setGsonItem(Gson().fromJson(fi.reader(), jsonClass))
+                val pass = setGsonItem(Gson().fromJson(data, jsonClass))
                 if (pass && loadFromCache) {
-                    cacheFile?.writeBytes(data)
+                    cacheFile?.writeText(data)
                 }
-                fi.close()
                 if(!pass) {
                     delay(2000)
                     continue

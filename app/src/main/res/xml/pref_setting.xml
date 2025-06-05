@@ -120,6 +120,16 @@
             app:enableCopying="true"
             app:iconSpaceReserved="false"
             app:key="@string/reverseProxyKeyID" />
+        <EditTextPreference
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:selectAllOnFocus="false"
+            android:singleLine="true"
+            android:title="@string/settings_cat_net_et_title_umstring"
+            android:summary="@string/settings_cat_net_et_summary_umstring"
+            app:enableCopying="true"
+            app:iconSpaceReserved="false"
+            app:key="settings_cat_net_et_umstring" />
         <SwitchPreferenceCompat
             app:iconSpaceReserved="false"
             app:key="@string/apiProxyKeyID"

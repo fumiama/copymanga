@@ -6,11 +6,11 @@ import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.api.Config
 import top.fumiama.copymanga.api.Config.proxyUrl
 import top.fumiama.copymanga.json.ComandyCapsule
 import top.fumiama.copymanga.lib.Comandy
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
@@ -21,61 +21,63 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.Callable
 import java.util.concurrent.FutureTask
-import java.util.concurrent.atomic.AtomicInteger
+import java.util.zip.GZIPInputStream
 
 object DownloadTools {
-    val failTimes = AtomicInteger(0)
-    fun getApiConnection(url: String, method: String = "GET", refer: String? = null, ua: String? = null, timeout: Int = 20000): HttpURLConnection {
+    private fun getApiConnection(url: String, method: String = "GET", timeout: Int = 20000): HttpURLConnection {
         val connection = URL(url).openConnection() as HttpURLConnection
         connection.requestMethod = method
         connection.connectTimeout = timeout
         connection.readTimeout = timeout
         connection.apply {
-            /*setRequestProperty("host",  if (url.startsWith("https://copymanga.azurewebsites.net")) {
-                Uri.parse(url).getQueryParameter("url")?.substringAfter("://")?.substringBefore("/")?:""
-            } else {
-                url.substringAfter("://").substringBefore("/")
-            })*/
-            ua?.let { setRequestProperty("user-agent", it) }
-            refer?.let { setRequestProperty("referer", it) }
+            setRequestProperty("user-agent", Config.pc_ua)
             setRequestProperty("source", "copyApp")
+            // deviceinfo
             setRequestProperty("webp", "1")
-            setRequestProperty("region", if(!Config.net_use_foreign.value) "1" else "0")
-            setRequestProperty("version", Config.app_ver.value)
             setRequestProperty("dt", SimpleDateFormat("yyyy.MM.dd", Locale.getDefault()).format(Calendar.getInstance().time))
-            Config.token.value?.let { tk ->
-                setRequestProperty("authorization", "Token $tk")
-            }
+            setRequestProperty("accept-encoding", "gzip")
+            setRequestProperty("authorization", "Token${Config.token.value?.let { tk ->
+                if (tk.isNotEmpty()) " $tk" else ""
+            }}")
             setRequestProperty("platform", Config.platform.value)
+            setRequestProperty("referer", Config.referer)
+            setRequestProperty("accept", "application/json")
+            setRequestProperty("version", Config.app_ver.value)
+            setRequestProperty("region", if(!Config.net_use_foreign.value) "1" else "0")
+            // device
+            // host
+            Config.net_umstring.value.let { if (it.isNotEmpty()) setRequestProperty("umstring", it) }
+            setRequestProperty("connection", "close")
         }
         Log.d("MyDT", "getConnection: $url\n${connection.requestProperties.map { "${it.key}: ${it.value}" }.joinToString("\n")}")
         return connection
     }
 
-    fun getComandyApiConnection(url: String, method: String = "GET", refer: String? = null, ua: String? = null) =
+    private fun getComandyApiConnection(url: String, method: String = "GET") =
         run {
             val capsule = ComandyCapsule()
             capsule.url = url
             capsule.method = method
             capsule.headers = hashMapOf()
-            /*capsule.headers["host"] = if (url.startsWith("https://copymanga.azurewebsites.net")) {
-                Uri.parse(url).getQueryParameter("url")?.substringAfter("://")?.substringBefore("/")?:""
-            } else {
-                url.substringAfter("://").substringBefore("/")
-            }*/
-            ua?.let { capsule.headers["user-agent"] = it }
-            refer?.let { capsule.headers["referer"] = it }
+            capsule.headers["user-agent"] = Config.pc_ua
             capsule.headers["source"] = "copyApp"
+            // deviceinfo
             capsule.headers["webp"] = "1"
-            MainActivity.mainWeakReference?.get()?.let {
-                capsule.headers["region"] = if(!Config.net_use_foreign.value) "1" else "0"
-                capsule.headers["version"] = Config.app_ver.value
-                Config.token.value?.let { tk ->
-                    capsule.headers["authorization"] = "Token $tk"
-                }
-            }
-            capsule.headers["platform"] = Config.platform.value
             capsule.headers["dt"] = SimpleDateFormat("yyyy.MM.dd", Locale.getDefault()).format(Calendar.getInstance().time)
+            capsule.headers["accept-encoding"] = "gzip"
+            capsule.headers["authorization"] = "Token${Config.token.value?.let { tk ->
+                if (tk.isNotEmpty()) " $tk" else ""
+            }}"
+            capsule.headers["platform"] = Config.platform.value
+            capsule.headers["referer"] = Config.referer
+            capsule.headers["accept"] = "application/json"
+            capsule.headers["version"] = Config.app_ver.value
+            capsule.headers["region"] = if(!Config.net_use_foreign.value) "1" else "0"
+            // device
+            // host
+            Config.net_umstring.value.let { if (it.isNotEmpty()) capsule.headers["umstring"] = it }
+            capsule.headers["connection"] = "close"
+
             Log.d("MyDT", "getComandyConnection: $url\n${capsule.headers.map { "${it.key}: ${it.value}" }.joinToString("\n")}")
             capsule
         }
@@ -123,16 +125,31 @@ object DownloadTools {
         return bytesCopied
     }
 
+    private fun decodeBody(ret: ByteArray, coding: String) : ByteArray {
+        return if (coding == "gzip") ByteArrayInputStream(ret).use { byteIn ->
+            GZIPInputStream(byteIn).use useGzip@ { gzipIn ->
+                ByteArrayOutputStream().use { byteOut ->
+                    val buffer = ByteArray(4096)
+                    var len: Int
+                    while (gzipIn.read(buffer).also { len = it } != -1) {
+                        byteOut.write(buffer, 0, len)
+                    }
+                    return@useGzip byteOut.toByteArray()
+                }
+            }
+        } else ret
+    }
+
     private fun InputStream.readBytesWithProgress(sz: Int, p: Client.Progress): ByteArray {
         val buffer = ByteArrayOutputStream(maxOf(DEFAULT_BUFFER_SIZE, this.available()))
         copyToWithProgress(buffer, sz, p)
         return buffer.toByteArray()
     }
 
-    suspend fun getHttpContent(u: String, refer: String? = null, ua: String? = Config.pc_ua, p: Client.Progress? = null): ByteArray =
+    suspend fun getApiContent(u: String, p: Client.Progress? = null): ByteArray =
         withContext(Dispatchers.IO) {
             if (!u.startsWith("https://$proxyUrl") && Comandy.instance.enabled) {
-                getComandyApiConnection(u, "GET", refer, ua).let { capsule ->
+                getComandyApiConnection(u, "GET").let { capsule ->
                     val para = Gson().toJson(capsule)
                     //Log.d("MyDT", "comandy request: $para")
                     Comandy.instance.getInstance()?.let { ins ->
@@ -154,6 +171,7 @@ object DownloadTools {
                                 Log.d("MyDT", "quit comandy get progress, completed: $completed for url $u")
                             }.start()
                         }
+                        var coding: String? = null
                         val r = ins.request(para)?.let { result ->
                             completed = true
                             p?.notify(100)
@@ -162,26 +180,29 @@ object DownloadTools {
                                 if (it.code != 200) throw IllegalArgumentException("HTTP${it.code} ${
                                     it.data?.let { d -> Base64.decode(d, Base64.DEFAULT).decodeToString() }
                                 }")
+                                coding = it.headers["Content-Encoding"] as String?
                                 Base64.decode(it.data, Base64.DEFAULT)
                             }
                         }
                         completed = true
                         p?.notify(100)
-                        r
+                        r?.let { ret -> coding?.let { decodeBody(ret, it) } }
                     }
                 }.let { if(it?.isNotEmpty() == true ) return@withContext it }
-                failTimes.incrementAndGet()
             }
-            getApiConnection(u, "GET", refer, ua).let {
-                val sz = it.getHeaderFieldInt("Content-Length", 0)
+            getApiConnection(u, "GET").let { conn ->
+                val sz = conn.getHeaderFieldInt("Content-Length", 0)
                 val ret = if (sz > 0 && p != null) {
-                    it.inputStream.readBytesWithProgress(sz, p)
+                    conn.inputStream.readBytesWithProgress(sz, p)
                 } else {
-                    it.inputStream.readBytes()
+                    conn.inputStream.readBytes()
                 }
-                it.disconnect()
+                conn.disconnect()
                 Log.d("MyDT", "getHttpContent: ${ret.size} bytes")
-                ret
+                if (conn.getHeaderField("Content-type") != "application/json") {
+                    throw IllegalStateException("请求错误: ${ret.decodeToString()}")
+                }
+                decodeBody(ret, conn.getHeaderField("Content-Encoding")?:"")
             }
         }
 
@@ -263,50 +284,33 @@ object DownloadTools {
         })
     }
 
-    /*private fun replaceChineseCharacters(string: String?) : String? {
-        if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.M) return string
-        else return string?.replace(Regex("(?<=/)[\\w\\s\\d\\u4e00-\\u9fa5.-]+(?=/?)")) { match ->
-            return@replace URLEncoder.encode(match.value, "UTF-8")
-        }
-    }*/
-
-    fun requestWithBody(url: String, method: String, body: ByteArray, refer: String? = Config.referer, ua: String? = Config.pc_ua, contentType: String? = "application/x-www-form-urlencoded;charset=utf-8"): ByteArray? {
+    fun requestApiWithBody(url: String, method: String, body: ByteArray, contentType: String): ByteArray {
         Log.d("MyDT", "$method Http: $url")
-        var ret: ByteArray? = null
-        val task = FutureTask(if(!url.startsWith("https://$proxyUrl") && Comandy.instance.enabled) Callable{
-            try {
-                val capsule = getComandyApiConnection(url, method, refer, ua)
-                contentType?.let { capsule.headers["content-type"] = it }
-                capsule.data = body.decodeToString()
-                runBlocking { Comandy.instance.getInstance() }?.request(Gson().toJson(capsule))?.let { result ->
-                    Gson().fromJson(result, ComandyCapsule::class.java)?.let {
-                        it.data?.let { d -> Base64.decode(d, Base64.DEFAULT) }?:"empty comandy data".encodeToByteArray()
-                    }
+        return if(!url.startsWith("https://$proxyUrl") && Comandy.instance.enabled) {
+            val capsule = getComandyApiConnection(url, method)
+            capsule.headers["content-type"] = contentType
+            capsule.data = body.decodeToString()
+            runBlocking { Comandy.instance.getInstance() }?.request(Gson().toJson(capsule))?.let { result ->
+                Gson().fromJson(result, ComandyCapsule::class.java)?.let { c ->
+                    c.data?.let { d ->
+                        Base64.decode(d, Base64.DEFAULT).let {
+                            (c.headers["Content-Encoding"] as String?)?.let { coding ->
+                                decodeBody(it, coding)
+                            }?:it
+                        }
+                    }?: throw IllegalStateException("empty comandy data")
                 }
-            } catch (ex: Exception) {
-                ex.printStackTrace()
-                failTimes.incrementAndGet()
-                ex.message?.encodeToByteArray()
+            }?: throw IllegalStateException("no comandy")
+        } else {
+            var ret: ByteArray
+            var coding = ""
+            getApiConnection(url, method).apply {
+                outputStream.write(body)
+                ret = inputStream.readBytes()
+                disconnect()
+                coding = getHeaderField("Content-Encoding")?:""
             }
-        }
-        else Callable {
-            try {
-                getApiConnection(url, method, refer, ua).apply {
-                    outputStream.write(body)
-                    ret = inputStream.readBytes()
-                    disconnect()
-                }
-            } catch (ex: Exception) {
-                ex.printStackTrace()
-            }
-            return@Callable ret
-        })
-        Thread(task).start()
-        return try {
-            task.get()
-        } catch (ex: Exception) {
-            ex.printStackTrace()
-            null
+            decodeBody(ret, coding)
         }
     }
 }

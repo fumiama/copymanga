@@ -153,6 +153,7 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
             if (getBoolean("loadJson")) {
                 getString("name")?.let { name ->
                     try {
+                        Log.d("MyBF", "loadFromCache name $name")
                         book = Book(name, {
                             return@Book getString(it)
                         }, activity?.getExternalFilesDir("")!!)
@@ -184,11 +185,17 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
     }
 
     private suspend fun queryCollect() {
-        MainActivity.shelf?.query(book?.path!!)?.let { b ->
-            mBookHandler?.collect = b.results?.collect?:-2
-            Log.d("MyBF", "get collect of ${book?.path} = ${mBookHandler?.collect}")
-            tic.text = b.results?.browse?.chapter_name?.let { name ->
-                getString(R.string.text_format_cloud_read_to).format(Chinese.fixEncodingIfNeeded(name))
+        try {
+            MainActivity.shelf?.query(book?.path!!)?.let { b ->
+                mBookHandler?.collect = b.results?.collect?:-2
+                Log.d("MyBF", "get collect of ${book?.path} = ${mBookHandler?.collect}")
+                tic.text = b.results?.browse?.chapter_name?.let { name ->
+                    getString(R.string.text_format_cloud_read_to).format(Chinese.fixEncodingIfNeeded(name))
+                }
+            }
+        } catch (e: Exception) {
+            activity?.runOnUiThread {
+                Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -208,7 +215,7 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
                 }
             }
             book?.uuid?.let { uuid ->
-                this@BookFragment.lbbsub.setOnClickListener {
+                this@BookFragment.lbbsub?.setOnClickListener {
                     lifecycleScope.launch clickLaunch@ {
                         if (this@BookFragment.lbbsub.text != getString(R.string.button_sub)) {
                             mBookHandler?.collect?.let { collect ->

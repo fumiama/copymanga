@@ -1,11 +1,13 @@
 package top.fumiama.copymanga.api.manga
 
 import android.util.Log
+import android.widget.Toast
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.card_book.*
 import kotlinx.android.synthetic.main.line_booktandb.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.json.BookInfoStructure
 import top.fumiama.copymanga.json.ThemeStructure
 import top.fumiama.copymanga.json.VolumeStructure
@@ -15,8 +17,7 @@ import top.fumiama.dmzj.copymanga.R
 import java.io.File
 
 class Book(val path: String, private val getString: (Int) -> String, private val exDir: File, private val loadCache: Boolean = false, private val mPassName: String? = null) {
-    private val mBookApiUrl = getString(R.string.bookInfoApiUrl).format(Config.myHostApiUrl.random(), path, Config.platform.value)
-    private val mUserAgent = getString(R.string.pc_ua).format(Config.app_ver.value)
+    private val mBookApiUrl = getString(R.string.bookInfoApiUrl).format(path, Config.platform.value)
     private var mBook: BookInfoStructure? = null
     private var mGroupPathWords = arrayOf<String>()
     private var mKeys = arrayOf<String>()
@@ -57,22 +58,16 @@ class Book(val path: String, private val getString: (Int) -> String, private val
     suspend fun updateInfo() = withContext(Dispatchers.IO) {
         try {
             var isDownload = false
-            val data: ByteArray = if (loadCache) {
+            val data: String = if (loadCache) {
                 name?.let { loadInfo(it) } ?: run {
                     isDownload = true
-                    Config.apiProxy?.comancry(mBookApiUrl) { url ->
-                        DownloadTools.getHttpContent(url, null, mUserAgent)
-                    }?:DownloadTools.getHttpContent(mBookApiUrl, null, mUserAgent)
+                    Config.myHostApiUrl.get(mBookApiUrl)
                 }
             } else {
                 isDownload = true
-                Config.apiProxy?.comancry(mBookApiUrl) { url ->
-                    DownloadTools.getHttpContent(url, null, mUserAgent)
-                }?:DownloadTools.getHttpContent(mBookApiUrl, null, mUserAgent)
-            }?:DownloadTools.getHttpContent(mBookApiUrl, null, mUserAgent)
-            mBook = data.inputStream().use {
-                Gson().fromJson(it.reader(), BookInfoStructure::class.java)
+                Config.myHostApiUrl.get(mBookApiUrl)
             }
+            mBook = Gson().fromJson(data, BookInfoStructure::class.java)
             if (isDownload) saveInfo(data)
             mGroupPathWords = arrayOf()
             mKeys = arrayOf()
@@ -88,6 +83,9 @@ class Book(val path: String, private val getString: (Int) -> String, private val
             }
         } catch (e: Exception) {
             e.printStackTrace()
+            MainActivity.mainWeakReference?.get()?.apply {
+                Toast.makeText(this, e.message, Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -162,19 +160,19 @@ class Book(val path: String, private val getString: (Int) -> String, private val
         }?:false
     }
 
-    private suspend fun saveInfo(data: ByteArray) = withContext(Dispatchers.IO) {
+    private suspend fun saveInfo(data: String) = withContext(Dispatchers.IO) {
         name?.let { name ->
             val mangaFolder = File(exDir, name)
             if(!mangaFolder.exists()) mangaFolder.mkdirs()
-            File(mangaFolder, "meta.json").writeBytes(data)
+            File(mangaFolder, "meta.json").writeText(data)
         }
     }
 
-    private suspend fun loadInfo(name: String): ByteArray? = withContext(Dispatchers.IO) {
+    private suspend fun loadInfo(name: String): String? = withContext(Dispatchers.IO) {
         val mangaFolder = File(exDir, name)
         if(!mangaFolder.exists()) mangaFolder.mkdirs()
         val f = File(mangaFolder, "meta.json")
         if (!f.exists()) return@withContext null
-        return@withContext f.readBytes()
+        return@withContext f.readBytes().decodeToString()
     }
 }

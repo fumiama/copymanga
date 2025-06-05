@@ -3,7 +3,7 @@
     <!ENTITY hosturl "api.copy-manga.com">
     <!ENTITY appver "2.3.0">
     <!ENTITY proxyurl "copymanga.azurewebsites.net">
-    <!ENTITY platform "1">
+    <!ENTITY platform "3">
     ]>
 <resources>
     <string name="app_name">拷贝漫画</string>
@@ -64,31 +64,30 @@
     <string name="touch_img_error">预载图片头失败</string>
     <string name="analyze_img_size_error">读取图片大小失败</string>
 
-    <string name="networkApiUrl">https://%1$s/api/v3/system/network2?platform=%2$s</string>
-    <string name="mainPageApiUrl">https://%1$s/api/v3/h5/homeIndex?platform=%2$s</string>
-    <string name="referUrl">https://%1$s</string>
+    <string name="networkApiUrl">/api/v3/system/network2?platform=%1$s</string>
+    <string name="mainPageApiUrl">/api/v3/h5/homeIndex?platform=%1$s</string>
     <string name="hostUrl">&hosturl;</string>
     <string name="proxyUrl">&proxyurl;</string>
-    <string name="rankApiUrl">https://%1$s/api/v3/ranks?limit=21&amp;offset=%2$d&amp;date_type=%3$s&amp;audience_type=%4$s&amp;platform=%5$s</string>
-    <string name="searchApiUrl">https://%1$s/api/v3/search/comic?limit=21&amp;offset=%2$d&amp;q=%3$s&amp;q_type=%4$s&amp;platform=%5$s</string>
-    <string name="filterApiUrl">https://%1$s/api/v3/h5/filter/comic/tags?platform=%2$s</string>
-    <string name="sortApiUrl">https://%1$s/api/v3/comics?limit=21&amp;offset=%2$d&amp;ordering=%3$s&amp;theme=%4$s&amp;top=%5$s&amp;platform=%6$s</string>
-    <string name="bookInfoApiUrl">https://%1$s/api/v3/comic2/%2$s?platform=%3$s</string>
-    <string name="bookUserQueryApiUrl">https://%1$s/api/v3/comic2/%2$s/query?platform=%3$s</string>
-    <string name="groupInfoApiUrl">https://%1$s/api/v3/comic/%2$s/group/%3$s/chapters?limit=100&amp;offset=%4$d&amp;platform=%5$s</string>
-    <string name="chapterInfoApiUrl">https://%1$s/api/v3/comic/%2$s/chapter%3$s/%4$s?platform=%5$s</string>
-    <string name="topicApiUrl">https://%1$s/api/v3/topic/%2$s?platform=%3$s</string>
-    <string name="topicContentApiUrl">https://%1$s/api/v3/topic/%2$s/contents?type=%3$d&amp;limit=21&amp;offset=%4$d&amp;platform=%5$s</string>
-    <string name="recommendApiUrl">https://%1$s/api/v3/recs?pos=3200102&amp;limit=21&amp;offset=%2$d&amp;platform=%3$s</string>
-    <string name="newestApiUrl">https://%1$s/api/v3/update/newest?limit=21&amp;offset=%2$d&amp;platform=%3$s</string>
-    <string name="finishApiUrl">https://%1$s/api/v3/comics?limit=21&amp;offset=%2$d&amp;ordering=%3$s&amp;top=finish&amp;platform=%4$s</string>
-    <string name="authorApiUrl">https://%1$s/api/v3/comics?limit=21&amp;offset=%2$d&amp;ordering=%3$s&amp;author=%4$s&amp;platform=%5$s</string>
-    <string name="captionApiUrl">https://%1$s/api/v3/comics?limit=21&amp;offset=%2$d&amp;ordering=%3$s&amp;theme=%4$s&amp;platform=%5$s</string>
-    <string name="loginApiUrl">https://%1$s/api/v3/login?platform=%2$s</string>
-    <string name="memberInfoApiUrl">https://%1$s/api/v3/member/info?platform=%2$s</string>
-    <string name="historyApiUrl">https://%1$s/api/v3/member/browse/comics?limit=21&amp;offset=%2$d&amp;platform=%3$s</string>
-    <string name="shelfApiUrl">https://%1$s/api/v3/member/collect/comics?limit=21&amp;offset=%2$d&amp;free_type=1&amp;ordering=%3$s&amp;platform=%4$s</string>
-    <string name="shelfOperateApiUrl">https://%1$s/api/v3/member/collect/comic</string>
+    <string name="rankApiUrl">/api/v3/ranks?limit=21&amp;offset=%1$d&amp;date_type=%2$s&amp;audience_type=%3$s&amp;platform=%4$s</string>
+    <string name="searchApiUrl">/api/v3/search/comic?limit=21&amp;offset=%1$d&amp;q=%2$s&amp;q_type=%3$s&amp;platform=%4$s</string>
+    <string name="filterApiUrl">/api/v3/h5/filter/comic/tags?platform=%1$s</string>
+    <string name="sortApiUrl">/api/v3/comics?limit=21&amp;offset=%1$d&amp;ordering=%2$s&amp;theme=%3$s&amp;top=%4$s&amp;platform=%5$s</string>
+    <string name="bookInfoApiUrl">/api/v3/comic2/%1$s?platform=%2$s</string>
+    <string name="bookUserQueryApiUrl">/api/v3/comic2/%1$s/query?platform=%2$s</string>
+    <string name="groupInfoApiUrl">/api/v3/comic/%1$s/group/%2$s/chapters?limit=100&amp;offset=%3$d&amp;platform=%4$s</string>
+    <string name="chapterInfoApiUrl">/api/v3/comic/%1$s/chapter%2$s/%3$s?platform=%4$s</string>
+    <string name="topicApiUrl">/api/v3/topic/%1$s?platform=%2$s</string>
+    <string name="topicContentApiUrl">/api/v3/topic/%1$s/contents?type=%2$d&amp;limit=21&amp;offset=%3$d&amp;platform=%4$s</string>
+    <string name="recommendApiUrl">/api/v3/recs?pos=3200102&amp;limit=21&amp;offset=%1$d&amp;platform=%2$s</string>
+    <string name="newestApiUrl">/api/v3/update/newest?limit=21&amp;offset=%1$d&amp;platform=%2$s</string>
+    <string name="finishApiUrl">/api/v3/comics?limit=21&amp;offset=%1$d&amp;ordering=%2$s&amp;top=finish&amp;platform=%3$s</string>
+    <string name="authorApiUrl">/api/v3/comics?limit=21&amp;offset=%1$d&amp;ordering=%2$s&amp;author=%3$s&amp;platform=%4$s</string>
+    <string name="captionApiUrl">/api/v3/comics?limit=21&amp;offset=%1$d&amp;ordering=%2$s&amp;theme=%3$s&amp;platform=%4$s</string>
+    <string name="loginApiUrl">/api/v3/login?platform=%1$s</string>
+    <string name="memberInfoApiUrl">/api/v3/member/info?platform=%1$s</string>
+    <string name="historyApiUrl">/api/v3/member/browse/comics?limit=21&amp;offset=%1$d&amp;platform=%2$s</string>
+    <string name="shelfApiUrl">/api/v3/member/collect/comics?limit=21&amp;offset=%1$d&amp;free_type=1&amp;ordering=%2$s&amp;platform=%3$s</string>
+    <string name="shelfOperateApiUrl">/api/v3/member/collect/comic</string>
 
     <string name="imgProxyApiUrl">https://&proxyurl;/api/img?code=%1$s&amp;url=%2$s</string>
     <string name="imgProxyCodeKeyID">settings_cat_net_et_img_proxy_code</string>
@@ -178,6 +177,8 @@
     <string name="settings_cat_net_et_summary_api_url">一般无需更改，除非拷贝漫画官方更改网址，默认：&hosturl;</string>
     <string name="settings_cat_net_et_title_reverse_proxy">反向代理</string>
     <string name="settings_cat_net_et_summary_reverse_proxy">您可以自建反向代理并填写在此处以解决网络不畅</string>
+    <string name="settings_cat_net_et_title_umstring">友盟ID</string>
+    <string name="settings_cat_net_et_summary_umstring">填写您分配到的友盟ID</string>
     <string name="settings_cat_net_sw_use_api_proxy">使用API代理（需要密钥）</string>
     <string name="settings_cat_net_sm_use_api_proxy">作者自建的API代理，可缓解国内图书详情加载问题，但不保证100%解决，也不保证一直可用</string>
     <string name="settings_cat_net_sw_use_img_proxy">使用图床代理（需要密钥）</string>
@@ -207,7 +208,6 @@
 
     <string name="login_null_username">用户名为空</string>
     <string name="login_null_pwd">密码为空</string>
-    <string name="login_get_conn_failed">登录失败</string>
     <string name="login_parse_json_error">解析返回数据失败</string>
     <string name="login_get_avatar_failed">获取用户信息失败</string>
     <string name="login_restart_to_apply">重启应用以彻底退出登录</string>

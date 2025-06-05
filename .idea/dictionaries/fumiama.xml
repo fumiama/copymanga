@@ -5,6 +5,7 @@
       <w>azurewebsites</w>
       <w>comancry</w>
       <w>comandy</w>
+      <w>deviceinfo</w>
       <w>downloaders</w>
       <w>grps</w>
       <w>hotmanga</w>
@@ -20,6 +21,7 @@
       <w>reclass</w>
       <w>reilia</w>
       <w>systembar</w>
+      <w>umstring</w>
     </words>
   </dictionary>
 </component>

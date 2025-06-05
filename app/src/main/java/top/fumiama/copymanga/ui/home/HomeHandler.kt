@@ -40,7 +40,7 @@ import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicInteger
 
 class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadHandler({
-        that.get()?.getString(R.string.mainPageApiUrl)!!.format(Config.myHostApiUrl.random(), Config.platform.value)
+        that.get()?.getString(R.string.mainPageApiUrl)!!.format(Config.platform.value)
     },
     IndexStructure::class.java,
     that.get()

@@ -5,10 +5,7 @@ import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.api.Config
-import top.fumiama.copymanga.json.ComandyCapsule
 import top.fumiama.copymanga.json.LoginInfoStructure
-import top.fumiama.copymanga.lib.Comandy
-import top.fumiama.copymanga.net.DownloadTools
 import top.fumiama.dmzj.copymanga.R
 import java.net.URLEncoder
 import java.nio.charset.Charset
@@ -17,22 +14,15 @@ class Member(private val getString: (Int) -> String) {
     val hasLogin: Boolean get() = Config.token.value?.isNotEmpty() ?: false
     suspend fun login(username: String, pwd: String, salt: Int): LoginInfoStructure =
         withContext(Dispatchers.IO) {
-            var err = ""
-            (if (!Config.net_use_api_proxy.value && Comandy.instance.enabled)
-                postComandyLogin(username, pwd, salt)
-            else postLogin(username, pwd, salt))?.let { data ->
-                try {
-                    return@withContext saveInfo(data)
-                } catch (e: Exception) {
-                    err = e.message.toString()
-                }
-            } ?: run { err = getString(R.string.login_get_conn_failed) }
-            val l = LoginInfoStructure()
-            l.code = 400
-            l.message = err
-            return@withContext l
+            return@withContext try {
+                saveInfo(postLogin(username, pwd, salt))
+            } catch (e: Exception) {
+                val l = LoginInfoStructure()
+                l.code = 400
+                l.message =  e.message.toString()
+                l
+            }
         }
-
 
     /**
      * 获得登录信息并更新头像
@@ -49,24 +39,21 @@ class Member(private val getString: (Int) -> String) {
         }
         try {
             val u = getString(R.string.memberInfoApiUrl)
-                .format(Config.myHostApiUrl.random(), Config.platform.value)
-            val data = (Config.apiProxy?.comancry(u) {
-                DownloadTools.getHttpContent(it)
-            }?:DownloadTools.getHttpContent(u)).decodeToString()
+                .format(Config.platform.value)
             try {
-                val l = Gson().fromJson(data, LoginInfoStructure::class.java)
+                val l = Gson().fromJson(Config.myHostApiUrl.get(u), LoginInfoStructure::class.java)
                 if (l.code == 200) Config.avatar.value = l.results.avatar
                 l
             } catch (e: Exception) {
                 val l = LoginInfoStructure()
                 l.code = 450
-                l.message = "${getString(R.string.login_get_avatar_failed)}: $data"
+                l.message = "${getString(R.string.login_get_avatar_failed)}: ${e.message}"
                 l
             }
         } catch (e: Exception) {
             val l = LoginInfoStructure()
             l.code = 450
-            l.message = "${getString(R.string.login_get_avatar_failed)}: $e"
+            l.message = "${getString(R.string.login_get_avatar_failed)}: ${e.message}"
             l
         }
     }
@@ -96,69 +83,17 @@ class Member(private val getString: (Int) -> String) {
         }
     }
 
-    private suspend fun postLogin(username: String, pwd: String, salt: Int): ByteArray? =
-        getString(R.string.loginApiUrl).format(Config.myHostApiUrl.random(), Config.platform.value).let { u ->
-            val use: suspend (String) -> ByteArray? = { it: String ->
-                DownloadTools.getApiConnection(it, "POST").let { c ->
-                    c.doOutput = true
-                    c.setRequestProperty(
-                        "content-type",
-                        "application/x-www-form-urlencoded;charset=utf-8"
-                    )
-                    c.setRequestProperty("platform", Config.platform.value)
-                    c.setRequestProperty("accept", "application/json")
-                    val r = if (!Config.net_use_foreign.value) "1" else "0"
-                    val pwdEncoded =
-                        Base64.encode("$pwd-$salt".toByteArray(), Base64.DEFAULT).decodeToString()
-                    c.outputStream.write(
-                        "username=${
-                            URLEncoder.encode(
-                                username,
-                                Charset.defaultCharset().name()
-                            )
-                        }&password=$pwdEncoded&salt=$salt&platform=${Config.platform.value}&authorization=Token+&version=${Config.app_ver.value}&source=copyApp&region=$r&webp=1".toByteArray()
-                    )
-                    c.outputStream.close()
-                    val b = c.inputStream.readBytes()
-                    c.inputStream.close()
-                    b
-                }
-            }
-            Config.apiProxy?.comancry(u, use)?:use(u)
-        }
-
-
-    private suspend fun postComandyLogin(username: String, pwd: String, salt: Int) =
-        getString(R.string.loginApiUrl).format(Config.myHostApiUrl.random(), Config.platform.value).let { u ->
-            val use: suspend (String) -> ByteArray? = { it: String ->
-                DownloadTools.getComandyApiConnection(it, "POST", null, Config.pc_ua).apply {
-                    headers["content-type"] = "application/x-www-form-urlencoded;charset=utf-8"
-                    headers["platform"] = Config.platform.value
-                    headers["accept"] = "application/json"
-                    val r = if (!Config.net_use_foreign.value) "1" else "0"
-                    val pwdEncoded =
-                        Base64.encode("$pwd-$salt".toByteArray(), Base64.DEFAULT).decodeToString()
-                    data = "username=${
-                        URLEncoder.encode(
-                            username,
-                            Charset.defaultCharset().name()
-                        )
-                    }&password=$pwdEncoded&salt=$salt&platform=${Config.platform.value}&authorization=Token+&version=${Config.app_ver.value}&source=copyApp&region=$r&webp=1"
-                }.let { capsule ->
-                    try {
-                        val para = Gson().toJson(capsule)
-                        Comandy.instance.getInstance()?.request(para)?.let { result ->
-                            Gson().fromJson(result, ComandyCapsule::class.java)!!.let {
-                                if (it.code != 200) null
-                                else Base64.decode(it.data, Base64.DEFAULT)
-                            }
-                        }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        null
-                    }
-                }
-            }
-            Config.apiProxy?.comancry(u, use)?:use(u)
-        }
+    private suspend fun postLogin(username: String, pwd: String, salt: Int): ByteArray =
+        getString(R.string.loginApiUrl).format(Config.platform.value).let { u ->
+            val r = if (!Config.net_use_foreign.value) "1" else "0"
+            val pwdEncoded =
+                Base64.encode("$pwd-$salt".toByteArray(), Base64.DEFAULT).decodeToString()
+            Config.myHostApiUrl.request(u, "username=${
+                URLEncoder.encode(
+                    username,
+                    Charset.defaultCharset().name()
+                )
+            }&password=$pwdEncoded&salt=$salt&platform=${Config.platform.value}&authorization=Token+&version=${Config.app_ver.value}&source=copyApp&region=$r&webp=1".encodeToByteArray(),
+                "POST", "application/x-www-form-urlencoded;charset=utf-8")
+        }.encodeToByteArray()
 }

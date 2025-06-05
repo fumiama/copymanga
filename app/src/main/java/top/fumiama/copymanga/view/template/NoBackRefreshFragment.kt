@@ -25,6 +25,7 @@ open class NoBackRefreshFragment(private val layoutToLoad: Int): Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        //TODO: 支持自动重建
         if(_rootView == null) {
             isFirstInflate = true
             _rootView = inflater.inflate(layoutToLoad, container, false)

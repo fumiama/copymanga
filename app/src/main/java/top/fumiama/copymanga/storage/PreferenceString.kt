@@ -8,6 +8,8 @@ data class PreferenceString(private val key: String, private var default: String
     constructor(key: Int, default: String?, defaultID: Int): this(
         MainActivity.mainWeakReference?.get()?.getString(key) ?:"", default, defaultID)
     constructor(key: String, default: Int): this(key, null, default)
+    constructor(key: String, default: String): this(key, default, 0)
+    constructor(key: String): this(key, "")
     constructor(key: Int): this(key, "", 0)
 
     private val defaultField: String

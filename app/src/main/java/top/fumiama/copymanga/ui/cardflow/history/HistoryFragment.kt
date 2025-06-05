@@ -11,7 +11,7 @@ import top.fumiama.dmzj.copymanga.R
 @OptIn(ExperimentalStdlibApi::class)
 class HistoryFragment : InfoCardLoader(R.layout.fragment_history, R.id.action_nav_history_to_nav_book, isHistoryBook = true) {
     override fun getApiUrl() =
-        getString(R.string.historyApiUrl).format(Config.myHostApiUrl.random(), page * 21, Config.platform.value)
+        getString(R.string.historyApiUrl).format(page * 21, Config.platform.value)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         if (MainActivity.member?.hasLogin != true) {

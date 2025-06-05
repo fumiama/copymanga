@@ -244,7 +244,6 @@ class NewDownloadFragment: MangaPagesFragmentTemplate(R.layout.fragment_newdownl
         Log.d("MyNDF", "Call dl and is new.")
         bundle.putString("loadJson", File(File(extDir, name), "info.json").readText())
         bundle.putString("name", name)
-        Log.d("MyNDF", "root view: $rootView")
         Log.d("MyNDF", "action_nav_new_download_to_nav_group")
         Navigate.safeNavigateTo(findNavController(), R.id.action_nav_new_download_to_nav_group, bundle)
     }

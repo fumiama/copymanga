@@ -118,7 +118,6 @@ class DownloadFragment: NoBackRefreshFragment(R.layout.fragment_download) {
             bundle.putBoolean("callFromOldDL", true)
         }
         bundle.putString("name", jsonFile.parentFile?.name?:"Null")
-        Log.d("MyDF", "root view: $rootView")
         Log.d("MyDF", "action_nav_download_to_nav_group")
         Navigate.safeNavigateTo(findNavController(), R.id.action_nav_download_to_nav_group, bundle)
     }
@@ -128,7 +127,6 @@ class DownloadFragment: NoBackRefreshFragment(R.layout.fragment_download) {
         bundle.putString("title", title)
         bundle.putString("file", file.absolutePath)
         Log.d("MyDF", "Call self to $title")
-        Log.d("MyDF", "root view: $rootView")
         Log.d("MyDF", "action_nav_download_self")
         Navigate.safeNavigateTo(findNavController(), R.id.action_nav_download_self, bundle)
     }

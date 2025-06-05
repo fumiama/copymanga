@@ -26,7 +26,6 @@ class ShelfFragment : InfoCardLoader(R.layout.fragment_shelf, R.id.action_nav_su
 
     override fun getApiUrl() =
         getString(R.string.shelfApiUrl).format(
-            Config.myHostApiUrl.random(),
             page * 21,
             sortWay[sortValue],
             Config.platform.value,

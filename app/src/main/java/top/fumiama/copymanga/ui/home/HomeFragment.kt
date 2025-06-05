@@ -51,6 +51,7 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
             val netInfo = tb.netInfo
             if(netInfo != tb.transportStringNull && netInfo != tb.transportStringError)
                 MainActivity.member?.apply { lifecycleScope.launch {
+                    Config.myHostApiUrl.init()
                     info().let { l ->
                         if (l.code != 200 && l.code != 449) {
                             Toast.makeText(context, l.message, Toast.LENGTH_SHORT).show()
@@ -298,7 +299,7 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
             suspend fun refresh(q: CharSequence) = withContext(Dispatchers.IO) {
                 query = q.toString()
                 activity?.apply {
-                    PausableDownloader(getString(R.string.searchApiUrl).format(Config.myHostApiUrl.random(), 0,
+                    PausableDownloader(getString(R.string.searchApiUrl).format(0,
                         URLEncoder.encode(q.toString(), Charset.defaultCharset().name()), type, Config.platform.value)) {
                         results = Gson().fromJson(it.decodeToString(), BookListStructure::class.java)
                         count = results?.results?.total?:0

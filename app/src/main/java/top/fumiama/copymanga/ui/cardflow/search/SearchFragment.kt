@@ -13,7 +13,7 @@ class SearchFragment : InfoCardLoader(R.layout.fragment_search, R.id.action_nav_
     private var query: String? = null
     private var type: String? = null
     override fun getApiUrl() =
-        getString(R.string.searchApiUrl).format(Config.myHostApiUrl.random(), page * 21, query, type, Config.platform.value)
+        getString(R.string.searchApiUrl).format(page * 21, query, type, Config.platform.value)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

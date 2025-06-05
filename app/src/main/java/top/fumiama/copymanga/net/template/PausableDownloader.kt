@@ -5,7 +5,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.api.Config
-import top.fumiama.copymanga.net.DownloadTools
 import kotlin.random.Random
 
 class PausableDownloader(private val url: String, private val waitMilliseconds: Long = 0, private val isApi: Boolean = true, private val whenFinish: (suspend (result: ByteArray)->Unit)? = null) {
@@ -14,10 +13,8 @@ class PausableDownloader(private val url: String, private val waitMilliseconds: 
         var c = 0
         while (!exit && c++ < 3) {
             try {
-                val data = (if (isApi) Config.apiProxy?.comancry(url) {
-                    DownloadTools.getHttpContent(it, Config.referer)
-                } else null)?:DownloadTools.getHttpContent(url, Config.referer)
-                whenFinish?.let { it(data) }
+                val data = Config.myHostApiUrl.get(url)
+                whenFinish?.let { it(data.encodeToByteArray()) }
                 return@withContext true
             } catch (e: Exception) {
                 e.printStackTrace()

@@ -18,7 +18,6 @@ open class StatusCardFlow(private val api: Int, nav: Int, inflateRes: Int,
 
     override fun getApiUrl() =
         getString(api).format(
-            Config.myHostApiUrl.random(),
             page * 21,
             sortWay[sortValue],
             Config.platform.value,

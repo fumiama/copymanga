@@ -158,6 +158,9 @@ class MainActivity : AppCompatActivity() {
             Log.d("MyMain", "start menu waiting")
             lifecycleScope.launch {
                 withContext(Dispatchers.IO) {
+                    Config.myHostApiUrl.init()
+                }
+                withContext(Dispatchers.IO) {
                     delay(1000)
                     withContext(Dispatchers.Main) {
                         isMenuWaiting = false
@@ -430,7 +433,7 @@ class MainActivity : AppCompatActivity() {
         dl.setMessage("${getString(R.string.app_description)}\n" +
                 "\n$comandy\n" +
                 "$comancry\n\n"+ File("/proc/self/cmdline").readText() + "\n" +
-                "当前API: ${Config.myHostApiUrl.joinToString(", ")}")
+                "当前API: ${Config.myHostApiUrl.getApis().joinToString(", ")}")
         dl.setTitle("${getString(R.string.action_info)} ${BuildConfig.VERSION_NAME}")
         dl.setIcon(R.mipmap.ic_launcher)
         dl.setPositiveButton(android.R.string.ok) { _, _ -> }
