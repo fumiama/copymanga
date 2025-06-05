@@ -173,6 +173,10 @@
     <string name="settings_cat_net_sm_use_foreign">不管使用什么线路, API访问均是海外, 只有图片CDN可能会变化（也可能不变）, 请酌情选择使用</string>
     <string name="settings_cat_net_sw_use_comandy">增强型数据访问</string>
     <string name="settings_cat_net_sm_use_comandy">使用经过优化的请求方法访问服务器</string>
+    <string name="settings_cat_net_sw_use_gzip">请求GZip</string>
+    <string name="settings_cat_net_sm_use_gzip">告知服务器优先返回GZip格式数据</string>
+    <string name="settings_cat_net_sw_use_json">请求JSON</string>
+    <string name="settings_cat_net_sm_use_json">显式告知服务器返回JSON格式数据</string>
     <string name="settings_cat_net_et_title_api_url">请求API网址</string>
     <string name="settings_cat_net_et_summary_api_url">一般无需更改，除非拷贝漫画官方更改网址，默认：&hosturl;</string>
     <string name="settings_cat_net_et_title_reverse_proxy">反向代理</string>

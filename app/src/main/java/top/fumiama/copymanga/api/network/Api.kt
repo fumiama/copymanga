@@ -70,12 +70,12 @@ class Api {
             throw NoSuchElementException("API列表为空")
         }
         var r: ReturnBase? = null
-        apis.forEach { api ->
+        apis.forEachIndexed { i, api ->
             val u = "https://$api$path"
-            val ret = (apiProxy?.comancry(u) {
-                DownloadTools.getApiContent(it)
-            }?: DownloadTools.getApiContent(u)).decodeToString()
             try {
+                val ret = (apiProxy?.comancry(u) {
+                    DownloadTools.getApiContent(it)
+                }?: DownloadTools.getApiContent(u)).decodeToString()
                 r = Gson().fromJson(ret, ReturnBase::class.java)
                 if (r!!.code != 200) {
                     mu.write { mHostApiUrls.remove(api) }
@@ -84,6 +84,9 @@ class Api {
                 }
             } catch (e: Exception) {
                 mu.write { mHostApiUrls.remove(api) }
+                if (i >= apis.size-1) { // throw lase exception
+                    throw e
+                }
             }
         }
         throw IllegalStateException("错误码${r?.code?:-1}, 信息: ${r?.message?:"空"}")

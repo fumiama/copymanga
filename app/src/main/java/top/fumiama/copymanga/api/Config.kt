@@ -79,6 +79,8 @@ object Config {
     val manga_dl_max_batch = PreferenceInt("settings_cat_md_sb_max_batch", 16)
     val manga_dl_show_0m_manga = PreferenceBoolean("settings_cat_md_sw_show_0m_manga", false)
 
+    val net_use_gzip = PreferenceBoolean("settings_cat_net_sw_use_gzip", false)
+    val net_use_json = PreferenceBoolean("settings_cat_net_sw_use_json", false)
     val net_use_comandy = PreferenceBoolean("settings_cat_net_sw_use_comandy", false)
     val net_use_foreign = PreferenceBoolean("settings_cat_net_sw_use_foreign", false)
     private val net_use_img_proxy = PreferenceBoolean("settings_cat_net_sw_use_img_proxy", false)

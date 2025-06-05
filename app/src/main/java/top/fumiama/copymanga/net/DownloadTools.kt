@@ -35,13 +35,13 @@ object DownloadTools {
             // deviceinfo
             setRequestProperty("webp", "1")
             setRequestProperty("dt", SimpleDateFormat("yyyy.MM.dd", Locale.getDefault()).format(Calendar.getInstance().time))
-            setRequestProperty("accept-encoding", "gzip")
+            if (Config.net_use_gzip.value) setRequestProperty("accept-encoding", "gzip")
             setRequestProperty("authorization", "Token${Config.token.value?.let { tk ->
                 if (tk.isNotEmpty()) " $tk" else ""
             }}")
             setRequestProperty("platform", Config.platform.value)
             setRequestProperty("referer", Config.referer)
-            setRequestProperty("accept", "application/json")
+            if (Config.net_use_json.value) setRequestProperty("accept", "application/json")
             setRequestProperty("version", Config.app_ver.value)
             setRequestProperty("region", if(!Config.net_use_foreign.value) "1" else "0")
             // device
@@ -64,13 +64,13 @@ object DownloadTools {
             // deviceinfo
             capsule.headers["webp"] = "1"
             capsule.headers["dt"] = SimpleDateFormat("yyyy.MM.dd", Locale.getDefault()).format(Calendar.getInstance().time)
-            capsule.headers["accept-encoding"] = "gzip"
+            if (Config.net_use_gzip.value) capsule.headers["accept-encoding"] = "gzip"
             capsule.headers["authorization"] = "Token${Config.token.value?.let { tk ->
                 if (tk.isNotEmpty()) " $tk" else ""
             }}"
             capsule.headers["platform"] = Config.platform.value
             capsule.headers["referer"] = Config.referer
-            capsule.headers["accept"] = "application/json"
+            if (Config.net_use_json.value) capsule.headers["accept"] = "application/json"
             capsule.headers["version"] = Config.app_ver.value
             capsule.headers["region"] = if(!Config.net_use_foreign.value) "1" else "0"
             // device

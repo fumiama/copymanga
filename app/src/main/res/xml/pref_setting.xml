@@ -77,6 +77,18 @@
             app:selectable="true"
             app:summary="@string/settings_cat_net_sm_use_comandy"
             app:title="@string/settings_cat_net_sw_use_comandy" />
+        <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
+            app:key="settings_cat_net_sw_use_gzip"
+            app:selectable="true"
+            app:summary="@string/settings_cat_net_sm_use_gzip"
+            app:title="@string/settings_cat_net_sw_use_gzip" />
+        <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
+            app:key="settings_cat_net_sw_use_json"
+            app:selectable="true"
+            app:summary="@string/settings_cat_net_sm_use_json"
+            app:title="@string/settings_cat_net_sw_use_json" />
         <ListPreference
             android:max="1500"
             app:iconSpaceReserved="false"
