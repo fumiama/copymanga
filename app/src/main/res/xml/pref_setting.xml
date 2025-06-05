@@ -89,6 +89,36 @@
             app:selectable="true"
             app:summary="@string/settings_cat_net_sm_use_json"
             app:title="@string/settings_cat_net_sw_use_json" />
+        <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
+            app:key="settings_cat_net_sw_platform"
+            app:selectable="true"
+            app:summary="@string/settings_cat_net_sm_platform"
+            app:title="@string/settings_cat_net_sw_platform" />
+        <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
+            app:key="settings_cat_net_sw_referer"
+            app:selectable="true"
+            app:summary="@string/settings_cat_net_sm_referer"
+            app:title="@string/settings_cat_net_sw_referer" />
+        <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
+            app:key="settings_cat_net_sw_version"
+            app:selectable="true"
+            app:summary="@string/settings_cat_net_sm_version"
+            app:title="@string/settings_cat_net_sw_version" />
+        <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
+            app:key="settings_cat_net_sw_region"
+            app:selectable="true"
+            app:summary="@string/settings_cat_net_sm_version"
+            app:title="@string/settings_cat_net_sw_version" />
+        <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
+            app:key="settings_cat_net_no_webp"
+            app:selectable="true"
+            app:summary="@string/settings_cat_net_sm_no_webp"
+            app:title="@string/settings_cat_net_sw_no_webp" />
         <ListPreference
             android:max="1500"
             app:iconSpaceReserved="false"
@@ -142,6 +172,26 @@
             app:enableCopying="true"
             app:iconSpaceReserved="false"
             app:key="settings_cat_net_et_umstring" />
+        <EditTextPreference
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:selectAllOnFocus="false"
+            android:singleLine="true"
+            android:title="@string/settings_cat_net_et_title_source"
+            android:summary="@string/settings_cat_net_et_summary_source"
+            app:enableCopying="true"
+            app:iconSpaceReserved="false"
+            app:key="settings_cat_net_et_source" />
+        <EditTextPreference
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:selectAllOnFocus="false"
+            android:singleLine="true"
+            android:title="@string/settings_cat_net_et_title_ua"
+            android:summary="@string/settings_cat_net_et_summary_ua"
+            app:enableCopying="true"
+            app:iconSpaceReserved="false"
+            app:key="settings_cat_net_et_ua" />
         <SwitchPreferenceCompat
             app:iconSpaceReserved="false"
             app:key="@string/apiProxyKeyID"

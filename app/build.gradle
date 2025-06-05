@@ -12,7 +12,7 @@ android {
         minSdkVersion 23
         //noinspection OldTargetApi
         targetSdkVersion 34
-        versionCode 75
+        versionCode 76
         versionName '2.5.4'
         resourceConfigurations += ['zh', 'zh-rCN']
 

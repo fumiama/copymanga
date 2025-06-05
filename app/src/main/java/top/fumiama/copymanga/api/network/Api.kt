@@ -106,12 +106,19 @@ class Api {
                 }?: DownloadTools.requestApiWithBody(u, method, body, contentType)).decodeToString()
                 r = Gson().fromJson(ret, ReturnBase::class.java)
                 if (r!!.code != 200) {
-                    mu.write { mHostApiUrls.remove(api) }
+                    mu.write {
+                        if (mHostApiUrls.size <= 1) return@write
+                        mHostApiUrls.remove(api)
+                    }
                 } else {
                     return ret
                 }
             } catch (e: Exception) {
-                mu.write { mHostApiUrls.remove(api) }
+                e.printStackTrace()
+                mu.write {
+                    if (mHostApiUrls.size <= 1) return@write
+                    mHostApiUrls.remove(api)
+                }
             }
         }
         throw IllegalStateException("错误码${r!!.code}, 信息: ${r!!.message}")

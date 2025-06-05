@@ -4,9 +4,11 @@
     <!ENTITY appver "2.3.0">
     <!ENTITY proxyurl "copymanga.azurewebsites.net">
     <!ENTITY platform "3">
+    <!ENTITY source "copyApp">
     ]>
 <resources>
     <string name="app_name">拷贝漫画</string>
+    <string name="source">&source;</string>
 
     <string name="action_settings">设定</string>
     <string name="action_info">关于</string>
@@ -177,12 +179,26 @@
     <string name="settings_cat_net_sm_use_gzip">告知服务器优先返回GZip格式数据</string>
     <string name="settings_cat_net_sw_use_json">请求JSON</string>
     <string name="settings_cat_net_sm_use_json">显式告知服务器返回JSON格式数据</string>
+    <string name="settings_cat_net_sw_platform">请求平台</string>
+    <string name="settings_cat_net_sm_platform">向服务器报告平台版本号</string>
+    <string name="settings_cat_net_sw_referer">请求来源</string>
+    <string name="settings_cat_net_sm_referer">向服务器报告请求来源</string>
+    <string name="settings_cat_net_sw_version">请求版本号</string>
+    <string name="settings_cat_net_sm_version">向服务器报告请求版本号</string>
+    <string name="settings_cat_net_sw_region">请求区域</string>
+    <string name="settings_cat_net_sm_region">向服务器报告请求区域</string>
+    <string name="settings_cat_net_sw_no_webp">不请求WebP</string>
+    <string name="settings_cat_net_sm_no_webp">不向服务器报告WebP请求</string>
     <string name="settings_cat_net_et_title_api_url">请求API网址</string>
     <string name="settings_cat_net_et_summary_api_url">一般无需更改，除非拷贝漫画官方更改网址，默认：&hosturl;</string>
     <string name="settings_cat_net_et_title_reverse_proxy">反向代理</string>
     <string name="settings_cat_net_et_summary_reverse_proxy">您可以自建反向代理并填写在此处以解决网络不畅</string>
     <string name="settings_cat_net_et_title_umstring">友盟ID</string>
     <string name="settings_cat_net_et_summary_umstring">填写您分配到的友盟ID</string>
+    <string name="settings_cat_net_et_title_source">请求源</string>
+    <string name="settings_cat_net_et_summary_source">默认&source;</string>
+    <string name="settings_cat_net_et_title_ua">请求UA</string>
+    <string name="settings_cat_net_et_summary_ua">自定义请求UA</string>
     <string name="settings_cat_net_sw_use_api_proxy">使用API代理（需要密钥）</string>
     <string name="settings_cat_net_sm_use_api_proxy">作者自建的API代理，可缓解国内图书详情加载问题，但不保证100%解决，也不保证一直可用</string>
     <string name="settings_cat_net_sw_use_img_proxy">使用图床代理（需要密钥）</string>

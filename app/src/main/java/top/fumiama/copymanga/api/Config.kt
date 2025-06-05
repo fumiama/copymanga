@@ -42,7 +42,7 @@ object Config {
                 field = LazyHeaders.Builder()
                     .addHeader("referer", referer)
                     .addHeader("User-Agent", pc_ua)
-                    .addHeader("source", "copyApp")
+                    .addHeader("source", net_source.value)
                     .addHeader("webp", "1")
                     .addHeader("version", app_ver.value)
                     .addHeader(
@@ -81,12 +81,19 @@ object Config {
 
     val net_use_gzip = PreferenceBoolean("settings_cat_net_sw_use_gzip", false)
     val net_use_json = PreferenceBoolean("settings_cat_net_sw_use_json", false)
+    val net_platform = PreferenceBoolean("settings_cat_net_sw_platform", false)
+    val net_referer = PreferenceBoolean("settings_cat_net_sw_referer", false)
+    val net_version = PreferenceBoolean("settings_cat_net_sw_version", false)
+    val net_region = PreferenceBoolean("settings_cat_net_sw_region", false)
+    val net_no_webp = PreferenceBoolean("settings_cat_net_no_webp", false)
     val net_use_comandy = PreferenceBoolean("settings_cat_net_sw_use_comandy", false)
     val net_use_foreign = PreferenceBoolean("settings_cat_net_sw_use_foreign", false)
     private val net_use_img_proxy = PreferenceBoolean("settings_cat_net_sw_use_img_proxy", false)
     val net_use_api_proxy = PreferenceBoolean("settings_cat_net_sw_use_api_proxy", false)
     val net_img_resolution = PreferenceString(R.string.imgResolutionKeyID)
     val net_umstring = PreferenceString("settings_cat_net_et_umstring")
+    val net_source = PreferenceString("settings_cat_net_et_source", R.string.source)
+    val net_ua = PreferenceString("settings_cat_net_et_ua", "__default_ua__")
 
     val view_manga_inverse_chapters = PreferenceBoolean("settings_cat_vm_sw_inverse_chapters", false)
     val view_manga_always_dark_bg = PreferenceBoolean("settings_cat_vm_sw_always_dark_bg", false)

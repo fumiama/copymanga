@@ -30,20 +30,23 @@ object DownloadTools {
         connection.connectTimeout = timeout
         connection.readTimeout = timeout
         connection.apply {
-            setRequestProperty("user-agent", Config.pc_ua)
-            setRequestProperty("source", "copyApp")
+            Config.net_ua.value.let {
+                if (it.isEmpty()) return@let
+                setRequestProperty("user-agent", if (it == "__default_ua__") Config.pc_ua else it)
+            }
+            Config.net_source.value.let { if(it.isNotEmpty()) setRequestProperty("source", it) }
             // deviceinfo
-            setRequestProperty("webp", "1")
+            if (!Config.net_no_webp.value) setRequestProperty("webp", "1")
             setRequestProperty("dt", SimpleDateFormat("yyyy.MM.dd", Locale.getDefault()).format(Calendar.getInstance().time))
             if (Config.net_use_gzip.value) setRequestProperty("accept-encoding", "gzip")
             setRequestProperty("authorization", "Token${Config.token.value?.let { tk ->
                 if (tk.isNotEmpty()) " $tk" else ""
             }}")
-            setRequestProperty("platform", Config.platform.value)
-            setRequestProperty("referer", Config.referer)
+            if (Config.net_platform.value) setRequestProperty("platform", Config.platform.value)
+            if (Config.net_referer.value) setRequestProperty("referer", Config.referer)
             if (Config.net_use_json.value) setRequestProperty("accept", "application/json")
-            setRequestProperty("version", Config.app_ver.value)
-            setRequestProperty("region", if(!Config.net_use_foreign.value) "1" else "0")
+            if (Config.net_version.value) setRequestProperty("version", Config.app_ver.value)
+            if (Config.net_region.value) setRequestProperty("region", if(!Config.net_use_foreign.value) "1" else "0")
             // device
             // host
             Config.net_umstring.value.let { if (it.isNotEmpty()) setRequestProperty("umstring", it) }
@@ -59,20 +62,23 @@ object DownloadTools {
             capsule.url = url
             capsule.method = method
             capsule.headers = hashMapOf()
-            capsule.headers["user-agent"] = Config.pc_ua
-            capsule.headers["source"] = "copyApp"
+            Config.net_ua.value.let {
+                if (it.isEmpty()) return@let
+                capsule.headers["user-agent"] = if (it == "__default_ua__") Config.pc_ua else it
+            }
+            Config.net_source.value.let { if(it.isNotEmpty()) capsule.headers["source"] = it }
             // deviceinfo
-            capsule.headers["webp"] = "1"
+            if (!Config.net_no_webp.value) capsule.headers["webp"] = "1"
             capsule.headers["dt"] = SimpleDateFormat("yyyy.MM.dd", Locale.getDefault()).format(Calendar.getInstance().time)
             if (Config.net_use_gzip.value) capsule.headers["accept-encoding"] = "gzip"
             capsule.headers["authorization"] = "Token${Config.token.value?.let { tk ->
                 if (tk.isNotEmpty()) " $tk" else ""
             }}"
-            capsule.headers["platform"] = Config.platform.value
-            capsule.headers["referer"] = Config.referer
+            if (Config.net_platform.value) capsule.headers["platform"] = Config.platform.value
+            if (Config.net_referer.value) capsule.headers["referer"] = Config.referer
             if (Config.net_use_json.value) capsule.headers["accept"] = "application/json"
-            capsule.headers["version"] = Config.app_ver.value
-            capsule.headers["region"] = if(!Config.net_use_foreign.value) "1" else "0"
+            if (Config.net_version.value) capsule.headers["version"] = Config.app_ver.value
+            if (Config.net_region.value) capsule.headers["region"] = if(!Config.net_use_foreign.value) "1" else "0"
             // device
             // host
             Config.net_umstring.value.let { if (it.isNotEmpty()) capsule.headers["umstring"] = it }
