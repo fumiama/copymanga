@@ -111,8 +111,8 @@
             app:iconSpaceReserved="false"
             app:key="settings_cat_net_sw_region"
             app:selectable="true"
-            app:summary="@string/settings_cat_net_sm_version"
-            app:title="@string/settings_cat_net_sw_version" />
+            app:summary="@string/settings_cat_net_sm_region"
+            app:title="@string/settings_cat_net_sw_region" />
         <SwitchPreferenceCompat
             app:iconSpaceReserved="false"
             app:key="settings_cat_net_no_webp"
