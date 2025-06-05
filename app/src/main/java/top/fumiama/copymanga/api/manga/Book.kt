@@ -84,7 +84,7 @@ class Book(val path: String, private val getString: (Int) -> String, private val
         } catch (e: Exception) {
             e.printStackTrace()
             MainActivity.mainWeakReference?.get()?.apply {
-                Toast.makeText(this, e.message, Toast.LENGTH_SHORT).show()
+                runOnUiThread { Toast.makeText(this, e.message, Toast.LENGTH_SHORT).show() }
             }
         }
     }

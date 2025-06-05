@@ -199,7 +199,8 @@ object DownloadTools {
                 }
                 conn.disconnect()
                 Log.d("MyDT", "getHttpContent: ${ret.size} bytes")
-                if (conn.getHeaderField("Content-type") != "application/json") {
+                if (!u.startsWith("https://$proxyUrl") &&
+                    conn.getHeaderField("Content-type") != "application/json") {
                     throw IllegalStateException("请求错误: ${ret.decodeToString()}")
                 }
                 decodeBody(ret, conn.getHeaderField("Content-Encoding")?:"")

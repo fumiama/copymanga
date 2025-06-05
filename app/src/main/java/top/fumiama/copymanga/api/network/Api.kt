@@ -48,12 +48,16 @@ class Api {
                 } catch (e: Exception) {
                     e.printStackTrace()
                     mHostApiUrls = mutableListOf(networkApiUrl.value)
-                    Toast.makeText(this, e.message, Toast.LENGTH_SHORT).show()
+                    runOnUiThread {
+                        Toast.makeText(this, e.message, Toast.LENGTH_SHORT).show()
+                    }
                 }
                 if (mHostApiUrls.isEmpty()) {
                     mHostApiUrls = mutableListOf(networkApiUrl.value)
                     Log.d("MyApi", "myHostApiUrl set default ${mHostApiUrls[0]}")
-                    Toast.makeText(this, "无法获取API列表", Toast.LENGTH_SHORT).show()
+                    runOnUiThread {
+                        Toast.makeText(this, "无法获取API列表", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         }
@@ -61,17 +65,17 @@ class Api {
     }
     // get throw error on non-json or non-200 or empty apis, path: /api/v3/xxx, return json string
     suspend fun get(path: String, forceApi: String? = null): String {
-        val apis = if (forceApi == null) mu.read { mHostApiUrls } else mutableListOf(forceApi)
+        val apis = if (forceApi == null) mu.read { mHostApiUrls.toTypedArray() } else arrayOf(forceApi)
         if (apis.isEmpty()) {
             throw NoSuchElementException("API列表为空")
         }
         var r: ReturnBase? = null
         apis.forEach { api ->
             val u = "https://$api$path"
+            val ret = (apiProxy?.comancry(u) {
+                DownloadTools.getApiContent(it)
+            }?: DownloadTools.getApiContent(u)).decodeToString()
             try {
-                val ret = (apiProxy?.comancry(u) {
-                    DownloadTools.getApiContent(it)
-                }?: DownloadTools.getApiContent(u)).decodeToString()
                 r = Gson().fromJson(ret, ReturnBase::class.java)
                 if (r!!.code != 200) {
                     mu.write { mHostApiUrls.remove(api) }
@@ -82,7 +86,7 @@ class Api {
                 mu.write { mHostApiUrls.remove(api) }
             }
         }
-        throw IllegalStateException("错误码${r!!.code}, 信息: ${r!!.message}")
+        throw IllegalStateException("错误码${r?.code?:-1}, 信息: ${r?.message?:"空"}")
     }
     // request throw error on non-json or non-200 or empty apis, path: /api/v3/xxx, return json string
     suspend fun request(path: String, body: ByteArray,  method: String, contentType: String, forceApi: String? = null): String {
