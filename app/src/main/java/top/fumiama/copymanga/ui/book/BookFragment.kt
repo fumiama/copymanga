@@ -20,6 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity
+import top.fumiama.copymanga.api.Config
 import top.fumiama.copymanga.api.manga.Book
 import top.fumiama.copymanga.api.manga.Reader
 import top.fumiama.copymanga.strings.Chinese
@@ -194,8 +195,10 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
                 }
             }
         } catch (e: Exception) {
-            activity?.runOnUiThread {
-                Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
+            withContext(Dispatchers.Main) {
+                activity?.runOnUiThread {
+                    Toast.makeText(context, "${e::class.simpleName} ${e.message}", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
@@ -217,29 +220,45 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
             book?.uuid?.let { uuid ->
                 this@BookFragment.lbbsub?.setOnClickListener {
                     lifecycleScope.launch clickLaunch@ {
+                        if (Config.token.value.isNullOrEmpty()) {
+                            Toast.makeText(context, R.string.noLogin, Toast.LENGTH_SHORT).show()
+                            return@clickLaunch
+                        }
                         if (this@BookFragment.lbbsub.text != getString(R.string.button_sub)) {
                             mBookHandler?.collect?.let { collect ->
                                 if (collect < 0) return@clickLaunch
-                                val re = MainActivity.shelf?.del(collect)
-                                Toast.makeText(context, re, Toast.LENGTH_SHORT).show()
-                                if (re == "请求成功") {
-                                    this@BookFragment.lbbsub.apply {
-                                        setText(R.string.button_sub)
-                                        val color = MaterialColors.getColor(this, R.attr.colorPrimarySurface)
-                                        backgroundTintList = ColorStateList.valueOf(color)
+                                try {
+                                    val re = MainActivity.shelf?.del(collect)
+                                    Toast.makeText(context, re, Toast.LENGTH_SHORT).show()
+                                    if (re == "请求成功") {
+                                        this@BookFragment.lbbsub.apply {
+                                            setText(R.string.button_sub)
+                                            val color = MaterialColors.getColor(this, R.attr.colorPrimarySurface)
+                                            backgroundTintList = ColorStateList.valueOf(color)
+                                        }
+                                    }
+                                } catch (e: Exception) {
+                                    withContext(Dispatchers.Main) {
+                                        Toast.makeText(context, "${e::class.simpleName} ${e.message}", Toast.LENGTH_SHORT).show()
                                     }
                                 }
                             }
                             return@clickLaunch
                         }
-                        val re = MainActivity.shelf?.add(uuid)
-                        Toast.makeText(context, re, Toast.LENGTH_SHORT).show()
-                        if (re == "修改成功") {
-                            queryCollect()
-                            this@BookFragment.lbbsub.apply {
-                                setText(R.string.button_sub_subscribed)
-                                val color = MaterialColors.getColor(this, R.attr.colorButtonNormal)
-                                backgroundTintList = ColorStateList.valueOf(color)
+                        try {
+                            val re = MainActivity.shelf?.add(uuid)
+                            Toast.makeText(context, re, Toast.LENGTH_SHORT).show()
+                            if (re == "修改成功") {
+                                queryCollect()
+                                this@BookFragment.lbbsub.apply {
+                                    setText(R.string.button_sub_subscribed)
+                                    val color = MaterialColors.getColor(this, R.attr.colorButtonNormal)
+                                    backgroundTintList = ColorStateList.valueOf(color)
+                                }
+                            }
+                        } catch (e: Exception) {
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(context, "${e::class.simpleName} ${e.message}", Toast.LENGTH_SHORT).show()
                             }
                         }
                     }

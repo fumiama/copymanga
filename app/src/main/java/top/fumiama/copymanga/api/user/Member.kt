@@ -2,6 +2,7 @@ package top.fumiama.copymanga.api.user
 
 import android.util.Base64
 import com.google.gson.Gson
+import com.google.gson.JsonSyntaxException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.api.Config
@@ -14,14 +15,7 @@ class Member(private val getString: (Int) -> String) {
     val hasLogin: Boolean get() = Config.token.value?.isNotEmpty() ?: false
     suspend fun login(username: String, pwd: String, salt: Int): LoginInfoStructure =
         withContext(Dispatchers.IO) {
-            return@withContext try {
-                saveInfo(postLogin(username, pwd, salt))
-            } catch (e: Exception) {
-                val l = LoginInfoStructure()
-                l.code = 400
-                l.message =  e.message.toString()
-                l
-            }
+            return@withContext saveInfo(postLogin(username, pwd, salt))
         }
 
     /**
@@ -32,30 +26,13 @@ class Member(private val getString: (Int) -> String) {
      */
     suspend fun info(): LoginInfoStructure = withContext(Dispatchers.IO) {
         if (!hasLogin) {
-            val l = LoginInfoStructure()
-            l.code = 449
-            l.message = getString(R.string.noLogin)
-            return@withContext l
+            throw IllegalArgumentException(getString(R.string.noLogin))
         }
-        try {
-            val u = getString(R.string.memberInfoApiUrl)
-                .format(Config.platform.value)
-            try {
-                val l = Gson().fromJson(Config.myHostApiUrl.get(u), LoginInfoStructure::class.java)
-                if (l.code == 200) Config.avatar.value = l.results.avatar
-                l
-            } catch (e: Exception) {
-                val l = LoginInfoStructure()
-                l.code = 450
-                l.message = "${getString(R.string.login_get_avatar_failed)}: ${e.message}"
-                l
-            }
-        } catch (e: Exception) {
-            val l = LoginInfoStructure()
-            l.code = 450
-            l.message = "${getString(R.string.login_get_avatar_failed)}: ${e.message}"
-            l
-        }
+        val u = getString(R.string.memberInfoApiUrl)
+            .format(Config.platform.value)
+        val l = Gson().fromJson(Config.myHostApiUrl.get(u), LoginInfoStructure::class.java)
+        if (l.code == 200) Config.avatar.value = l.results.avatar
+        l
     }
 
     suspend fun logout() = withContext(Dispatchers.IO) {
@@ -78,8 +55,8 @@ class Member(private val getString: (Int) -> String) {
                 }
                 return@use l
             } ?: throw Exception(getString(R.string.login_parse_json_error))
-        } catch (e: Exception) {
-            throw Exception(data.decodeToString(), e)
+        } catch (e: JsonSyntaxException) {
+            throw JsonSyntaxException(data.decodeToString(), e)
         }
     }
 

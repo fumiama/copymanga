@@ -26,7 +26,8 @@ class LoginActivity : AppCompatActivity() {
         alblogin.setOnClickListener {
             lifecycleScope.launch {
                 val salt = Random.nextInt(10000)
-                val username = altusrnm.text?.toString() ?: run {
+                val username = altusrnm.text?.toString()
+                if (username.isNullOrEmpty()) {
                     Toast.makeText(
                         this@LoginActivity,
                         R.string.login_null_username,
@@ -34,7 +35,8 @@ class LoginActivity : AppCompatActivity() {
                     ).show()
                     return@launch
                 }
-                val pwd = altpwd.text?.toString() ?: run {
+                val pwd = altpwd.text?.toString()
+                if (pwd.isNullOrEmpty()) {
                     Toast.makeText(this@LoginActivity, R.string.login_null_pwd, Toast.LENGTH_SHORT)
                         .show()
                     return@launch
@@ -50,14 +52,23 @@ class LoginActivity : AppCompatActivity() {
                     finish()
                     return@launch
                 }
-                val l = MainActivity.member?.login(username, pwd, salt)
-                Log.d("MyLA", "login return code: ${l?.code}")
-                if (l?.code == 200) {
-                    MainActivity.mainWeakReference?.get()?.refreshUserInfo()
-                    finish()
-                    return@launch
+                try {
+                    val l = MainActivity.member?.login(username, pwd, salt)
+                    Log.d("MyLA", "login return code: ${l?.code}")
+                    if (l?.code == 200) {
+                        MainActivity.mainWeakReference?.get()?.refreshUserInfo()
+                        finish()
+                        return@launch
+                    }
+                    Toast.makeText(this@LoginActivity, "错误码${l?.code}: ${l?.message}", Toast.LENGTH_LONG).show()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    Toast.makeText(
+                        this@LoginActivity,
+                        "${e::class.simpleName} ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
-                Toast.makeText(this@LoginActivity, l?.message, Toast.LENGTH_LONG).show()
             }
         }
         if (Config.general_enable_transparent_system_bar.value) {

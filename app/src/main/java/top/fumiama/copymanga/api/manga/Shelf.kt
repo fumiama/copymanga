@@ -15,7 +15,7 @@ class Shelf(private val getString: (Int) -> String) {
     private val delApiUrl get() = "${apiUrl}s?platform=${Config.platform.value}"
     suspend fun add(comicId: String): String = withContext(Dispatchers.IO) {
         if (comicId.isEmpty()) {
-            return@withContext "空漫画ID"
+            throw IllegalArgumentException("空漫画ID")
         }
         val body = buildString {
             append("comic_id=")
@@ -24,19 +24,15 @@ class Shelf(private val getString: (Int) -> String) {
             append("")
             append(Config.token.value)
         }
-        return@withContext try {
-            val re = Config.myHostApiUrl.request(
-                addApiUrl, body.encodeToByteArray(), "POST",
-                "application/x-www-form-urlencoded;charset=utf-8")
-            Gson().fromJson(re, ReturnBase::class.java).message
-        } catch (e: Exception) {
-            e.message?:e::class.simpleName?:e.toString()
-        }
+        val re = Config.myHostApiUrl.request(
+            addApiUrl, body.encodeToByteArray(), "POST",
+            "application/x-www-form-urlencoded;charset=utf-8")
+        Gson().fromJson(re, ReturnBase::class.java).message
     }
 
     suspend fun del(vararg bookIds: Int): String = withContext(Dispatchers.IO) {
         if (bookIds.isEmpty()) {
-            return@withContext "空ID列表"
+            throw IllegalArgumentException("空ID列表")
         }
         val body = buildString {
             bookIds.forEach {
@@ -47,14 +43,10 @@ class Shelf(private val getString: (Int) -> String) {
             append("authorization=Token+")
             append(Config.token.value)
         }
-        return@withContext try {
-            val re = Config.myHostApiUrl.request(
-                delApiUrl, body.encodeToByteArray(),
-                "DELETE", "application/x-www-form-urlencoded;charset=utf-8")
-            Gson().fromJson(re, ReturnBase::class.java).message
-        } catch (e: Exception) {
-            e.message?:e::class.simpleName?:e.toString()
-        }
+        val re = Config.myHostApiUrl.request(
+            delApiUrl, body.encodeToByteArray(),
+            "DELETE", "application/x-www-form-urlencoded;charset=utf-8")
+        Gson().fromJson(re, ReturnBase::class.java).message
     }
 
     suspend fun query(pathWord: String): BookQueryStructure? = withContext(Dispatchers.IO) {

@@ -52,10 +52,17 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
             if(netInfo != tb.transportStringNull && netInfo != tb.transportStringError)
                 MainActivity.member?.apply { lifecycleScope.launch {
                     Config.myHostApiUrl.init()
-                    info().let { l ->
-                        if (l.code != 200 && l.code != 449) {
-                            Toast.makeText(context, l.message, Toast.LENGTH_SHORT).show()
-                            logout()
+                    try {
+                        info().let { l ->
+                            if (l.code != 200 && l.code != 449) {
+                                Toast.makeText(context, l.message, Toast.LENGTH_SHORT).show()
+                                logout()
+                            }
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(context, "${e::class.simpleName} ${e.message}", Toast.LENGTH_SHORT).show()
                         }
                     }
                 } }

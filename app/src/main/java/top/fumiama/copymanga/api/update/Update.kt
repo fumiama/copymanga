@@ -70,7 +70,7 @@ object Update {
                                 Toast.makeText(this@apply, "下载成功", Toast.LENGTH_SHORT).show()
                                 info.dismiss()
                                 install(it, this@apply)
-                            } else runOnUiThread {
+                            } else {
                                 Toast.makeText(this@apply, "文件损坏", Toast.LENGTH_SHORT).show()
                                 info.dismiss()
                             }
