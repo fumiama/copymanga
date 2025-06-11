@@ -28,9 +28,8 @@ object Chinese {
     /**
      * 简单检测字符串是否包含常见 CJK（中日韩）汉字。
      */
-    fun containsChinese(text: String): Boolean {
+    private fun containsChinese(text: String): Boolean {
         val regex = Regex("[\u4E00-\u9FFF]")
         return regex.containsMatchIn(text)
     }
-
 }

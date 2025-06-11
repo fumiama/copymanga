@@ -2,6 +2,7 @@
 buildscript {
     ext.kotlin_version = "$cm_kotlin_version"
     repositories {
+        gradlePluginPortal()
         google()
         mavenCentral()
         maven { url 'https://maven.google.com' }

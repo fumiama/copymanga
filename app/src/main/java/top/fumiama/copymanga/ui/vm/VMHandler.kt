@@ -148,9 +148,7 @@ class VMHandler(activity: ViewMangaActivity, private val chapterUrl: String, pri
     override suspend fun onError() {
         super.onError()
         if(exit) return
-        withContext(Dispatchers.Main) {
-            wv.get()?.toolsBox?.toastError(R.string.download_chapter_info_failed)
-        }
+        wv.get()?.toolsBox?.toastErrorAndFinish(R.string.download_chapter_info_failed)
     }
 
     override suspend fun doWhenFinishDownload() {
@@ -187,7 +185,7 @@ class VMHandler(activity: ViewMangaActivity, private val chapterUrl: String, pri
             true
         } catch (e: Exception){
             e.printStackTrace()
-            wv.get()?.toolsBox?.toastError(R.string.load_local_chapter_info_failed)
+            wv.get()?.toolsBox?.toastErrorAndFinish(R.string.load_local_chapter_info_failed)
             false
         }
     }

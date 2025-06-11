@@ -50,18 +50,14 @@ class Api {
                     e.printStackTrace()
                     mHostApiUrls = mutableListOf(networkApiUrl.value)
                     withContext(Dispatchers.Main) {
-                        runOnUiThread {
-                            Toast.makeText(this@apply, "${e::class.simpleName} ${e.message}", Toast.LENGTH_SHORT).show()
-                        }
+                        Toast.makeText(this@apply, "${e::class.simpleName} ${e.message}", Toast.LENGTH_LONG).show()
                     }
                 }
                 if (mHostApiUrls.isEmpty()) {
                     mHostApiUrls = mutableListOf(networkApiUrl.value)
                     Log.d("MyApi", "myHostApiUrl set default ${mHostApiUrls[0]}")
                     withContext(Dispatchers.Main) {
-                        runOnUiThread {
-                            Toast.makeText(this@apply, "无法获取API列表", Toast.LENGTH_SHORT).show()
-                        }
+                        Toast.makeText(this@apply, "无法获取API列表", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -77,22 +73,12 @@ class Api {
         var r: ReturnBase? = null
         apis.forEachIndexed { i, api ->
             val u = "https://$api$path"
+            var ret = ""
             try {
-                val ret = (apiProxy?.comancry(u) {
+                ret = (apiProxy?.comancry(u) {
                     DownloadTools.getApiContent(it)
                 }?: DownloadTools.getApiContent(u)).decodeToString()
                 r = Gson().fromJson(ret, ReturnBase::class.java)
-                if (r!!.code != 200) {
-                    withContext(Dispatchers.Main) {
-                        MainActivity.mainWeakReference?.get()?.apply {
-                            runOnUiThread {
-                                Toast.makeText(this, "错误码${r?.code?:-1}, 信息: ${r?.message?:"空"}", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    }
-                } else {
-                    return ret
-                }
             } catch (e: Exception) {
                 mu.withLock  {
                     if (mHostApiUrls.size <= 1) return@withLock
@@ -102,11 +88,19 @@ class Api {
                     throw e
                 }
             }
+            r?.let {
+                if (it.code != 200) {
+                    throw IllegalArgumentException("错误码${it.code}, 信息: ${it.message?:"空"}")
+                } else {
+                    return ret
+                }
+            }
         }
-        throw IllegalStateException("错误码${r?.code?:-1}, 信息: ${r?.message?:"空"}")
+        throw NoSuchElementException("无可用API")
     }
+
     // request throw error on non-json or non-200 or empty apis, path: /api/v3/xxx, return json string
-    suspend fun request(path: String, body: ByteArray,  method: String, contentType: String, forceApi: String? = null): String {
+    suspend fun request(path: String, body: ByteArray, method: String, contentType: String, forceApi: String? = null): String {
         val apis = if (forceApi == null) mu.withLock  { mHostApiUrls } else mutableListOf(forceApi)
         if (apis.isEmpty()) {
             throw NoSuchElementException("API列表为空")
@@ -114,22 +108,12 @@ class Api {
         var r: ReturnBase? = null
         apis.forEachIndexed { i, api ->
             val u = "https://$api$path"
+            var ret = ""
             try {
-                val ret = (apiProxy?.comancry(u) {
+                ret = (apiProxy?.comancry(u) {
                     DownloadTools.requestApiWithBody(u, method, body, contentType)
                 }?: DownloadTools.requestApiWithBody(u, method, body, contentType)).decodeToString()
                 r = Gson().fromJson(ret, ReturnBase::class.java)
-                if (r!!.code != 200) {
-                    withContext(Dispatchers.Main) {
-                        MainActivity.mainWeakReference?.get()?.apply {
-                            runOnUiThread {
-                                Toast.makeText(this, "错误码${r?.code?:-1}, 信息: ${r?.message?:"空"}", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    }
-                } else {
-                    return ret
-                }
             } catch (e: Exception) {
                 e.printStackTrace()
                 mu.withLock  {
@@ -140,7 +124,14 @@ class Api {
                     throw e
                 }
             }
+            r?.let {
+                if (it.code != 200) {
+                    throw IllegalArgumentException("错误码${it.code}, 信息: ${it.message?:"空"}")
+                } else {
+                    return ret
+                }
+            }
         }
-        throw IllegalStateException("错误码${r?.code?:-1}, 信息: ${r?.message?:"空"}")
+        throw NoSuchElementException("无可用API")
     }
 }

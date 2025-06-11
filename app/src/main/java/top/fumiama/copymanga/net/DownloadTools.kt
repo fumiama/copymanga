@@ -6,10 +6,12 @@ import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import top.fumiama.copymanga.api.Config
 import top.fumiama.copymanga.api.Config.proxyUrl
 import top.fumiama.copymanga.json.ComandyCapsule
 import top.fumiama.copymanga.lib.Comandy
+import java.io.BufferedReader
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
@@ -146,6 +148,19 @@ object DownloadTools {
         } else ret
     }
 
+    private fun parseErrorResponse(body: String): String {
+        return try {
+            val json = JSONObject(body)
+            if (json.has("detail")) {
+                json.getString("detail")
+            } else {
+                body // 原始 JSON 返回
+            }
+        } catch (e: Exception) {
+            "非JSON返回: $body"
+        }
+    }
+
     private fun InputStream.readBytesWithProgress(sz: Int, p: Client.Progress): ByteArray {
         val buffer = ByteArrayOutputStream(maxOf(DEFAULT_BUFFER_SIZE, this.available()))
         copyToWithProgress(buffer, sz, p)
@@ -184,7 +199,7 @@ object DownloadTools {
                             //Log.d("MyDT", "comandy reply: $result")
                             Gson().fromJson(result, ComandyCapsule::class.java)!!.let {
                                 if (it.code != 200) throw IllegalArgumentException("HTTP${it.code} ${
-                                    it.data?.let { d -> Base64.decode(d, Base64.DEFAULT).decodeToString() }
+                                    it.data?.let { d -> parseErrorResponse(Base64.decode(d, Base64.DEFAULT).decodeToString()) }
                                 }")
                                 coding = it.headers["Content-Encoding"] as String?
                                 Base64.decode(it.data, Base64.DEFAULT)
@@ -198,10 +213,14 @@ object DownloadTools {
             }
             getApiConnection(u, "GET").let { conn ->
                 val sz = conn.getHeaderFieldInt("Content-Length", 0)
+                if (conn.responseCode >= 400)
+                    throw IllegalArgumentException("HTTP${conn.responseCode} " +
+                        parseErrorResponse(conn.errorStream.bufferedReader().use(BufferedReader::readText))
+                )
                 val ret = if (sz > 0 && p != null) {
-                    conn.inputStream.readBytesWithProgress(sz, p)
+                    conn.inputStream.use { it.readBytesWithProgress(sz, p) }
                 } else {
-                    conn.inputStream.readBytes()
+                    conn.inputStream.use(InputStream::readBytes)
                 }
                 conn.disconnect()
                 Log.d("MyDT", "getHttpContent: ${ret.size} bytes")
@@ -255,7 +274,9 @@ object DownloadTools {
                             completed = true
                             p?.notify(100)
                             Gson().fromJson(result, ComandyCapsule::class.java)?.let {
-                                if (it.code != 200) null
+                                if (it.code != 200) throw IllegalArgumentException("HTTP${it.code} ${
+                                    it.data?.let { d -> Base64.decode(d, Base64.DEFAULT).decodeToString() }
+                                }")
                                 else it.data?.let { d -> Base64.decode(d, Base64.DEFAULT) }
                             }
                         }
@@ -272,17 +293,17 @@ object DownloadTools {
             var ret: ByteArray? = null
             try {
                 val connection = getNormalConnection(u, "GET", Config.pc_ua)
-                val ci = connection.inputStream
                 val sz = connection.getHeaderFieldInt("Content-Length", 0)
-                if(readSize > 0) {
-                    ret = ByteArray(readSize)
-                    ci?.read(ret, 0, readSize)
-                } else ret = if (sz > 0 && p != null) {
-                    ci.readBytesWithProgress(sz, p)
-                } else {
-                    ci.readBytes()
+                connection.inputStream.use { ci ->
+                    if(readSize > 0) {
+                        ret = ByteArray(readSize)
+                        ci.read(ret, 0, readSize)
+                    } else ret = if (sz > 0 && p != null) {
+                        ci.readBytesWithProgress(sz, p)
+                    } else {
+                        ci.readBytes()
+                    }
                 }
-                ci?.close()
                 connection.disconnect()
             } catch (ex: Exception) {
                 ex.printStackTrace()
@@ -313,7 +334,11 @@ object DownloadTools {
             var coding = ""
             getApiConnection(url, method).apply {
                 outputStream.write(body)
-                ret = inputStream.readBytes()
+                if (responseCode >= 400)
+                    throw IllegalArgumentException("HTTP${responseCode} " +
+                            parseErrorResponse(errorStream.bufferedReader().use(BufferedReader::readText))
+                    )
+                ret = inputStream.use(InputStream::readBytes)
                 disconnect()
                 coding = getHeaderField("Content-Encoding")?:""
             }

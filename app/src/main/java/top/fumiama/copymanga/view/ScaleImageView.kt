@@ -564,11 +564,11 @@ class ScaleImageView : ImageView {
             } else {
                 super.onDraw(canvas)
             }
-        }catch (e:Exception){
+        } catch (e:Exception){
             e.printStackTrace()
             ViewMangaActivity.va?.get()?.apply {
                 lifecycleScope.launch {
-                    toolsBox.toastError(R.string.show_image_error_try_lower_resolution, false)
+                    toolsBox.toastErrorAndFinish(R.string.show_image_error_try_lower_resolution, false)
                 }
             }
         }

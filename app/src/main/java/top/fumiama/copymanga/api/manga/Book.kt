@@ -2,7 +2,9 @@ package top.fumiama.copymanga.api.manga
 
 import android.util.Log
 import android.widget.Toast
+import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
+import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.card_book.*
 import kotlinx.android.synthetic.main.line_booktandb.*
 import kotlinx.coroutines.Dispatchers
@@ -56,38 +58,29 @@ class Book(val path: String, private val getString: (Int) -> String, private val
      * 更新云端最新图书信息并缓存到本地
      */
     suspend fun updateInfo() = withContext(Dispatchers.IO) {
-        try {
-            var isDownload = false
-            val data: String = if (loadCache) {
-                name?.let { loadInfo(it) } ?: run {
-                    isDownload = true
-                    Config.myHostApiUrl.get(mBookApiUrl)
-                }
-            } else {
+        var isDownload = false
+        val data: String = if (loadCache) {
+            name?.let { loadInfo(it) } ?: run {
                 isDownload = true
-                Config.myHostApiUrl.get(mBookApiUrl)
+                Config.api.get(mBookApiUrl)
             }
-            mBook = Gson().fromJson(data, BookInfoStructure::class.java)
-            if (isDownload) saveInfo(data)
-            mGroupPathWords = arrayOf()
-            mKeys = arrayOf()
-            mCounts = intArrayOf()
-            mBook?.results?.groups?.values?.forEach {
-                mKeys += it.name
-                mGroupPathWords += it.path_word
-                if (it.count == 0) {
-                    it.count = 1
-                }
-                mCounts += it.count
-                Log.d("MyB", "Add caption: ${it.name} @ ${it.path_word} of ${it.count}")
+        } else {
+            isDownload = true
+            Config.api.get(mBookApiUrl)
+        }
+        mBook = Gson().fromJson(data, BookInfoStructure::class.java)
+        if (isDownload) saveInfo(data)
+        mGroupPathWords = arrayOf()
+        mKeys = arrayOf()
+        mCounts = intArrayOf()
+        mBook?.results?.groups?.values?.forEach {
+            mKeys += it.name
+            mGroupPathWords += it.path_word
+            if (it.count == 0) {
+                it.count = 1
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            MainActivity.mainWeakReference?.get()?.apply {
-                withContext(Dispatchers.Main) {
-                    runOnUiThread { Toast.makeText(this@apply, "${e::class.simpleName} ${e.message}", Toast.LENGTH_SHORT).show() }
-                }
-            }
+            mCounts += it.count
+            Log.d("MyB", "Add caption: ${it.name} @ ${it.path_word} of ${it.count}")
         }
     }
 

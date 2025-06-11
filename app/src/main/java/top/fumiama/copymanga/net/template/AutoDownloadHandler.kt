@@ -76,7 +76,7 @@ open class AutoDownloadHandler(
         var cnt = 0
         while (cnt++ <= 3) {
             try {
-                val data = Config.myHostApiUrl.get(url())
+                val data = Config.api.get(url())
                 if(exit) return@withContext
                 val pass = setGsonItem(Gson().fromJson(data, jsonClass))
                 if (pass && loadFromCache) {

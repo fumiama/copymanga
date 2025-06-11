@@ -10,13 +10,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.ImageButton
-import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
+import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
 import com.lapism.search.internal.SearchLayout
 import kotlinx.android.synthetic.main.card_book_plain.view.*
@@ -29,12 +29,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.MainActivity.Companion.ime
-import top.fumiama.copymanga.json.BookListStructure
-import top.fumiama.copymanga.view.template.NoBackRefreshFragment
-import top.fumiama.copymanga.net.template.PausableDownloader
 import top.fumiama.copymanga.api.Config
-import top.fumiama.copymanga.view.operation.GlideHideLottieViewListener
+import top.fumiama.copymanga.json.BookListStructure
+import top.fumiama.copymanga.net.template.PausableDownloader
 import top.fumiama.copymanga.view.interaction.Navigate
+import top.fumiama.copymanga.view.operation.GlideHideLottieViewListener
+import top.fumiama.copymanga.view.template.NoBackRefreshFragment
 import top.fumiama.dmzj.copymanga.R
 import java.lang.ref.WeakReference
 import java.net.URLEncoder
@@ -51,18 +51,15 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
             val netInfo = tb.netInfo
             if(netInfo != tb.transportStringNull && netInfo != tb.transportStringError)
                 MainActivity.member?.apply { lifecycleScope.launch {
-                    Config.myHostApiUrl.init()
-                    try {
-                        info().let { l ->
-                            if (l.code != 200 && l.code != 449) {
-                                Toast.makeText(context, l.message, Toast.LENGTH_SHORT).show()
-                                logout()
-                            }
-                        }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(context, "${e::class.simpleName} ${e.message}", Toast.LENGTH_SHORT).show()
+                    withContext(Dispatchers.IO) {
+                        Config.api.init()
+                        try {
+                            info()
+                        } catch (e: Exception) {
+                            Snackbar
+                                .make(view, "${e::class.simpleName} ${e.message}", Snackbar.LENGTH_LONG)
+                                .setTextMaxLines(10)
+                                .show()
                         }
                     }
                 } }

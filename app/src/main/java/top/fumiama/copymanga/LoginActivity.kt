@@ -35,8 +35,8 @@ class LoginActivity : AppCompatActivity() {
                     ).show()
                     return@launch
                 }
-                val pwd = altpwd.text?.toString()
-                if (pwd.isNullOrEmpty()) {
+                val pwd = altpwd.text?.toString()?:""
+                if (!isLogout && pwd.isEmpty()) {
                     Toast.makeText(this@LoginActivity, R.string.login_null_pwd, Toast.LENGTH_SHORT)
                         .show()
                     return@launch
@@ -66,7 +66,7 @@ class LoginActivity : AppCompatActivity() {
                     Toast.makeText(
                         this@LoginActivity,
                         "${e::class.simpleName} ${e.message}",
-                        Toast.LENGTH_SHORT
+                        Toast.LENGTH_LONG
                     ).show()
                 }
             }

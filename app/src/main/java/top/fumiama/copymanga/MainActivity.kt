@@ -63,6 +63,8 @@ import top.fumiama.copymanga.api.update.Update
 import top.fumiama.copymanga.api.user.Member
 import top.fumiama.copymanga.lib.Comancry
 import top.fumiama.copymanga.lib.Comandy
+import top.fumiama.copymanga.storage.DataLoader
+import top.fumiama.copymanga.strings.Base16384
 import top.fumiama.dmzj.copymanga.BuildConfig
 import top.fumiama.dmzj.copymanga.R
 import java.io.File
@@ -158,7 +160,7 @@ class MainActivity : AppCompatActivity() {
             Log.d("MyMain", "start menu waiting")
             lifecycleScope.launch {
                 withContext(Dispatchers.IO) {
-                    Config.myHostApiUrl.init()
+                    Config.api.init()
                 }
                 withContext(Dispatchers.IO) {
                     delay(1000)
@@ -206,6 +208,7 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
+    @SuppressLint("CheckResult")
     @OptIn(ExperimentalStdlibApi::class)
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
@@ -214,10 +217,39 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             R.id.action_download -> {
-                if (NewDownloadFragment.wn != null) {
-                    //TODO: fill it
-                } else {
-                    bookHandler.get()?.sendEmptyMessage(BookHandler.NAVIGATE_TO_DOWNLOAD)
+                when (navController?.currentDestination?.id) {
+                    R.id.nav_new_download -> {
+                        //TODO: fill it
+                    }
+                    R.id.nav_settings -> {
+                        toolsBox.buildInfo("备份管理", "可选择导出或导入base16384格式配置项",
+                            "导出", "导入", "取消", { // ok
+                                MaterialDialog(this).show {
+                                    input(prefill = Base16384.encode(DataLoader().toByteArray()))
+                                    positiveButton(android.R.string.ok)
+                                    title(null, "请复制配置文本并保存")
+                                }
+                            }, { // neutral
+                                MaterialDialog(this).show {
+                                    input { _, c ->
+                                        try {
+                                            DataLoader(Base16384.decode(c.toString())).settings.export()
+                                            navController?.apply {
+                                                currentDestination?.id?.let {
+                                                    popBackStack()
+                                                    navigate(it)
+                                                }
+                                            }
+                                        } catch (e: Exception) {
+                                            Toast.makeText(this@MainActivity, e.message?:e::class.simpleName, Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                    positiveButton(android.R.string.ok)
+                                    title(null, "请粘贴配置文本")
+                                }
+                            })
+                    }
+                    else -> bookHandler.get()?.sendEmptyMessage(BookHandler.NAVIGATE_TO_DOWNLOAD)
                 }
                 true
             }
@@ -338,6 +370,13 @@ class MainActivity : AppCompatActivity() {
                 menuMain?.findItem(R.id.action_sort)?.isVisible = false
                 menuMain?.findItem(R.id.action_del)?.isVisible = true
             }
+            R.id.nav_settings -> {
+                Log.d("MyMain", "enter settings")
+                menuMain?.findItem(R.id.action_info)?.isVisible = false
+                menuMain?.findItem(R.id.action_download)?.isVisible = true
+                menuMain?.findItem(R.id.action_sort)?.isVisible = false
+                menuMain?.findItem(R.id.action_del)?.isVisible = false
+            }
             else -> {
                 Log.d("MyMain", "enter others")
                 menuMain?.findItem(R.id.action_info)?.isVisible = false
@@ -433,7 +472,7 @@ class MainActivity : AppCompatActivity() {
         dl.setMessage("${getString(R.string.app_description)}\n" +
                 "\n$comandy\n" +
                 "$comancry\n\n"+ File("/proc/self/cmdline").readText() + "\n" +
-                "当前API: ${Config.myHostApiUrl.getApis().joinToString(", ")}")
+                "当前API: ${Config.api.getApis().joinToString(", ")}")
         dl.setTitle("${getString(R.string.action_info)} ${BuildConfig.VERSION_NAME}")
         dl.setIcon(R.mipmap.ic_launcher)
         dl.setPositiveButton(android.R.string.ok) { _, _ -> }

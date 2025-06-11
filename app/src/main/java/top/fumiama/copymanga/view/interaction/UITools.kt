@@ -43,11 +43,10 @@ class UITools(that: Context?, w: WeakReference<Activity>? = null) {
                 }
             } ?: transportStringError
         }
-    suspend fun toastError(s: String, willFinish: Boolean = true) = withContext(Dispatchers.Main) {
+    suspend fun toastError(s: String) = withContext(Dispatchers.Main) {
         Toast.makeText(zis, s, Toast.LENGTH_SHORT).show()
-        if (willFinish) weak?.get()?.finish()
     }
-    suspend fun toastError(s: Int, willFinish: Boolean = true) = withContext(Dispatchers.Main) {
+    suspend fun toastErrorAndFinish(s: Int, willFinish: Boolean = true) = withContext(Dispatchers.Main) {
         Toast.makeText(zis, s, Toast.LENGTH_SHORT).show()
         if (willFinish) weak?.get()?.finish()
     }

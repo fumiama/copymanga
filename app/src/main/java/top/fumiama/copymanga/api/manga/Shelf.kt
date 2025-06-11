@@ -24,7 +24,7 @@ class Shelf(private val getString: (Int) -> String) {
             append("")
             append(Config.token.value)
         }
-        val re = Config.myHostApiUrl.request(
+        val re = Config.api.request(
             addApiUrl, body.encodeToByteArray(), "POST",
             "application/x-www-form-urlencoded;charset=utf-8")
         Gson().fromJson(re, ReturnBase::class.java).message
@@ -43,7 +43,7 @@ class Shelf(private val getString: (Int) -> String) {
             append("authorization=Token+")
             append(Config.token.value)
         }
-        val re = Config.myHostApiUrl.request(
+        val re = Config.api.request(
             delApiUrl, body.encodeToByteArray(),
             "DELETE", "application/x-www-form-urlencoded;charset=utf-8")
         Gson().fromJson(re, ReturnBase::class.java).message
@@ -51,7 +51,7 @@ class Shelf(private val getString: (Int) -> String) {
 
     suspend fun query(pathWord: String): BookQueryStructure? = withContext(Dispatchers.IO) {
         val queryUrl = queryApiUrlTemplate.format(pathWord, Config.platform.value)
-        Config.myHostApiUrl.get(queryUrl).let {
+        Config.api.get(queryUrl).let {
             Gson().fromJson(it, BookQueryStructure::class.java)
         }
     }

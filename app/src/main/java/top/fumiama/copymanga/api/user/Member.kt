@@ -24,15 +24,15 @@ class Member(private val getString: (Int) -> String) {
      * - **code**: 449: 未登录, 450: 有 Exception
      * - **message**: 可以 toast 的信息
      */
-    suspend fun info(): LoginInfoStructure = withContext(Dispatchers.IO) {
+    suspend fun info(): LoginInfoStructure {
         if (!hasLogin) {
             throw IllegalArgumentException(getString(R.string.noLogin))
         }
         val u = getString(R.string.memberInfoApiUrl)
             .format(Config.platform.value)
-        val l = Gson().fromJson(Config.myHostApiUrl.get(u), LoginInfoStructure::class.java)
-        if (l.code == 200) Config.avatar.value = l.results.avatar
-        l
+        val l = Gson().fromJson(Config.api.get(u), LoginInfoStructure::class.java)
+        if (l.code == 200) Config.avatar.value = l.results.avatar // must be true
+        return l
     }
 
     suspend fun logout() = withContext(Dispatchers.IO) {
@@ -43,7 +43,7 @@ class Member(private val getString: (Int) -> String) {
         Config.avatar.value = null
     }
 
-    private suspend fun saveInfo(data: ByteArray) = data.inputStream().use { dataIn ->
+    private fun saveInfo(data: ByteArray) = data.inputStream().use { dataIn ->
         try {
             Gson().fromJson(dataIn.reader(), LoginInfoStructure::class.java)?.let { l ->
                 if (l.code == 200) {
@@ -51,9 +51,8 @@ class Member(private val getString: (Int) -> String) {
                     Config.user_id.value = l.results?.user_id
                     Config.username.value = l.results?.username
                     Config.nickname.value = l.results.nickname
-                    return@use info()
                 }
-                return@use l
+                l
             } ?: throw Exception(getString(R.string.login_parse_json_error))
         } catch (e: JsonSyntaxException) {
             throw JsonSyntaxException(data.decodeToString(), e)
@@ -65,7 +64,7 @@ class Member(private val getString: (Int) -> String) {
             val r = if (!Config.net_use_foreign.value) "1" else "0"
             val pwdEncoded =
                 Base64.encode("$pwd-$salt".toByteArray(), Base64.DEFAULT).decodeToString()
-            Config.myHostApiUrl.request(u, "username=${
+            Config.api.request(u, "username=${
                 URLEncoder.encode(
                     username,
                     Charset.defaultCharset().name()

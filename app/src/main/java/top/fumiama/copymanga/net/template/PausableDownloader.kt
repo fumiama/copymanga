@@ -13,7 +13,7 @@ class PausableDownloader(private val url: String, private val waitMilliseconds: 
         var c = 0
         while (!exit && c++ < 3) {
             try {
-                val data = Config.myHostApiUrl.get(url)
+                val data = Config.api.get(url)
                 whenFinish?.let { it(data.encodeToByteArray()) }
                 return@withContext true
             } catch (e: Exception) {

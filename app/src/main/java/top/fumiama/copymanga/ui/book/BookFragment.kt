@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.color.MaterialColors
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.card_book.*
 import kotlinx.android.synthetic.main.fragment_book.*
@@ -57,8 +58,9 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
                 } catch (e: Exception) {
                     e.printStackTrace()
                     if(mBookHandler?.exit != false) return@launch
-                    Toast.makeText(context, R.string.null_book, Toast.LENGTH_SHORT).show()
-                    findNavController().popBackStack()
+                    Snackbar.make(view, "${e::class.simpleName} ${e.message}", Snackbar.LENGTH_LONG).setTextMaxLines(10).setDuration(10000).show()
+                    // Toast.makeText(context, R.string.null_book, Toast.LENGTH_SHORT).show()
+                    // findNavController().popBackStack()
                     return@launch
                 }
                 Log.d("MyBF", "read path: ${book?.path}")
@@ -196,9 +198,7 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
             }
         } catch (e: Exception) {
             withContext(Dispatchers.Main) {
-                activity?.runOnUiThread {
-                    Toast.makeText(context, "${e::class.simpleName} ${e.message}", Toast.LENGTH_SHORT).show()
-                }
+                Toast.makeText(context, "${e::class.simpleName} ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -239,7 +239,7 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
                                     }
                                 } catch (e: Exception) {
                                     withContext(Dispatchers.Main) {
-                                        Toast.makeText(context, "${e::class.simpleName} ${e.message}", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, "${e::class.simpleName} ${e.message}", Toast.LENGTH_LONG).show()
                                     }
                                 }
                             }
@@ -258,7 +258,7 @@ class BookFragment: NoBackRefreshFragment(R.layout.fragment_book) {
                             }
                         } catch (e: Exception) {
                             withContext(Dispatchers.Main) {
-                                Toast.makeText(context, "${e::class.simpleName} ${e.message}", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "${e::class.simpleName} ${e.message}", Toast.LENGTH_LONG).show()
                             }
                         }
                     }

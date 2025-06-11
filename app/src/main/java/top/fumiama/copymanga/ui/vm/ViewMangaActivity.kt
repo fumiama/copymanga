@@ -78,7 +78,6 @@ class ViewMangaActivity : TitleActivityTemplate() {
     var clicked = 0
     private var isInSeek = false
     private var isInScroll = true
-    //private var progressLog: PropertiesTools? = null
     var scrollImages = arrayOf<ScaleImageView>()
     var scrollButtons = arrayOf<Button>()
     var scrollPositions = arrayOf<Int>()
@@ -192,7 +191,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
                     } else prepareImgFromWeb()
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    toolsBox.toastError(R.string.load_manga_error)
+                    toolsBox.toastErrorAndFinish(R.string.load_manga_error)
                 }
                 withContext(Dispatchers.Main) {
                     startPostponedEnterTransition()
@@ -350,7 +349,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
                 Log.d("MyVM", "[$i] 分析: ${it.name}, cut: $useCut")
             }
         } catch (e: Exception) {
-            withContext(Dispatchers.Main) { toolsBox.toastError(R.string.count_zip_entries_error) }
+            toolsBox.toastErrorAndFinish(R.string.count_zip_entries_error)
         }
         Log.d("MyVM", "开始加载控件")
         doWhenFinish(count)
@@ -377,9 +376,8 @@ class ViewMangaActivity : TitleActivityTemplate() {
                     loadOneImg()
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    withContext(Dispatchers.Main) {
-                        toolsBox.toastError(getString(R.string.load_page_number_error).format(currentItem))
-                    }
+                    toolsBox.toastError(getString(R.string.load_page_number_error).format(currentItem))
+                    finish()
                 }
             }
         } else {
@@ -637,7 +635,7 @@ class ViewMangaActivity : TitleActivityTemplate() {
             }*/
         } catch (e: Exception) {
             e.printStackTrace()
-            toolsBox.toastError(R.string.load_chapter_error)
+            toolsBox.toastErrorAndFinish(R.string.load_chapter_error)
             finish()
         }
     }

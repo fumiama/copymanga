@@ -1,6 +1,7 @@
 package top.fumiama.copymanga.storage
 
 import android.util.Log
+import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import top.fumiama.copymanga.MainActivity
 
@@ -20,7 +21,7 @@ data class PreferenceString(private val key: String, private var default: String
             }
             return default?:""
         }
-    val value: String
+    var value: String = defaultField
         get() {
             MainActivity.mainWeakReference?.get()?.let {
                 PreferenceManager.getDefaultSharedPreferences(it).apply {
@@ -32,7 +33,16 @@ data class PreferenceString(private val key: String, private var default: String
                     }
                 }
             }
-            Log.d("MyPS", "get default key $key value $defaultField")
-            return defaultField
+            Log.d("MyPS", "get default key $key value $field")
+            return field
+        }
+        set(value) {
+            field = value
+            Log.d("MyUPI", "set key $key value $value")
+            MainActivity.mainWeakReference?.get()?.let {
+                PreferenceManager.getDefaultSharedPreferences(it).apply {
+                    edit(commit = true) { putString(key, value) }
+                }
+            }
         }
 }

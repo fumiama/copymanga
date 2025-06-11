@@ -14,6 +14,8 @@ import top.fumiama.dmzj.copymanga.R
 import java.io.File
 
 object Config {
+    val api = Api()
+
     var imageProxy: Proxy? = null
         get() {
             if (!net_use_img_proxy.value) return null
@@ -55,16 +57,11 @@ object Config {
         }
 
     val proxyUrl = MainActivity.mainWeakReference?.get()?.getString(R.string.proxyUrl)!!
-    val reverseProxyUrl = PreferenceString(R.string.reverseProxyKeyID)
-    val networkApiUrl = PreferenceString("settings_cat_net_et_api_url", R.string.hostUrl)
-    val myHostApiUrl = Api()
-    val navTextInfo = UserPreferenceString("navTextInfo", R.string.navTextInfo)
-    val proxy_key = PreferenceString(R.string.imgProxyCodeKeyID)
-    val app_ver = PreferenceString("settings_cat_general_et_app_version", R.string.app_ver)
-    val platform = PreferenceString("settings_cat_general_et_platform", R.string.platform)
-    val token = UserPreferenceString("token", "", null)
     val pc_ua get() = MainActivity.mainWeakReference?.get()?.getString(R.string.pc_ua)?.format(app_ver.value)?:""
     val referer get() = MainActivity.mainWeakReference?.get()?.getString(R.string.referer)?.format(app_ver.value)?:""
+
+    val navTextInfo = UserPreferenceString("navTextInfo", R.string.navTextInfo)
+    val token = UserPreferenceString("token", "", null)
     val comandy_version = UserPreferenceInt("comandy_version", 0)
     val comancry_version = UserPreferenceInt("comancry_version", 0)
     val user_id = UserPreferenceString("user_id")
@@ -72,6 +69,8 @@ object Config {
     val nickname = UserPreferenceString("nickname")
     val avatar = UserPreferenceString("avatar")
 
+    val app_ver = PreferenceString("settings_cat_general_et_app_version", R.string.app_ver)
+    val platform = PreferenceString("settings_cat_general_et_platform", R.string.platform)
     val general_enable_transparent_system_bar = PreferenceBoolean("settings_cat_general_sw_enable_transparent_systembar", false)
     val general_disable_kanban_animation = PreferenceBoolean("settings_cat_general_sw_disable_kanban_animation", false)
     val general_card_per_row = PreferenceInt("settings_cat_general_sb_card_per_row", 0)
@@ -79,6 +78,9 @@ object Config {
     val manga_dl_max_batch = PreferenceInt("settings_cat_md_sb_max_batch", 16)
     val manga_dl_show_0m_manga = PreferenceBoolean("settings_cat_md_sw_show_0m_manga", false)
 
+    val reverseProxyUrl = PreferenceString(R.string.reverseProxyKeyID)
+    val networkApiUrl = PreferenceString("settings_cat_net_et_api_url", R.string.hostUrl)
+    val proxy_key = PreferenceString(R.string.imgProxyCodeKeyID)
     val net_use_gzip = PreferenceBoolean("settings_cat_net_sw_use_gzip", false)
     val net_use_json = PreferenceBoolean("settings_cat_net_sw_use_json", false)
     val net_platform = PreferenceBoolean("settings_cat_net_sw_platform", false)
@@ -88,7 +90,7 @@ object Config {
     val net_no_webp = PreferenceBoolean("settings_cat_net_no_webp", false)
     val net_use_comandy = PreferenceBoolean("settings_cat_net_sw_use_comandy", false)
     val net_use_foreign = PreferenceBoolean("settings_cat_net_sw_use_foreign", false)
-    private val net_use_img_proxy = PreferenceBoolean("settings_cat_net_sw_use_img_proxy", false)
+    val net_use_img_proxy = PreferenceBoolean("settings_cat_net_sw_use_img_proxy", false)
     val net_use_api_proxy = PreferenceBoolean("settings_cat_net_sw_use_api_proxy", false)
     val net_img_resolution = PreferenceString(R.string.imgResolutionKeyID)
     val net_umstring = PreferenceString("settings_cat_net_et_umstring")
