@@ -1,17 +1,19 @@
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'kotlin-android-extensions'
+    id 'kotlin-kapt'
+}
 
 android {
-    compileSdkVersion 32
-    buildToolsVersion "30.0.2"
-
     defaultConfig {
-        applicationId "top.fumiama.copymanga"
+        compileSdk 34
+        applicationId "top.fumiama.copymangaweb"
         minSdkVersion 23
-        targetSdkVersion 32
-        versionCode 12
-        versionName '1.4.3'
+        //noinspection OldTargetApi
+        targetSdkVersion 34
+        versionCode 13
+        versionName '1.5.0'
         resConfigs "zh", "zh-rCN"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -19,27 +21,38 @@ android {
 
     signingConfigs {
         release {
-            storeFile file('../../../OneDrive/swc/developer/android_key/open_key')
-            storePassword 'fumiama'
-            keyAlias 'default'
-            keyPassword 'fumiama'
-            v1SigningEnabled true
-            v2SigningEnabled true
+            enableV1Signing true
+            enableV2Signing true
+            enableV3Signing true
+            enableV4Signing true
+        }
+        debug {
+            enableV1Signing true
+            enableV2Signing true
+            enableV3Signing true
+            enableV4Signing true
         }
     }
-
     buildTypes {
         release {
             minifyEnabled true
             shrinkResources true
+            vcsInfo.include false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
         }
-        /*debug{
+        /*winrelease {r
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }*/
+        debug{
+            //minifyEnabled true
+            //shrinkResources true
+            //vcsInfo.include false
+            //proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug
+        }
     }
 
     compileOptions {
@@ -54,19 +67,43 @@ android {
     viewBinding {
         enabled = true
     }
+    bundle{
+        density{
+            enableSplit = true
+        }
+        language{
+            enableSplit = false
+        }
+    }
+    namespace 'top.fumiama.copymangaweb'
+}
+
+Properties props = new Properties()
+def propFile = file('signing.properties')
+if (propFile.canRead()){
+    props.load(new FileInputStream(propFile))
+
+    if (props!=null && props.containsKey('STORE_FILE') && props.containsKey('STORE_PASSWORD') &&
+            props.containsKey('KEY_ALIAS') && props.containsKey('KEY_PASSWORD')) {
+
+        android.signingConfigs.debug.storeFile = file(props['STORE_FILE'])
+        android.signingConfigs.debug.storePassword = props['STORE_PASSWORD']
+        android.signingConfigs.debug.keyAlias = props['KEY_ALIAS']
+        android.signingConfigs.debug.keyPassword = props['KEY_PASSWORD']
+    }
 }
 
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'androidx.core:core-ktx:1.8.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     implementation 'androidx.cardview:cardview:1.0.0'
-    implementation 'androidx.viewpager2:viewpager2:1.0.0'
+    implementation 'androidx.viewpager2:viewpager2:1.1.0'
     testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
-    implementation 'com.github.bumptech.glide:glide:4.12.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
-    implementation 'com.google.code.gson:gson:2.8.9'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0'
+    implementation 'com.google.code.gson:gson:2.13.1'
 }

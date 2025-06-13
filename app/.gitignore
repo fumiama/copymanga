@@ -1,2 +1,4 @@
 /build
 /release
+/debug
+/signing.properties
