@@ -12,8 +12,8 @@ android {
         minSdkVersion 23
         //noinspection OldTargetApi
         targetSdkVersion 34
-        versionCode 79
-        versionName '2.5.6'
+        versionCode 80
+        versionName '2.5.7'
         resourceConfigurations += ['zh', 'zh-rCN']
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
