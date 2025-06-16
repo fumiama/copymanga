@@ -1,1 +1,1 @@
-Third-party client for copymanga with better reading/downloading experience
+A third-party app for CopyManga, offering only basic features. For a more complete experience, please refer to the official version.

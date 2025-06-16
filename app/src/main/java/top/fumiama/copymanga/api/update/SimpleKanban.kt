@@ -1,7 +1,7 @@
 package top.fumiama.copymanga.api.update
 
 import android.util.Log
-import top.fumiama.copymanga.net.Client
+import top.fumiama.sdict.io.Client
 
 class SimpleKanban(private val client: Client, private val pwd: String) {   //must run in thread
     private val raw: ByteArray?
@@ -51,13 +51,13 @@ class SimpleKanban(private val client: Client, private val pwd: String) {   //mu
             client.sendMessage("${pwd}get${version}quit")
             client.receiveRawMessage(36)             //Welcome to simple kanban server. get
             val r = try {
-                val firstRecv = client.receiveRawMessage(4)
-                if(firstRecv.decodeToString() == "null") "null"
+                val firstReceive = client.receiveRawMessage(4)
+                if(firstReceive.decodeToString() == "null") "null"
                 else {
-                    val length = convert2Int(firstRecv)
+                    val length = convert2Int(firstReceive)
                     Log.d("MySK", "Msg len: $length")
                     var re = byteArrayOf()
-                    if(firstRecv.size > 4) re += firstRecv.copyOfRange(4, firstRecv.size)
+                    if(firstReceive.size > 4) re += firstReceive.copyOfRange(4, firstReceive.size)
                     re += client.receiveRawMessage(length - re.size)
                     if(re.isNotEmpty()) re.decodeToString() else "null"
                 }

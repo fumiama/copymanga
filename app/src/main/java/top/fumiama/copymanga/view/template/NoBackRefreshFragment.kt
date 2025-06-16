@@ -14,9 +14,8 @@ import top.fumiama.copymanga.api.Config
 import top.fumiama.copymanga.view.interaction.UITools
 import java.util.concurrent.atomic.AtomicBoolean
 
-open class NoBackRefreshFragment(private val layoutToLoad: Int): Fragment() {
+open class NoBackRefreshFragment(private val layoutToLoad: Int, private val noCacheView: Boolean = false): Fragment() {
     private var _rootView: View? = null
-    val rootView: View get() = _rootView!!
     var isFirstInflate = true
     var navBarHeight = 0
     private val disableAnimation get() = Config.general_disable_kanban_animation.value
@@ -25,7 +24,10 @@ open class NoBackRefreshFragment(private val layoutToLoad: Int): Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        //TODO: 支持自动重建
+        navBarHeight = context?.let { UITools.getNavigationBarHeight(it) } ?: 0
+
+        if (noCacheView) return inflater.inflate(layoutToLoad, container, false)
+
         if(_rootView == null) {
             isFirstInflate = true
             _rootView = inflater.inflate(layoutToLoad, container, false)
@@ -34,8 +36,7 @@ open class NoBackRefreshFragment(private val layoutToLoad: Int): Fragment() {
             isFirstInflate = false
             Log.d("MyNBRF", "not first inflate")
         }
-        navBarHeight = context?.let { UITools.getNavigationBarHeight(it) } ?: 0
-        return rootView
+        return _rootView!!
     }
     override fun onDestroy() {
         hideKanban()

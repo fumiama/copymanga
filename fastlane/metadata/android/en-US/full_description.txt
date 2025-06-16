@@ -1,7 +1,9 @@
-Third-party client for copymanga with better reading/downloading experience.
+A third-party app for CopyManga, offering only basic features. For a more complete experience, please refer to the official version.
 <h3>Features</h3>
-1. Browse homepage, category, rank, my downloads, tag, and author.
-2. View, search and read manga; log reading progress.
-3. Download manga. But due to force majeure, the downloading is slow and error-prone. This is not due to bad optimization, absolutely not.
-4. Read downloaded manga.
-5. Check update.
+1. Browse the homepage, categories, rankings, downloads, subscriptions, reading history, tags, and authors.
+2. View and search for manga, and read them directly. Reading progress is saved both locally and in the cloud (cloud sync does not track the exact page).
+3. Download manga. However, due to circumstances beyond our control, download speeds may be slow and errors can occur—definitely not because of optimization, absolutely not.
+4. Read and delete downloaded manga, or jump to the manga detail page directly from your downloads.
+5. Check for updates.
+6. Log in and log out.
+7. Subscribe or unsubscribe to manga.

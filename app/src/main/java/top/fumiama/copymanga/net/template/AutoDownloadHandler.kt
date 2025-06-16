@@ -11,11 +11,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import top.fumiama.copymanga.MainActivity.Companion.mainWeakReference
 import top.fumiama.copymanga.api.Config
 import top.fumiama.copymanga.json.ReturnBase
 import java.io.File
-import java.security.MessageDigest
 
 open class AutoDownloadHandler(
     private val url: () -> String, private val jsonClass: Class<*>,
@@ -24,6 +22,7 @@ open class AutoDownloadHandler(
     private val customCacheFile: File? = null): Handler(Looper.myLooper()!!) {
     private var checkTimes = 0
     var exit = false
+    var raw: String? = null
     override fun handleMessage(msg: Message) {
         super.handleMessage(msg)
         when(msg.what){
@@ -45,26 +44,16 @@ open class AutoDownloadHandler(
         downloadCoroutine()
         check()
     }
-    private fun toHexStr(byteArray: ByteArray) =
-        with(StringBuilder()) {
-            byteArray.forEach {
-                val hex = it.toInt() and (0xFF)
-                val hexStr = Integer.toHexString(hex)
-                if (hexStr.length == 1) append("0").append(hexStr)
-                else append(hexStr)
-            }
-            toString()
-        }
     private suspend fun downloadCoroutine() = withContext(Dispatchers.IO) {
-        val cacheName = toHexStr(MessageDigest.getInstance("MD5").digest(url().encodeToByteArray()))
-        val cacheFile = customCacheFile?:(mainWeakReference?.get()?.externalCacheDir?.let { File(it, cacheName) })
         if(loadFromCache) {
-            cacheFile?.let {
+            customCacheFile?.let {
                 if (it.exists()) {
                     var pass = true
                     it.inputStream().use { fi->
                         try {
-                            pass = setGsonItem(Gson().fromJson(fi.reader(), jsonClass))
+                            val data = fi.readBytes().decodeToString()
+                            raw = data
+                            pass = setGsonItem(Gson().fromJson(data, jsonClass))
                         } catch (e: Exception) {
                             e.printStackTrace()
                         }
@@ -77,10 +66,11 @@ open class AutoDownloadHandler(
         while (cnt++ <= 3) {
             try {
                 val data = Config.api.get(url())
+                raw = data
                 if(exit) return@withContext
                 val pass = setGsonItem(Gson().fromJson(data, jsonClass))
                 if (pass && loadFromCache) {
-                    cacheFile?.writeText(data)
+                    customCacheFile?.writeText(data)
                 }
                 if(!pass) {
                     delay(2000)

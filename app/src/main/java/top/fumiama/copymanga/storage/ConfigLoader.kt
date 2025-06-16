@@ -4,7 +4,7 @@ import top.fumiama.copymanga.api.Config
 import java.nio.ByteBuffer
 import java.util.zip.CRC32
 
-class DataLoader {
+class ConfigLoader {
     data class Settings(
         var appVer: String,
         var platform: String,

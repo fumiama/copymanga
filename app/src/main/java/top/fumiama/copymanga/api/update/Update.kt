@@ -16,10 +16,11 @@ import kotlinx.android.synthetic.main.dialog_progress.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import top.fumiama.copymanga.net.Client
+import top.fumiama.sdict.io.Client
 import top.fumiama.copymanga.view.interaction.UITools
 import top.fumiama.dmzj.copymanga.BuildConfig
 import top.fumiama.dmzj.copymanga.R
+import top.fumiama.sdict.utils.Utils.toHexStr
 import java.io.File
 import java.security.MessageDigest
 
@@ -63,7 +64,7 @@ object Update {
                     fetch(client, kanban, this@apply) {
                         lifecycleScope.launch {
                             val md5 = msg.substringAfterLast("md5:")
-                            if (md5 == UITools.toHexStr(
+                            if (md5 == toHexStr(
                                     MessageDigest.getInstance("MD5").digest(it)
                                 )
                             ) {

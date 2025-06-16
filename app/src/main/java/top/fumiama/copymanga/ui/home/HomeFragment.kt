@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.ImageButton
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -24,7 +25,6 @@ import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.line_word.view.*
 import kotlinx.android.synthetic.main.viewpage_horizonal.view.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity
@@ -40,150 +40,176 @@ import java.lang.ref.WeakReference
 import java.net.URLEncoder
 import java.nio.charset.Charset
 
-class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
+class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home, true) {
     lateinit var homeHandler: HomeHandler
+    val vm: HomeViewModel by viewModels()
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        if(isFirstInflate) {
-            val tb = (activity as MainActivity).toolsBox
-            val netInfo = tb.netInfo
-            if(netInfo != tb.transportStringNull && netInfo != tb.transportStringError)
-                MainActivity.member?.apply { lifecycleScope.launch {
-                    withContext(Dispatchers.IO) {
-                        Config.api.init()
-                        try {
-                            info()
-                        } catch (e: Exception) {
-                            Snackbar
-                                .make(view, "${e::class.simpleName} ${e.message}", Snackbar.LENGTH_LONG)
-                                .setTextMaxLines(10)
-                                .show()
-                        }
-                    }
-                } }
-            homeHandler = HomeHandler(WeakReference(this))
 
-            val theme = resources.newTheme()
-            swiperefresh?.setColorSchemeColors(
-                resources.getColor(R.color.colorAccent, theme),
-                resources.getColor(R.color.colorBlue2, theme),
-                resources.getColor(R.color.colorGreen, theme))
-            swiperefresh?.isEnabled = true
+        val theme = resources.newTheme()
+        swiperefresh?.setColorSchemeColors(
+            resources.getColor(R.color.colorAccent, theme),
+            resources.getColor(R.color.colorBlue2, theme),
+            resources.getColor(R.color.colorGreen, theme)
+        )
 
-            fhl?.setPadding(0, 0, 0, navBarHeight)
+        fhl?.setPadding(0, 0, 0, navBarHeight)
 
-            fhs?.apply {
-                isNestedScrollingEnabled = true
-                val recyclerView = findViewById<RecyclerView>(R.id.search_recycler_view)
-                recyclerView.isNestedScrollingEnabled = true
-                recyclerView.setPadding(0, 0, 0, navBarHeight)
-                setAdapterLayoutManager(LinearLayoutManager(context))
-                val adapter = ListViewHolder(recyclerView).RecyclerViewAdapter()
-                setAdapter(adapter)
-                navigationIconSupport = SearchLayout.NavigationIconSupport.SEARCH
-                setMicIconImageResource(R.drawable.ic_setting_search)
-                val micView = findViewById<ImageButton>(R.id.search_image_view_mic)
-                setClearFocusOnBackPressed(true)
-                setOnNavigationClickListener(object : SearchLayout.OnNavigationClickListener {
-                    override fun onNavigationClick(hasFocus: Boolean) {
-                        if (hasFocus()) {
-                            clearFocus()
-                        }
-                        else requestFocus()
-                    }
-                })
-                setTextHint(android.R.string.search_go)
-
-                var lastSearch = ""
-                setOnQueryTextListener(object : SearchLayout.OnQueryTextListener {
-                    var lastChangeTime = 0L
-                    override fun onQueryTextChange(newText: CharSequence): Boolean {
-                        if (newText.contentEquals("__notice_focus_change__") || newText.contentEquals(lastSearch)) return true
-                        lastSearch = newText.toString()
-                        postDelayed({
-                            lifecycleScope.launch {
-                                if (!newText.contentEquals(lastSearch)) return@launch
-                                val diff = System.currentTimeMillis() - lastChangeTime
-                                if(diff > 500) {
-                                    if (newText.isNotEmpty()) {
-                                        Log.d("MyHF", "new text: $newText")
-                                        adapter.refresh(newText)
+        lifecycleScope.launch {
+            withContext(Dispatchers.Main) {
+                vm.indexStructure.observe(viewLifecycleOwner) {
+                    Log.d("MyHF", "get observed: $it")
+                    if (it == null) { // init
+                        val tb = (activity as MainActivity).toolsBox
+                        val netInfo = tb.netInfo
+                        lifecycleScope.launch net@ {
+                            if (netInfo == tb.transportStringNull || netInfo == tb.transportStringError) {
+                                (activity as MainActivity).toolsBox.toastError(getString(R.string.web_error))
+                                fhov?.swipeRefreshLayout = swiperefresh
+                                swiperefresh.isRefreshing = false
+                                swiperefresh.setOnRefreshListener {
+                                    Log.d("MyHFH", "Refresh items.")
+                                    vm.saveIndexStructure(null)
+                                }
+                                hideKanban()
+                                return@net
+                            }
+                            MainActivity.member?.apply {
+                                withContext(Dispatchers.IO) {
+                                    Config.api.init()
+                                    try {
+                                        info()
+                                    } catch (e: Exception) {
+                                        withContext(Dispatchers.Main) {
+                                            Snackbar
+                                                .make(
+                                                    view,
+                                                    "${e::class.simpleName} ${e.message}",
+                                                    Snackbar.LENGTH_LONG
+                                                )
+                                                .setTextMaxLines(10)
+                                                .show()
+                                        }
                                     }
                                 }
-                            }
-                        }, 1024)
-                        lastChangeTime = System.currentTimeMillis()
-                        return true
-                    }
+                        } }
 
-                    override fun onQueryTextSubmit(query: CharSequence): Boolean {
-                        /*if(query.isNotEmpty()) {
-                            val key = query.toString()
-                            Toast.makeText(context, key, Toast.LENGTH_SHORT).show()
-                        }*/
-                        Log.d("MyHF", "recover text: $lastSearch")
-                        setTextQuery(lastSearch, false)
-                        return true
-                    }
-                })
+                        homeHandler = HomeHandler(WeakReference(this@HomeFragment))
+                        homeHandler.obtainMessage(-1, true).sendToTarget()
+                        homeHandler.startLoad()
 
-                setOnMicClickListener(object : SearchLayout.OnMicClickListener {
-                    val types = arrayOf("", "name", "author", "local")
-                    var i = 0
-                    override fun onMicClick() {
-                        val typeNames = resources.getStringArray(R.array.search_types)
-                        AlertDialog.Builder(context)
-                            .setTitle(R.string.set_search_types)
-                            .setIcon(R.mipmap.ic_launcher)
-                            .setSingleChoiceItems(ArrayAdapter(context, R.layout.line_choice_list, typeNames), i){ d, p ->
-                                adapter.type = types[p]
-                                i = p
-                                d.cancel()
-                            }.show()
+                        return@observe
                     }
-                })
+                    if(homeHandler.exit) return@observe
 
-                var isInFocusWaiting = false
-                setOnFocusChangeListener(object : SearchLayout.OnFocusChangeListener {
-                    override fun onFocusChange(hasFocus: Boolean) {
-                        Log.d("MyHF", "fhs onFocusChange: $hasFocus")
-                        if (isInFocusWaiting) return
-                        isInFocusWaiting = true
-                        postDelayed({
-                            navigationIconSupport = if (hasFocus) {
-                                setTextQuery("__notice_focus_change__", true)
-                                SearchLayout.NavigationIconSupport.ARROW
-                            }
-                            else {
-                                if (lastSearch.isNotEmpty()) {
-                                    micView?.visibility = View.VISIBLE
+                    swiperefresh?.isEnabled = true
+
+                    fhs?.apply {
+                        isNestedScrollingEnabled = true
+                        val recyclerView = findViewById<RecyclerView>(R.id.search_recycler_view)
+                        recyclerView.isNestedScrollingEnabled = true
+                        recyclerView.setPadding(0, 0, 0, navBarHeight)
+                        setAdapterLayoutManager(LinearLayoutManager(context))
+                        val adapter = ListViewHolder(recyclerView).RecyclerViewAdapter()
+                        setAdapter(adapter)
+                        navigationIconSupport = SearchLayout.NavigationIconSupport.SEARCH
+                        setMicIconImageResource(R.drawable.ic_setting_search)
+                        val micView = findViewById<ImageButton>(R.id.search_image_view_mic)
+                        setClearFocusOnBackPressed(true)
+                        setOnNavigationClickListener(object : SearchLayout.OnNavigationClickListener {
+                            override fun onNavigationClick(hasFocus: Boolean) {
+                                if (hasFocus()) {
+                                    clearFocus()
                                 }
-                                SearchLayout.NavigationIconSupport.SEARCH
+                                else requestFocus()
                             }
-                            isInFocusWaiting = false
-                        }, 300)
-                    }
-                })
+                        })
+                        setTextHint(android.R.string.search_go)
 
-                setOnTouchListener { _, e ->
-                    Log.d("MyHF", "fhns on touch")
-                    if (e.action == MotionEvent.ACTION_UP && mSearchEditText?.text?.isNotEmpty() == true) {
-                        ime?.hideSoftInputFromWindow(activity?.window?.decorView?.windowToken, 0)
-                    }
-                    false
-                }
-            }
+                        var lastSearch = ""
+                        setOnQueryTextListener(object : SearchLayout.OnQueryTextListener {
+                            var lastChangeTime = 0L
+                            override fun onQueryTextChange(newText: CharSequence): Boolean {
+                                if (newText.contentEquals("__notice_focus_change__") || newText.contentEquals(lastSearch)) return true
+                                lastSearch = newText.toString()
+                                postDelayed({
+                                    lifecycleScope.launch {
+                                        if (!newText.contentEquals(lastSearch)) return@launch
+                                        val diff = System.currentTimeMillis() - lastChangeTime
+                                        if(diff > 500) {
+                                            if (newText.isNotEmpty()) {
+                                                Log.d("MyHF", "new text: $newText")
+                                                adapter.refresh(newText)
+                                            }
+                                        }
+                                    }
+                                }, 1024)
+                                lastChangeTime = System.currentTimeMillis()
+                                return true
+                            }
 
-            lifecycleScope.launch{
-                withContext(Dispatchers.IO) {
-                    homeHandler.obtainMessage(-1, true).sendToTarget()
-                    while(!MainActivity.isDrawerClosed) delay(233)
-                    //homeHandler.sendEmptyMessage(6)    //removeAllViews
-                    //homeHandler.fhib = null
-                    delay(300)
-                    homeHandler.startLoad()
+                            override fun onQueryTextSubmit(query: CharSequence): Boolean {
+                                /*if(query.isNotEmpty()) {
+                                    val key = query.toString()
+                                    Toast.makeText(context, key, Toast.LENGTH_SHORT).show()
+                                }*/
+                                Log.d("MyHF", "recover text: $lastSearch")
+                                setTextQuery(lastSearch, false)
+                                return true
+                            }
+                        })
+
+                        setOnMicClickListener(object : SearchLayout.OnMicClickListener {
+                            val types = arrayOf("", "name", "author", "local")
+                            var i = 0
+                            override fun onMicClick() {
+                                val typeNames = resources.getStringArray(R.array.search_types)
+                                AlertDialog.Builder(context)
+                                    .setTitle(R.string.set_search_types)
+                                    .setIcon(R.mipmap.ic_launcher)
+                                    .setSingleChoiceItems(ArrayAdapter(context, R.layout.line_choice_list, typeNames), i){ d, p ->
+                                        adapter.type = types[p]
+                                        i = p
+                                        d.cancel()
+                                    }.show()
+                            }
+                        })
+
+                        var isInFocusWaiting = false
+                        setOnFocusChangeListener(object : SearchLayout.OnFocusChangeListener {
+                            override fun onFocusChange(hasFocus: Boolean) {
+                                Log.d("MyHF", "fhs onFocusChange: $hasFocus")
+                                if (isInFocusWaiting) return
+                                isInFocusWaiting = true
+                                postDelayed({
+                                    navigationIconSupport = if (hasFocus) {
+                                        setTextQuery("__notice_focus_change__", true)
+                                        SearchLayout.NavigationIconSupport.ARROW
+                                    }
+                                    else {
+                                        if (lastSearch.isNotEmpty()) {
+                                            micView?.visibility = View.VISIBLE
+                                        }
+                                        SearchLayout.NavigationIconSupport.SEARCH
+                                    }
+                                    isInFocusWaiting = false
+                                }, 300)
+                            }
+                        })
+
+                        setOnTouchListener { _, e ->
+                            Log.d("MyHF", "fhns on touch")
+                            if (e.action == MotionEvent.ACTION_UP && mSearchEditText?.text?.isNotEmpty() == true) {
+                                ime?.hideSoftInputFromWindow(activity?.window?.decorView?.windowToken, 0)
+                            }
+                            false
+                        }
+                    }
+                    homeHandler.sendEmptyMessage(2)         //setSwipe
+                    homeHandler.sendEmptyMessage(7)         //inflateBanner
+                    homeHandler.sendEmptyMessage(1)         //inflateCardLines
                 }
             }
         }
@@ -300,6 +326,7 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
 
             override fun getItemCount() = (results?.results?.list?.size?:0) + if (query?.isNotEmpty() == true) 1 else 0
 
+            @SuppressLint("NotifyDataSetChanged")
             suspend fun refresh(q: CharSequence) = withContext(Dispatchers.IO) {
                 query = q.toString()
                 activity?.apply {

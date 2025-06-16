@@ -8,7 +8,6 @@ import android.os.Message
 import android.util.Log
 import android.view.View
 import android.view.ViewTreeObserver
-import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.cardview.widget.CardView
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -28,13 +27,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import top.fumiama.copymanga.api.Config
 import top.fumiama.copymanga.json.ComicStructure
 import top.fumiama.copymanga.json.IndexStructure
 import top.fumiama.copymanga.net.template.AutoDownloadHandler
-import top.fumiama.copymanga.api.Config
-import top.fumiama.copymanga.view.operation.GlideHideLottieViewListener
 import top.fumiama.copymanga.view.interaction.Navigate
 import top.fumiama.copymanga.view.interaction.UITools
+import top.fumiama.copymanga.view.operation.GlideHideLottieViewListener
 import top.fumiama.dmzj.copymanga.R
 import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicInteger
@@ -47,7 +46,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
 ) {
     private val homeF get() = that.get()
     var index: IndexStructure? = null
-    var fhib: Banner? = null
+    private var fhib: Banner? = null
         get() {
             Log.d("MyHH", "Get fhib.")
             if (field == null) {
@@ -56,7 +55,6 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
             }
             return field
         }
-    private var indexLines = arrayOf<View>()
 
     override fun handleMessage(msg: Message) {
         super.handleMessage(msg)
@@ -72,16 +70,6 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
             2 -> homeF?.swiperefresh?.let { setSwipe(it) }
             3 -> setBanner(fhib!!)
             5 -> setBannerInfo(msg.obj as Banner)
-            6 -> {
-                homeF?.fhl?.let {
-                    val oa = ObjectAnimator.ofFloat(it, "alpha", 1f, 0f).setDuration(233)
-                    oa.doOnEnd { _ ->
-                        it.removeAllViews()
-                        it.alpha = 1f
-                    }
-                    oa.start()
-                }
-            }
             7 -> inflateBanner()
         }
     }
@@ -108,15 +96,22 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
             Toast.makeText(homeF?.context, R.string.web_error, Toast.LENGTH_SHORT).show()
         }
     }
-    override suspend fun doWhenFinishDownload() = withContext(Dispatchers.IO) {
+    override suspend fun doWhenFinishDownload(): Unit = withContext(Dispatchers.IO) {
         super.doWhenFinishDownload()
-        if(exit) return@withContext
-        sendEmptyMessage(2)         //setSwipe
-        sendEmptyMessage(7)         //inflateBanner
-        sendEmptyMessage(1)         //inflateCardLines
+        raw?.let {
+            Log.d("MyHFH", "save raw: $it")
+            homeF?.apply { activity?.runOnUiThread {
+                vm.saveIndexStructure(it)
+            } }
+        }
     }
 
-    private fun inflateBanner() = homeF?.fhl?.addView(fhib)
+    private fun inflateBanner() {
+        homeF?.fhl?.let { it.post {
+            fhib = null
+            it.addView(fhib)
+        } }
+    }
 
     private suspend fun inflateTopics() {
         index?.results?.topics?.list?.let {
@@ -242,29 +237,13 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
     private fun inflateCardLines() {
         homeF?.lifecycleScope?.launch {
             withContext(Dispatchers.IO) {
-                if (indexLines.isNotEmpty()) indexLines = arrayOf()
                 inflateRec()
                 inflateTopics()
                 inflateHot()
                 inflateNew()
                 inflateFinish()
                 inflateRank()
-                homeF?.fhl?.apply { post {
-                    for (i in indexLines.indices) {
-                        try {
-                            addView(indexLines[i])
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            (indexLines[i].parent as LinearLayout).apply {
-                                post {
-                                    removeAllViews()
-                                    homeF?.fhl?.addView(indexLines[i])
-                                }
-                            }
-                        }
-                    }
-                    obtainMessage(-1, false).sendToTarget()                 //closeLoad
-                } }
+                obtainMessage(-1, false).sendToTarget()                 //closeLoad
             }
         }
     }
@@ -306,14 +285,24 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
             homeF?.lifecycleScope?.launch {
                 withContext(Dispatchers.IO) {
                     homeF?.showKanban()
-                    fhib?.isAutoPlay = false
-                    index = null
-                    fhib?.adapter?.notifyDataSetChanged()
+                    fhib?.let {
+                        it.isAutoPlay = false
+                        index = null
+                        it.adapter?.notifyDataSetChanged()
+                    }
                     fhib = null
-                    indexLines = arrayOf()
-                    this@HomeHandler.sendEmptyMessage(6)    //removeAllViews
                     delay(300)
-                    this@HomeHandler.sendEmptyMessage(0)    //setLayouts
+                    withContext(Dispatchers.Main) {
+                        homeF?.fhl?.let {
+                            val oa = ObjectAnimator.ofFloat(it, "alpha", 1f, 0f).setDuration(233)
+                            oa.doOnEnd { _ ->
+                                it.removeAllViews()
+                                it.alpha = 1f
+                                homeF?.vm?.saveIndexStructure(null) // reload
+                            }
+                            oa.start()
+                        }
+                    }
                 }
             }
         }
@@ -322,15 +311,14 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
     private suspend fun allocateLine(
         title: String, iconResId: Int, comics: Array<ComicStructure>,
         finish: Boolean = false, isTopic: Boolean = false, onClick: (() -> Unit)? = null
-    ): Int = withContext(Dispatchers.IO) {
-        val p = indexLines.size
+    ): Unit = withContext(Dispatchers.IO) {
         val c = comics.size / 3
         homeF?.layoutInflater?.inflate(
             when(c){
                 1 -> R.layout.line_1bookline
                 2 -> R.layout.line_2bookline
                 3 -> R.layout.line_3bookline
-                else -> return@withContext -1
+                else -> return@withContext
         }, null, false)?.apply {
             withContext(Dispatchers.Main) {
                 scanCards(this@apply, comics, finish, isTopic)
@@ -341,9 +329,9 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
                     if(onClick != null) setOnClickListener { onClick() }
                 }
             }
-            indexLines += this
+            homeF?.fhl?.let { it.post { it.addView(this) } }
         }
-        return@withContext p
+        return@withContext
     }
 
     private suspend fun scanCards(v: View, comics: Array<ComicStructure>, finish: Boolean, isTopic: Boolean) = withContext(Dispatchers.IO) {

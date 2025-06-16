@@ -10,7 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.json.ComandyVersion
-import top.fumiama.copymanga.net.Client
+import top.fumiama.sdict.io.Client
 import top.fumiama.copymanga.net.DownloadTools
 import top.fumiama.copymanga.storage.PreferenceBoolean
 import top.fumiama.copymanga.storage.UserPreferenceInt

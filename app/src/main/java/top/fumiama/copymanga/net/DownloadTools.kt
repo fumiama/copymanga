@@ -7,6 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import top.fumiama.sdict.io.Client
 import top.fumiama.copymanga.api.Config
 import top.fumiama.copymanga.api.Config.proxyUrl
 import top.fumiama.copymanga.json.ComandyCapsule
@@ -34,7 +35,7 @@ object DownloadTools {
         connection.apply {
             Config.net_ua.value.let {
                 if (it.isEmpty()) return@let
-                setRequestProperty("user-agent", if (it == "__default_ua__") Config.pc_ua else it)
+                setRequestProperty("user-agent", if (it == Config.default_ua) Config.pc_ua else it)
             }
             Config.net_source.value.let { if(it.isNotEmpty()) setRequestProperty("source", it) }
             // deviceinfo
@@ -43,7 +44,7 @@ object DownloadTools {
             if (Config.net_use_gzip.value) setRequestProperty("accept-encoding", "gzip")
             setRequestProperty("authorization", "Token${Config.token.value?.let { tk ->
                 if (tk.isNotEmpty()) " $tk" else ""
-            }}")
+            }?:""}")
             if (Config.net_platform.value) setRequestProperty("platform", Config.platform.value)
             if (Config.net_referer.value) setRequestProperty("referer", Config.referer)
             if (Config.net_use_json.value) setRequestProperty("accept", "application/json")
@@ -66,7 +67,7 @@ object DownloadTools {
             capsule.headers = hashMapOf()
             Config.net_ua.value.let {
                 if (it.isEmpty()) return@let
-                capsule.headers["user-agent"] = if (it == "__default_ua__") Config.pc_ua else it
+                capsule.headers["user-agent"] = if (it == Config.default_ua) Config.pc_ua else it
             }
             Config.net_source.value.let { if(it.isNotEmpty()) capsule.headers["source"] = it }
             // deviceinfo
@@ -75,7 +76,7 @@ object DownloadTools {
             if (Config.net_use_gzip.value) capsule.headers["accept-encoding"] = "gzip"
             capsule.headers["authorization"] = "Token${Config.token.value?.let { tk ->
                 if (tk.isNotEmpty()) " $tk" else ""
-            }}"
+            }?:""}"
             if (Config.net_platform.value) capsule.headers["platform"] = Config.platform.value
             if (Config.net_referer.value) capsule.headers["referer"] = Config.referer
             if (Config.net_use_json.value) capsule.headers["accept"] = "application/json"

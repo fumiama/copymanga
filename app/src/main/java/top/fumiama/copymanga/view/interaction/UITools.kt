@@ -123,16 +123,6 @@ class UITools(that: Context?, w: WeakReference<Activity>? = null) {
         return listOf(numPerRow, w, totalWidth)
     }
     companion object {
-        fun toHexStr(byteArray: ByteArray) =
-            with(StringBuilder()) {
-                byteArray.forEach {
-                    val hex = it.toInt() and (0xFF)
-                    val hexStr = Integer.toHexString(hex)
-                    if (hexStr.length == 1) append("0").append(hexStr)
-                    else append(hexStr)
-                }
-                toString()
-            }
         @SuppressLint("DiscouragedApi", "InternalInsetResource")
         fun getNavigationBarHeight(context: Context): Int {
             val resources = context.resources

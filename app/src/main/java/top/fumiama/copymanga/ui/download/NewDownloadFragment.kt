@@ -21,7 +21,7 @@ import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.api.Config.manga_dl_show_0m_manga
 import top.fumiama.copymanga.api.manga.Downloader
 import top.fumiama.copymanga.api.manga.Reader
-import top.fumiama.copymanga.net.Client
+import top.fumiama.sdict.io.Client
 import top.fumiama.copymanga.storage.FileUtils
 import top.fumiama.copymanga.storage.FileUtils.compressToUserFile
 import top.fumiama.copymanga.view.interaction.Navigate

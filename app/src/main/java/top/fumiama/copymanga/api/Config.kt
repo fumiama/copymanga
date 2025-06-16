@@ -58,6 +58,7 @@ object Config {
 
     val proxyUrl = MainActivity.mainWeakReference?.get()?.getString(R.string.proxyUrl)!!
     val pc_ua get() = MainActivity.mainWeakReference?.get()?.getString(R.string.pc_ua)?.format(app_ver.value)?:""
+    val default_ua get() = MainActivity.mainWeakReference?.get()?.getString(R.string.default_ua)?:""
     val referer get() = MainActivity.mainWeakReference?.get()?.getString(R.string.referer)?.format(app_ver.value)?:""
 
     val navTextInfo = UserPreferenceString("navTextInfo", R.string.navTextInfo)
@@ -95,7 +96,7 @@ object Config {
     val net_img_resolution = PreferenceString(R.string.imgResolutionKeyID)
     val net_umstring = PreferenceString("settings_cat_net_et_umstring")
     val net_source = PreferenceString("settings_cat_net_et_source", R.string.source)
-    val net_ua = PreferenceString("settings_cat_net_et_ua", "__default_ua__")
+    val net_ua = PreferenceString("settings_cat_net_et_ua", R.string.default_ua)
 
     val view_manga_inverse_chapters = PreferenceBoolean("settings_cat_vm_sw_inverse_chapters", false)
     val view_manga_always_dark_bg = PreferenceBoolean("settings_cat_vm_sw_always_dark_bg", false)

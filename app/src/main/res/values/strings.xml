@@ -115,6 +115,7 @@
     <string name="TRANSPORT_ERROR">网络错误</string>
 
     <string name="pc_ua">COPY/%1$s</string>
+    <string name="default_ua">__default_ua__</string>
     <string name="app_ver">&appver;</string>
     <string name="referer">com.copymanga.app-%1$s</string>
     <string name="platform">&platform;</string>

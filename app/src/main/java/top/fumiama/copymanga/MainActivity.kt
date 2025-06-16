@@ -63,7 +63,7 @@ import top.fumiama.copymanga.api.update.Update
 import top.fumiama.copymanga.api.user.Member
 import top.fumiama.copymanga.lib.Comancry
 import top.fumiama.copymanga.lib.Comandy
-import top.fumiama.copymanga.storage.DataLoader
+import top.fumiama.copymanga.storage.ConfigLoader
 import top.fumiama.copymanga.strings.Base16384
 import top.fumiama.dmzj.copymanga.BuildConfig
 import top.fumiama.dmzj.copymanga.R
@@ -225,7 +225,7 @@ class MainActivity : AppCompatActivity() {
                         toolsBox.buildInfo("备份管理", "可选择导出或导入base16384格式配置项",
                             "导出", "导入", "取消", { // ok
                                 MaterialDialog(this).show {
-                                    input(prefill = Base16384.encode(DataLoader().toByteArray()))
+                                    input(prefill = Base16384.encode(ConfigLoader().toByteArray()))
                                     positiveButton(android.R.string.ok)
                                     title(null, "请复制配置文本并保存")
                                 }
@@ -233,7 +233,7 @@ class MainActivity : AppCompatActivity() {
                                 MaterialDialog(this).show {
                                     input { _, c ->
                                         try {
-                                            DataLoader(Base16384.decode(c.toString())).settings.export()
+                                            ConfigLoader(Base16384.decode(c.toString())).settings.export()
                                             navController?.apply {
                                                 currentDestination?.id?.let {
                                                     popBackStack()
