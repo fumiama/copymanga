@@ -16,7 +16,7 @@ import java.io.File
 import java.util.regex.Pattern
 import java.util.zip.ZipInputStream
 
-class DlListActivity:Activity() {
+class DlListActivity: Activity() {
     private var nullZipDirStr = emptyArray<String>()
     private var handler: DlLHandler? = null
 
@@ -27,6 +27,12 @@ class DlListActivity:Activity() {
         ttitle.text = intent.getStringExtra("title")
         handler = DlLHandler(Looper.myLooper()!!, this)
         handler?.obtainMessage(3, currentDir)?.sendToTarget()       //call scanFile
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        handler?.removeCallbacksAndMessages(null)
+        handler = null
     }
 
     fun scanFile(cd: File?){

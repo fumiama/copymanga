@@ -8,11 +8,11 @@ import android.net.NetworkCapabilities
 import android.widget.Toast
 import top.fumiama.copymangaweb.R
 import java.lang.ref.WeakReference
-import java.util.*
+import java.util.Calendar
 import kotlin.math.sqrt
 
-class ToolsBox(w: WeakReference<Any>) {
-    val zis = (w as WeakReference<Activity>).get()
+class ToolsBox(w: WeakReference<Activity>) {
+    val zis = w.get()
     val week: String
         get() {
             val cal = Calendar.getInstance()
@@ -27,7 +27,7 @@ class ToolsBox(w: WeakReference<Any>) {
                 else -> ""
             }
         }
-    val netinfo: String
+    val netInfo: String
         get() {
             val cm: ConnectivityManager =
                 zis?.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager

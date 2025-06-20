@@ -12,8 +12,8 @@ android {
         minSdkVersion 23
         //noinspection OldTargetApi
         targetSdkVersion 34
-        versionCode 13
-        versionName '1.5.0'
+        versionCode 14
+        versionName '1.5.1'
         resConfigs "zh", "zh-rCN"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -96,7 +96,7 @@ if (propFile.canRead()){
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation 'androidx.core:core-ktx:1.8.0'
+    implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.viewpager2:viewpager2:1.1.0'

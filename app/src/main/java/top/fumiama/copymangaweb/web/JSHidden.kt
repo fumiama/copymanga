@@ -4,11 +4,12 @@ import android.util.Log
 import android.webkit.JavascriptInterface
 import top.fumiama.copymangaweb.activity.DlActivity
 import top.fumiama.copymangaweb.activity.MainActivity.Companion.mh
+import top.fumiama.copymangaweb.handler.MainHandler
 
 class JSHidden {
     @JavascriptInterface
     fun loadChapter(listString: String){
-        Thread{mh?.obtainMessage(2, listString)?.sendToTarget()}.start()
+        mh?.obtainMessage(MainHandler.CALL_VIEW_MANGA, listString)?.sendToTarget()
     }
     @JavascriptInterface
     fun setTitle(title:String){
@@ -17,6 +18,14 @@ class JSHidden {
     }
     @JavascriptInterface
     fun setFab(content: String){
-        Thread{mh?.obtainMessage(4, content)?.sendToTarget()}.start()
+        mh?.obtainMessage(MainHandler.SET_FAB, content)?.sendToTarget()
+    }
+    @JavascriptInterface
+    fun setLoadingDialog(display: Boolean) {
+        mh?.sendEmptyMessage(if (display) MainHandler.SHOW_LOADING_DIALOG else MainHandler.HIDE_LOADING_DIALOG)
+    }
+    @JavascriptInterface
+    fun setLoadingDialogProgress(index: String, count: String) {
+        mh?.obtainMessage(MainHandler.SET_LOADING_DIALOG_TEXT, "$index/$count")?.sendToTarget()
     }
 }

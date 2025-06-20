@@ -5,4 +5,4 @@ pluginManagement {
 }
 
 include ':app'
-rootProject.name = "拷贝漫画"
+rootProject.name = "拷贝Lite"

@@ -34,9 +34,9 @@ class WebViewClient(private val context: Context, jsFileName: String):WebViewCli
         }.start()
     }
 
-    override fun onReceivedSslError(view: WebView?, handler: SslErrorHandler?, error: SslError?) {
+    /*override fun onReceivedSslError(view: WebView?, handler: SslErrorHandler?, error: SslError?) {
         handler?.proceed() // ignore ssl errors
-    }
+    }*/
 
     override fun shouldInterceptRequest(
         view: WebView?,

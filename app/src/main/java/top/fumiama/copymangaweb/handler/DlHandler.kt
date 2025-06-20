@@ -14,8 +14,7 @@ import java.lang.ref.WeakReference
 
 class DlHandler(activity: DlActivity, looper: Looper) : Handler(looper) {
     private val da = WeakReference(activity)
-    private val d 
-        get() = da.get()
+    private val d get() = da.get()
     private var size = 0
     private var refreshSize = true
 

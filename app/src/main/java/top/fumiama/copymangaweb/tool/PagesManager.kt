@@ -55,10 +55,10 @@ class PagesManager(w: WeakReference<ViewMangaActivity>) {
                     ).show()
                 }
             }
-        } else v?.hideObjs()
+        } else v?.hideSettings()
     }
     fun manageInfo(){
-        if (v?.clicked == false) v.showObjs() else v?.hideObjs()
+        if (v?.clicked == false) v.showSettings() else v?.hideSettings()
     }
     private fun doubleTapToast(goNext: Boolean){
         val hint = if(goNext) "下" else "上"

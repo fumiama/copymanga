@@ -1,5 +1,6 @@
 package top.fumiama.copymangaweb.tool
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.view.MotionEvent
 import android.view.View
@@ -15,12 +16,13 @@ class SetDraggable {
         return this
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     fun onto(target: View) {
         var lastX = 0
         var lastY = 0
         var firstX = 0
         var firstY = 0
-        target.setOnTouchListener { v: View, event: MotionEvent ->
+        target.post { target.setOnTouchListener { v: View, event: MotionEvent ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     lastX = event.rawX.toInt()
@@ -56,7 +58,7 @@ class SetDraggable {
                     lastY = event.rawY.toInt()
                 }
             }
-            abs(firstX - lastX) > 3 || abs(firstY - lastY) > 3      //移动微小则判断为点击
-        }
+            abs(firstX - lastX) > 3 || abs(firstY - lastY) > 3      // 移动微小则判断为点击
+        } }
     }
 }
