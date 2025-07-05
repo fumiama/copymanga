@@ -1,19 +1,17 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
-    id 'kotlin-android-extensions'
     id 'kotlin-kapt'
 }
 
 android {
     defaultConfig {
-        compileSdk 34
+        compileSdk 36
         applicationId "top.fumiama.copymangaweb"
         minSdkVersion 23
-        //noinspection OldTargetApi
-        targetSdkVersion 34
-        versionCode 14
-        versionName '1.5.1'
+        targetSdkVersion 36
+        versionCode 15
+        versionName '1.5.2'
         resConfigs "zh", "zh-rCN"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -67,6 +65,9 @@ android {
     viewBinding {
         enabled = true
     }
+    dataBinding {
+        enable = true
+    }
     bundle{
         density{
             enableSplit = true
@@ -96,7 +97,9 @@ if (propFile.canRead()){
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3"
+    implementation 'androidx.core:core-ktx:1.16.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.9.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.viewpager2:viewpager2:1.1.0'
@@ -106,4 +109,5 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:4.16.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0'
     implementation 'com.google.code.gson:gson:2.13.1'
+    implementation 'top.fumiama:sdict:0.1.1'
 }

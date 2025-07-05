@@ -7,8 +7,6 @@ import android.os.Bundle
 import android.os.Looper
 import android.widget.ArrayAdapter
 import android.widget.Toast
-import kotlinx.android.synthetic.main.activity_dlist.*
-import kotlinx.android.synthetic.main.widget_titlebar.*
 import top.fumiama.copymangaweb.R
 import top.fumiama.copymangaweb.databinding.ActivityDlistBinding
 import top.fumiama.copymangaweb.handler.DlLHandler
@@ -17,14 +15,15 @@ import java.util.regex.Pattern
 import java.util.zip.ZipInputStream
 
 class DlListActivity: Activity() {
+    private lateinit var mBinding: ActivityDlistBinding
     private var nullZipDirStr = emptyArray<String>()
     private var handler: DlLHandler? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val binding = ActivityDlistBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        ttitle.text = intent.getStringExtra("title")
+        mBinding = ActivityDlistBinding.inflate(layoutInflater)
+        setContentView(mBinding.root)
+        mBinding.myt.ttitle.text = intent.getStringExtra("title")
         handler = DlLHandler(Looper.myLooper()!!, this)
         handler?.obtainMessage(3, currentDir)?.sendToTarget()       //call scanFile
     }
@@ -42,8 +41,8 @@ class DlListActivity: Activity() {
             if(o1.endsWith(".zip") && o2.endsWith(".zip")) (10000*getFloat(o1) - 10000*getFloat(o2) + 0.5).toInt()
             else o1[0] - o2[0]
         }?.let {
-            mylv.adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, it)
-            mylv.setOnItemClickListener { _, _, position, _ ->
+            mBinding.mylv.adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, it)
+            mBinding.mylv.setOnItemClickListener { _, _, position, _ ->
                 val chosenFile = File(cd, it[position])
                 val chosenJson = File(chosenFile, "info.bin")
                 //Toast.makeText(this, "进入$chosenFile", Toast.LENGTH_SHORT).show()
@@ -69,7 +68,7 @@ class DlListActivity: Activity() {
                     }
                 }
             }
-            mylv.setOnItemLongClickListener { _, _, position, _ ->
+            mBinding.mylv.setOnItemLongClickListener { _, _, position, _ ->
                 val chosenFile = File(cd, it[position])
                 AlertDialog.Builder(this)
                     .setIcon(R.drawable.ic_launcher_foreground).setMessage("在此执行删除/查错?")

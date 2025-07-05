@@ -8,15 +8,11 @@ import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
+import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import android.widget.ToggleButton
 import com.google.gson.Gson
-import kotlinx.android.synthetic.main.activity_dl.*
-import kotlinx.android.synthetic.main.button_tbutton.view.*
-import kotlinx.android.synthetic.main.line_caption.view.*
-import kotlinx.android.synthetic.main.line_horizonal.view.*
-import kotlinx.android.synthetic.main.widget_downloadbar.*
-import kotlinx.android.synthetic.main.widget_titlebar.*
 import top.fumiama.copymangaweb.R
 import top.fumiama.copymangaweb.activity.MainActivity.Companion.mh
 import top.fumiama.copymangaweb.activity.template.ToolsBoxActivity
@@ -33,6 +29,7 @@ import java.io.File
 import java.lang.Thread.sleep
 
 class DlActivity : ToolsBoxActivity() {
+    lateinit var mBinding: ActivityDlBinding
     private var tbtncnt = 0
     private var isNewTitle = false
     var haveSElectAll = false
@@ -52,11 +49,11 @@ class DlActivity : ToolsBoxActivity() {
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val binding = ActivityDlBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        mBinding = ActivityDlBinding.inflate(layoutInflater)
+        setContentView(mBinding.root)
         mh?.saveUrlsOnly = true
         mangaDlTools = MangaDlTools(this)
-        dwh.apply { post {
+        mBinding.dwh.apply { post {
             settings.userAgentString = getString(R.string.pc_ua)
             webChromeClient = WebChromeClient()
             setWebViewClient("h.js")
@@ -72,16 +69,24 @@ class DlActivity : ToolsBoxActivity() {
         super.onDestroy()
     }
 
-    private fun showDlCard(){
-        //ObjectAnimator.ofFloat(csdwn, "alpha", 0.3f, 0.9f).setDuration(233).start()
-        ObjectAnimator.ofFloat(csdwn, "translationX", cdwnWidth.toFloat() * 0.9f, 0f).setDuration(
+    private fun showDlCard() {
+        ObjectAnimator.ofFloat(
+            mBinding.dldlbar.csdwn,
+            "translationX",
+            cdwnWidth.toFloat() * 0.9f,
+            0f
+        ).setDuration(
             233
         ).start()
     }
 
-    private fun hideDlCard(){
-        //ObjectAnimator.ofFloat(csdwn, "alpha", 0.9f, 0.3f).setDuration(233).start()
-        ObjectAnimator.ofFloat(csdwn, "translationX", 0f, cdwnWidth.toFloat() * 0.9f).setDuration(
+    private fun hideDlCard() {
+        ObjectAnimator.ofFloat(
+            mBinding.dldlbar.csdwn,
+            "translationX",
+            0f,
+            cdwnWidth.toFloat() * 0.9f
+        ).setDuration(
             233
         ).start()
     }
@@ -112,28 +117,28 @@ class DlActivity : ToolsBoxActivity() {
 
     @SuppressLint("SetTextI18n")
     fun setLayouts() {
-        ttitle.apply { post { text = comicName } }
+        mBinding.dtitle.ttitle.apply { post { text = comicName } }
         val widthData = toolsBox.calcWidthFromDp(8, 64)
         btnNumPerRow = widthData[0]
         btnw = widthData[1]
-        csdwn.apply { post { viewTreeObserver.addOnGlobalLayoutListener(object :
+        mBinding.dldlbar.csdwn.apply { post { viewTreeObserver.addOnGlobalLayoutListener(object :
             ViewTreeObserver.OnGlobalLayoutListener {
             override fun onGlobalLayout() {
-                cdwnWidth = csdwn.width
+                cdwnWidth = width
                 viewTreeObserver.removeOnGlobalLayoutListener(this)
             }
         }) } }
-        dllazys.onScrollListener = object : LazyScrollView.OnScrollListener {
+        mBinding.dllazys.onScrollListener = object : LazyScrollView.OnScrollListener {
             override fun onBottom() {}
-            override fun onScroll() { if (csdwn.translationX == 0f) hideDlCard() }
+            override fun onScroll() { if (mBinding.dldlbar.csdwn.translationX == 0f) hideDlCard() }
             override fun onTop() {}
         }
-        cdwn.let { it.post {
+        mBinding.dldlbar.cdwn.let { it.post {
             it.setOnClickListener {
-                if (csdwn.translationX != 0f) showDlCard()
+                if (mBinding.dldlbar.csdwn.translationX != 0f) showDlCard()
                 else if (checkedChapter == 0) hideDlCard()
                 else {
-                    pdwn.progress = 0
+                    mBinding.dldlbar.pdwn.progress = 0
                     if (canDl || checkedChapter == 0) canDl = false
                     else {
                         haveDlStarted = true
@@ -152,7 +157,9 @@ class DlActivity : ToolsBoxActivity() {
                 return@setOnLongClickListener true
             }
         } }
-        isearch.apply { post { setOnClickListener { showMultiSelectInfo() } } }
+        mBinding.dtitle.isearch.apply { post {
+            setOnClickListener { showMultiSelectInfo() }
+        } }
         Thread{ analyzeStructure() }.start()
     }
 
@@ -165,9 +172,9 @@ class DlActivity : ToolsBoxActivity() {
         ViewMangaActivity.zipList = arrayOf()
         Gson().fromJson(json?.reader(), Array<ComicStructure>::class.java)?.let {
             for (group in it) {
-                val tc = layoutInflater.inflate(R.layout.line_caption, ldwn, false)
-                tc.tcptn.text = group.name
-                ldwn.apply { post {
+                val tc = layoutInflater.inflate(R.layout.line_caption, mBinding.ldwn, false)
+                tc.findViewById<TextView>(R.id.tcptn).text = group.name
+                mBinding.ldwn.apply { post {
                     addView(
                         tc,
                         ViewGroup.LayoutParams(
@@ -176,7 +183,7 @@ class DlActivity : ToolsBoxActivity() {
                         )
                     )
                     addView(
-                        layoutInflater.inflate(R.layout.div_h, ldwn, false),
+                        layoutInflater.inflate(R.layout.div_h, mBinding.ldwn, false),
                         ViewGroup.LayoutParams(
                             ViewGroup.LayoutParams.MATCH_PARENT,
                             ViewGroup.LayoutParams.WRAP_CONTENT
@@ -227,45 +234,52 @@ class DlActivity : ToolsBoxActivity() {
     @SuppressLint("SetTextI18n")
     fun addToggleButton(title: String, url: String, caption: String) {
         if ((tbtncnt % btnNumPerRow == 0) || isNewTitle) {
-            toggleButtonLine = layoutInflater.inflate(R.layout.line_horizonal, ldwn, false)
-            ldwn.apply {
+            toggleButtonLine = layoutInflater.inflate(R.layout.line_horizonal, mBinding.ldwn, false)
+            mBinding.ldwn.apply {
                 val t = toggleButtonLine
                 post { addView(t) }
             }
             tbtncnt = 0
             isNewTitle = false
         }
-        val tbv = layoutInflater.inflate(R.layout.button_tbutton, toggleButtonLine.ltbtn, false)
-        tbv.tbtn.index = tbtnlist.size
-        tbtnlist += tbv.tbtn
-        tbv.tbtn.url = url
+        val tbv = layoutInflater.inflate(R.layout.button_tbutton, toggleButtonLine.findViewById(R.id.ltbtn), false)
+        val tbvTbtn = tbv.findViewById<ChapterToggleButton>(R.id.tbtn)?:return
+        tbvTbtn.index = tbtnlist.size
+        tbtnlist += tbvTbtn
+        tbvTbtn.url = url
         tbtncnt++
         val zipPosition = ViewMangaActivity.zipList?.size
         ViewMangaActivity.zipList = ViewMangaActivity.zipList?.plus("$title.zip")
-        tbv.tbtn.textOff = title
-        tbv.tbtn.textOn = title
-        tbv.tbtn.text = title
-        tbv.tbtn.hint = caption
-        tbv.tbtn.layoutParams.width = btnw
+        tbvTbtn.textOff = title
+        tbvTbtn.textOn = title
+        tbvTbtn.text = title
+        tbvTbtn.hint = caption
+        tbvTbtn.layoutParams.width = btnw
         val zipFile = File("${getExternalFilesDir("")}/$comicName/$caption/$title.zip")
         if (zipFile.exists()) {
-            tbv.tbtn.setBackgroundResource(R.drawable.rndbg_checked)
-            tbv.tbtn.isChecked = false
-            tbv.tbtn.freezesText = true
+            tbvTbtn.setBackgroundResource(R.drawable.rndbg_checked)
+            tbvTbtn.isChecked = false
+            tbvTbtn.freezesText = true
         }
         toggleButtonLine.apply { post {
-            ltbtn.addView(tbv)
+            findViewById<LinearLayout>(R.id.ltbtn)?.addView(tbv)
             invalidate()
         } }
-        tbv.tbtn.setOnClickListener { v ->
+        tbvTbtn.setOnClickListener { v ->
             val normalAct = (multiSelect && zipFile.exists()) || !zipFile.exists()
-            if (zipFile.exists() && !v.tbtn.isChecked) v.tbtn.apply { post { setBackgroundResource(R.drawable.rndbg_checked) } }
-            else if(normalAct) v.tbtn.apply { post { setBackgroundResource(R.drawable.toggle_button) } }
+            val tbtn = v.findViewById<ChapterToggleButton>(R.id.tbtn)?:return@setOnClickListener
+            if (zipFile.exists() && !tbtn.isChecked) tbtn.apply { post { setBackgroundResource(R.drawable.rndbg_checked) } }
+            else if(normalAct) tbtn.apply { post { setBackgroundResource(R.drawable.toggle_button) } }
             if (normalAct) {
-                if (v.tbtn.isChecked) tdwn.apply { post { text = "$dldChapter/${++checkedChapter}" } }
-                else tdwn.apply { post { text = "$dldChapter/${--checkedChapter}" } }
-            } else if(v.tbtn.isChecked) {
-                v.tbtn.apply { post {
+                mBinding.dldlbar.tdwn.apply {
+                    if (tbtn.isChecked) post {
+                        text = "$dldChapter/${++checkedChapter}"
+                    } else post {
+                        text = "$dldChapter/${--checkedChapter}"
+                    }
+                }
+            } else if(tbtn.isChecked) {
+                tbtn.apply { post {
                     isChecked = false
                     zipPosition?.let { Thread {
                         callVM(title, zipFile, it)
@@ -273,7 +287,7 @@ class DlActivity : ToolsBoxActivity() {
                 } }
             }
         }
-        tbv.tbtn.setOnLongClickListener {
+        tbvTbtn.setOnLongClickListener {
             if (zipFile.exists()) {
                 toolsBox.buildInfo("确认删除这些章节?",
                     "该操作将不可撤销",
@@ -282,8 +296,10 @@ class DlActivity : ToolsBoxActivity() {
                     "取消",
                     {
                         if (checkedChapter == 0) {
-                            it.tbtn.apply { post { isChecked = true } }
-                            tdwn.apply { post { text = "$dldChapter/${++checkedChapter}" } }
+                            tbvTbtn.apply { post { isChecked = true } }
+                            mBinding.dldlbar.tdwn.apply { post {
+                                text = "$dldChapter/${++checkedChapter}"
+                            } }
                         }
                         handler.sendEmptyMessage(7)
                     })
@@ -324,7 +340,9 @@ class DlActivity : ToolsBoxActivity() {
 
     @SuppressLint("SetTextI18n")
     fun updateProgressBar() {
-        tdwn.apply { post { text = "${++dldChapter}/$checkedChapter" } }
+        mBinding.dldlbar.tdwn.apply { post {
+            text = "${++dldChapter}/$checkedChapter"
+        } }
         setProgress2(dldChapter * 100 / checkedChapter, 233)
     }
 
@@ -336,6 +354,7 @@ class DlActivity : ToolsBoxActivity() {
     }
 
     fun setProgress2(end: Int, duration: Long) {
+        val pdwn = mBinding.dldlbar.pdwn
         ObjectAnimator.ofInt(
             pdwn,
             "progress",

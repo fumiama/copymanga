@@ -20,23 +20,6 @@ import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
-import kotlinx.android.synthetic.main.activity_main.w
-import kotlinx.android.synthetic.main.activity_viewmanga.infcard
-import kotlinx.android.synthetic.main.activity_viewmanga.oneinfo
-import kotlinx.android.synthetic.main.activity_viewmanga.vone
-import kotlinx.android.synthetic.main.activity_viewmanga.vp
-import kotlinx.android.synthetic.main.page_imgview.onei
-import kotlinx.android.synthetic.main.page_imgview.view.onei
-import kotlinx.android.synthetic.main.widget_infodrawer.idtblr
-import kotlinx.android.synthetic.main.widget_infodrawer.idtbvh
-import kotlinx.android.synthetic.main.widget_infodrawer.idtbvolturn
-import kotlinx.android.synthetic.main.widget_infodrawer.idtbvp
-import kotlinx.android.synthetic.main.widget_infodrawer.idtime
-import kotlinx.android.synthetic.main.widget_infodrawer.view.idc
-import kotlinx.android.synthetic.main.widget_titlebar.isearch
-import kotlinx.android.synthetic.main.widget_titlebar.ttitle
-import kotlinx.android.synthetic.main.widget_viewmangainfo.infseek
-import kotlinx.android.synthetic.main.widget_viewmangainfo.inftxtprogress
 import top.fumiama.copymangaweb.R
 import top.fumiama.copymangaweb.activity.MainActivity.Companion.wm
 import top.fumiama.copymangaweb.activity.template.ToolsBoxActivity
@@ -44,6 +27,7 @@ import top.fumiama.copymangaweb.databinding.ActivityViewmangaBinding
 import top.fumiama.copymangaweb.handler.TimeThread
 import top.fumiama.copymangaweb.tool.PropertiesTools
 import top.fumiama.copymangaweb.tool.ToolsBox
+import top.fumiama.copymangaweb.view.ScaleImageView
 import java.io.File
 import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
@@ -54,6 +38,7 @@ import java.util.zip.ZipInputStream
 class ViewMangaActivity : ToolsBoxActivity() {
     lateinit var handler: Handler
     lateinit var tt: TimeThread
+    lateinit var mBinding: ActivityViewmangaBinding
 
     var count = 0
     var clicked = false
@@ -90,13 +75,13 @@ class ViewMangaActivity : ToolsBoxActivity() {
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val binding = ActivityViewmangaBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        mBinding = ActivityViewmangaBinding.inflate(layoutInflater)
+        setContentView(mBinding.root)
         va = WeakReference(this)
         p = PropertiesTools(File("$filesDir/settings.properties"))
         r2l = p["r2l"] == "true"
         notUseVP = p["noAnimation"] == "true"
-        handler = MyHandler(infcard, toolsBox)
+        handler = MyHandler(toolsBox)
         tt = TimeThread(handler, 22)
         tt.canDo = true
         tt.start()
@@ -105,7 +90,7 @@ class ViewMangaActivity : ToolsBoxActivity() {
             setContentView(R.layout.dialog_unzipping)
             show()
         }
-        ttitle.apply { post { text = titleText } }
+        mBinding.oneinfo.inftitle.ttitle.apply { post { text = titleText } }
         Log.d("MyVM", "dlZip2View: $dlZip2View, mangaZip: $mangaZip")
         if(dlZip2View && mangaZip?.exists() != true) toolsBox.toastError("已经到头了~")
         else Thread {
@@ -121,7 +106,7 @@ class ViewMangaActivity : ToolsBoxActivity() {
                     if(pn > 0) {
                         pageNum = pn
                         pn = -1
-                    }else if(pn == -2){
+                    } else if(pn == -2){
                         pageNum = count
                         pn = -1
                     }
@@ -129,7 +114,8 @@ class ViewMangaActivity : ToolsBoxActivity() {
                     e.printStackTrace()
                     toolsBox.toastError("准备控件错误")
                 } finally {
-                    dialog?.hide()
+                    dialog?.dismiss()
+                    dialog = null
                 }
             }
         }.start()
@@ -158,13 +144,13 @@ class ViewMangaActivity : ToolsBoxActivity() {
     }
 
     private fun getPageNumber(): Int {
-        return if (r2l && !notUseVP) count - vp.currentItem
-        else (if (notUseVP) currentItem else vp.currentItem) + 1
+        return if (r2l && !notUseVP) count - mBinding.vp.currentItem
+        else (if (notUseVP) currentItem else mBinding.vp.currentItem) + 1
     }
 
     private fun setPageNumber(num: Int) {
-        if (r2l && !notUseVP) vp.apply { post { currentItem = count - num } }
-        else if (notUseVP) currentItem = num - 1 else vp.currentItem = num - 1
+        if (r2l && !notUseVP) mBinding.vp.apply { post { currentItem = count - num } }
+        else if (notUseVP) currentItem = num - 1 else mBinding.vp.currentItem = num - 1
     }
 
     private fun getImgBitmap(position: Int): Bitmap? {
@@ -176,18 +162,18 @@ class ViewMangaActivity : ToolsBoxActivity() {
     }
 
     private fun loadOneImg() {
-        if(dlZip2View) onei.apply { post { setImageBitmap(getImgBitmap(currentItem)) } }
+        if(dlZip2View) mBinding.vone.onei.apply { post { setImageBitmap(getImgBitmap(currentItem)) } }
         else Glide.with(this@ViewMangaActivity)
-            .load(imgUrls[currentItem])
+            .load(toolsBox.resolution.wrap(imgUrls[currentItem]))
             .placeholder(R.drawable.ic_dl)
             .dontAnimate()
-            .into(onei)
+            .into(mBinding.vone.onei)
         updateSeekBar()
     }
 
     private fun setIdPosition(position: Int) {
         infoDrawerDelta = position.toFloat()
-        infcard.apply { post { translationY = infoDrawerDelta } }
+        mBinding.infcard.root.apply { post { translationY = infoDrawerDelta } }
     }
 
     @SuppressLint("SetTextI18n")
@@ -202,10 +188,10 @@ class ViewMangaActivity : ToolsBoxActivity() {
     }
 
     private fun prepareIdBtLR() {
-        idtblr.apply { post {
+        mBinding.infcard.idtblr.apply { post {
             isChecked = r2l
             setOnClickListener {
-                if (idtblr.isChecked) p["r2l"] = "true"
+                if (mBinding.infcard.idtblr.isChecked) p["r2l"] = "true"
                 else p["r2l"] = "false"
                 Toast.makeText(this@ViewMangaActivity, "下次浏览生效", Toast.LENGTH_SHORT).show()
             }
@@ -213,10 +199,10 @@ class ViewMangaActivity : ToolsBoxActivity() {
     }
 
     private fun prepareIdBtVP() {
-        idtbvp.apply { post {
+        mBinding.infcard.idtbvp.apply { post {
             isChecked = notUseVP
             setOnClickListener {
-                if (idtbvp.isChecked) p["noAnimation"] = "true"
+                if (mBinding.infcard.idtbvp.isChecked) p["noAnimation"] = "true"
                 else p["noAnimation"] = "false"
                 Toast.makeText(this@ViewMangaActivity, "下次浏览生效", Toast.LENGTH_SHORT).show()
             }
@@ -225,10 +211,10 @@ class ViewMangaActivity : ToolsBoxActivity() {
 
     private fun prepareVP() {
         if (notUseVP) {
-            vp.apply { post { visibility = View.INVISIBLE } }
-            vone.apply { post { visibility = View.VISIBLE } }
+            mBinding.vp.apply { post { visibility = View.INVISIBLE } }
+            mBinding.vone.root.apply { post { visibility = View.VISIBLE } }
         } else {
-            vp.apply { post {
+            mBinding.vp.apply { post {
                 visibility = View.VISIBLE
                 adapter = ViewData(this).RecyclerViewAdapter()
                 registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
@@ -239,7 +225,7 @@ class ViewMangaActivity : ToolsBoxActivity() {
                 })
                 if (r2l) currentItem = count - 1
             } }
-            vone.apply { post { visibility = View.INVISIBLE } }
+            mBinding.vone.root.apply { post { visibility = View.INVISIBLE } }
         }
     }
 
@@ -251,8 +237,8 @@ class ViewMangaActivity : ToolsBoxActivity() {
 
     @SuppressLint("SetTextI18n")
     private fun prepareInfoBar(size: Int) {
-        oneinfo.apply { post { alpha = 0F } }
-        infseek.apply { post {
+        mBinding.oneinfo.root.apply { post { alpha = 0F } }
+        mBinding.oneinfo.infseek.apply { post {
             visibility = View.INVISIBLE
             setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(p0: SeekBar?, p1: Int, isHuman: Boolean) {
@@ -271,36 +257,38 @@ class ViewMangaActivity : ToolsBoxActivity() {
                 }
             })
         } }
-        isearch.apply { post {
+        mBinding.oneinfo.inftitle.isearch.apply { post {
             visibility = View.INVISIBLE
             setOnClickListener {
-                handler.sendEmptyMessage(3)
+                this@ViewMangaActivity.handler.sendEmptyMessage(3)
             }
         } }
-        inftxtprogress.apply { post { text = "$pageNum/$size" } }
+        mBinding.oneinfo.inftxtprogress.apply { post { text = "$pageNum/$size" } }
     }
 
     private fun prepareIdBtVH() {
-        idtbvh.apply { post {
+        mBinding.infcard.idtbvh.apply { post {
             isChecked = p["vertical"] == "true"
             setOnClickListener {
-                if (idtbvh.isChecked) {
-                    vp.apply { post { orientation = ViewPager2.ORIENTATION_VERTICAL } }
+                if (mBinding.infcard.idtbvh.isChecked) {
+                    mBinding.vp.apply { post { orientation = ViewPager2.ORIENTATION_VERTICAL } }
                     p["vertical"] = "true"
                 } else {
-                    vp.apply { post { orientation = ViewPager2.ORIENTATION_HORIZONTAL } }
+                    mBinding.vp.apply { post { orientation = ViewPager2.ORIENTATION_HORIZONTAL } }
                     p["vertical"] = "false"
                 }
             }
+            if (isChecked) mBinding.vp.apply { post {
+                orientation = ViewPager2.ORIENTATION_VERTICAL
+            } }
         } }
-        if (idtbvh.isChecked) vp.apply { post { orientation = ViewPager2.ORIENTATION_VERTICAL } }
     }
 
     private fun prepareIdBtVolTurn() {
-        idtbvolturn.apply { post {
+        mBinding.infcard.idtbvolturn.apply { post {
             isChecked = volTurnPage
             setOnClickListener {
-                if (idtbvolturn.isChecked) p["volturn"] = "true"
+                if (mBinding.infcard.idtbvolturn.isChecked) p["volturn"] = "true"
                 else p["volturn"] = "false"
             }
         } }
@@ -333,17 +321,17 @@ class ViewMangaActivity : ToolsBoxActivity() {
 
     @SuppressLint("SetTextI18n")
     private fun updateSeekText() {
-        inftxtprogress.apply { post { text = "$pageNum/$count" } }
+        mBinding.oneinfo.inftxtprogress.apply { post { text = "$pageNum/$count" } }
     }
 
     private fun updateSeekProgress() {
-        infseek.apply { post { progress = pageNum * 100 / count } }
+        mBinding.oneinfo.infseek.apply { post { progress = pageNum * 100 / count } }
     }
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         tt.canDo = false
-        wm?.get()?.w?.goBack()
+        wm?.get()?.mBinding?.w?.goBack()
         super.onBackPressed()
     }
 
@@ -366,11 +354,16 @@ class ViewMangaActivity : ToolsBoxActivity() {
             @SuppressLint("ClickableViewAccessibility", "SetTextI18n")
             override fun onBindViewHolder(holder: ViewData, position: Int) {
                 val pos = if (r2l) count - position - 1 else position
-                if(dlZip2View) getImgBitmap(pos)?.let {
-                    //Glide.with(this@ViewMangaActivity).load(it).placeholder(R.drawable.bg_comment).into(holder.itemView.onei)
-                    holder.itemView.onei.setImageBitmap(it)
+                holder.itemView.findViewById<ScaleImageView>(R.id.onei)?.let { oneImage ->
+                    if(dlZip2View) getImgBitmap(pos)?.let {
+                        //Glide.with(this@ViewMangaActivity).load(it).placeholder(R.drawable.bg_comment).into(holder.itemView.onei)
+                        oneImage.setImageBitmap(it)
+                    }
+                    else Glide.with(this@ViewMangaActivity)
+                        .load(toolsBox.resolution.wrap(imgUrls[pos])).placeholder(R.drawable.ic_dl)
+                        .dontAnimate().timeout(10000)
+                        .into(oneImage)
                 }
-                else Glide.with(this@ViewMangaActivity).load(imgUrls[pos]).placeholder(R.drawable.ic_dl).dontAnimate().timeout(10000).into(holder.itemView.onei)
             }
 
             override fun getItemCount(): Int {
@@ -380,34 +373,35 @@ class ViewMangaActivity : ToolsBoxActivity() {
     }
 
     fun showSettings() {
-        infseek.visibility = View.VISIBLE
-        isearch.visibility = View.VISIBLE
+        mBinding.oneinfo.infseek.visibility = View.VISIBLE
+        mBinding.oneinfo.inftitle.isearch.visibility = View.VISIBLE
+        val v = mBinding.oneinfo.root
         ObjectAnimator.ofFloat(
-            oneinfo,
+            v,
             "alpha",
-            oneinfo.alpha,
+            v.alpha,
             1F
         ).setDuration(233).start()
         clicked = true
     }
 
     fun hideSettings() {
+        val v = mBinding.oneinfo.root
         ObjectAnimator.ofFloat(
-            oneinfo,
+            v,
             "alpha",
-            oneinfo.alpha,
+            v.alpha,
             0F
         ).setDuration(233).start()
         clicked = false
-        infseek.postDelayed({
-            infseek.visibility = View.INVISIBLE
-            isearch.visibility = View.INVISIBLE
+        mBinding.oneinfo.infseek.postDelayed({
+            mBinding.oneinfo.infseek.visibility = View.INVISIBLE
+            mBinding.oneinfo.inftitle.isearch.visibility = View.INVISIBLE
         }, 300)
         handler.sendEmptyMessage(1)
     }
 
     class MyHandler(
-        private val infoCard: View,
         private val toolsBox: ToolsBox
     ) : Handler(Looper.myLooper()!!) {
         private var infoShown = false
@@ -432,19 +426,27 @@ class ViewMangaActivity : ToolsBoxActivity() {
                 } else {
                     showInfCard(); true
                 }
-                22 -> toolsBox.zis?.idtime?.text =
-                    SimpleDateFormat("HH:mm").format(Date()) + toolsBox.week + toolsBox.netInfo
+                22 -> (toolsBox.zis as? ViewMangaActivity)?.mBinding?.infcard?.idtime?.apply { post {
+                    text = SimpleDateFormat("HH:mm")
+                        .format(Date()) + toolsBox.week + toolsBox.netInfo
+                } }
             }
         }
 
         private fun showInfCard() {
-            ObjectAnimator.ofFloat(infoCard.idc, "alpha", 0.3F, 0.8F).setDuration(233).start()
-            ObjectAnimator.ofFloat(infoCard, "translationY", delta, 0F).setDuration(233).start()
+            Log.d("MyVM", "showInfCard delta $delta")
+            va?.get()?.mBinding?.infcard?.apply {
+                ObjectAnimator.ofFloat(idc, "alpha", 0.3F, 0.8F).setDuration(233).start()
+                ObjectAnimator.ofFloat(root, "translationY", delta, 0F).setDuration(233).start()
+            }
         }
 
         private fun hideInfCard() {
-            ObjectAnimator.ofFloat(infoCard.idc, "alpha", 0.8F, 0.3F).setDuration(233).start()
-            ObjectAnimator.ofFloat(infoCard, "translationY", 0F, delta).setDuration(233).start()
+            Log.d("MyVM", "hideInfCard delta $delta")
+            va?.get()?.mBinding?.infcard?.apply {
+                ObjectAnimator.ofFloat(idc, "alpha", 0.8F, 0.3F).setDuration(233).start()
+                ObjectAnimator.ofFloat(root, "translationY", 0F, delta).setDuration(233).start()
+            }
         }
     }
 

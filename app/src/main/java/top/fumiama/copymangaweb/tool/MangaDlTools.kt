@@ -2,7 +2,6 @@ package top.fumiama.copymangaweb.tool
 
 import top.fumiama.copymangaweb.R
 import top.fumiama.copymangaweb.activity.DlActivity
-import kotlinx.android.synthetic.main.activity_dl.*
 import java.io.File
 import java.lang.Thread.sleep
 import java.lang.ref.WeakReference
@@ -16,7 +15,7 @@ class MangaDlTools(activity: DlActivity) {
     var exit = false
     private val sem = Semaphore(1)
     private val da = WeakReference(activity)
-    private val d = da.get()
+    private val d get() = da.get()
     private val p = PropertiesTools(File("${d?.filesDir}/chapters.hash"))
     private var imgUrlsList: Array<Array<String>?>? = null
     private var chaptersCount = 0
@@ -38,7 +37,7 @@ class MangaDlTools(activity: DlActivity) {
         sem.acquire()
         da.get()?.apply {
             p[url.substringAfterLast("/")] = (chaptersCount++).toString()
-            runOnUiThread { dwh.loadUrl(url) }
+            runOnUiThread { mBinding.dwh.apply { post { loadUrl(url) } } }
         }
     }
 
@@ -48,7 +47,7 @@ class MangaDlTools(activity: DlActivity) {
     }
 
     fun dlChapterAndPackIntoZip(zipf: File, hash: String){
-        imgUrlsList?.get(p[hash].toInt())?.let {
+        imgUrlsList?.get(p[hash].toInt())?.let { images ->
             val dl = DownloadTools()
             zipf.parentFile?.let { if (!it.exists()) it.mkdirs() }
             if (zipf.exists()) zipf.delete()
@@ -56,12 +55,16 @@ class MangaDlTools(activity: DlActivity) {
             val zip = ZipOutputStream(CheckedOutputStream(zipf.outputStream(), CRC32()))
             zip.setLevel(9)
             var succeed = true
-            for (i in it.indices) {
+            for (i in images.indices) {
                 zip.putNextEntry(ZipEntry("$i.webp"))
                 var tryTimes = 3
                 var s = false
                 while (!s && tryTimes-- > 0){
-                    s = dl.getHttpContent(it[i], d?.getString(R.string.web_home_www), d?.getString(R.string.pc_ua))?.let { zip.write(it); true } ?: false
+                    s = d?.toolsBox?.resolution?.wrap(images[i])?.let { u ->
+                        dl.getHttpContent(u, d?.getString(R.string.web_home_www),
+                            d?.getString(R.string.pc_ua)
+                        )?.let { zip.write(it); true } ?: false
+                    } ?: false
                     if (!s) {
                         onDownloadedListener?.handleMessage(i + 1)
                         sleep(2000)

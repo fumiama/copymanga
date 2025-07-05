@@ -49,6 +49,9 @@ if (typeof (loaded) == "undefined") {
             invoke.hideRanobeTab();
             invoke.hideRanobeRack();
         }
+        else if (url.indexOf("/searchContent") > 0) {
+            invoke.hideRanobeRack();
+        }
         else if (url.indexOf("/comicContent/") > 0) setTimeout(function () { invoke.loadChapter() }, 1000);
         else if (url.indexOf("/details/comic/") > 0) GM.loadComic(url);
         else if (url.indexOf("/personal") > 0) {

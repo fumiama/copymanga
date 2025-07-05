@@ -7,7 +7,7 @@ import android.util.Log
 import android.webkit.WebView
 import top.fumiama.copymangaweb.web.WebViewClient
 
-@SuppressLint("JavascriptInterface")
+@SuppressLint("JavascriptInterface", "SetJavaScriptEnabled")
 class JSWebView : WebView {
     constructor(context: Context): super(context)
     constructor(context: Context, attributeSet: AttributeSet): super(context, attributeSet)

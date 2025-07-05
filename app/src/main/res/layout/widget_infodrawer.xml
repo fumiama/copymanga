@@ -1,97 +1,99 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:viewBindingIgnore="true"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    xmlns:tools="http://schemas.android.com/tools">
+    <androidx.constraintlayout.widget.ConstraintLayout
+        tools:viewBindingIgnore="true"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/idc"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:alpha="0.3"
-        android:background="#FCFCFF"
-        app:cardCornerRadius="16dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0">
+        <androidx.cardview.widget.CardView
+            android:id="@+id/idc"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:alpha="0.3"
+            android:background="#FCFCFF"
+            app:cardCornerRadius="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
-            <TextView
-                android:id="@+id/idtime"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:text="加载中..."
-                android:textColor="#000000"
-                app:layout_constraintBottom_toTopOf="@+id/idtbvh"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.0" />
+                <TextView
+                    android:id="@+id/idtime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:text="@string/loading"
+                    android:textColor="#000000"
+                    app:layout_constraintBottom_toTopOf="@+id/idtbvh"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.0" />
 
-            <ToggleButton
-                android:id="@+id/idtbvolturn"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginBottom="8dp"
-                android:background="@drawable/toggle_button"
-                android:textOff="音量翻页关"
-                android:textOn="音量翻页开"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/idtbvh"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/idtime"
-                app:layout_constraintVertical_bias="0.0" />
+                <ToggleButton
+                    android:id="@+id/idtbvolturn"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:background="@drawable/toggle_button"
+                    android:textOff="@string/vol_turn_off"
+                    android:textOn="@string/vol_turn_on"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/idtbvh"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/idtime"
+                    app:layout_constraintVertical_bias="0.0" />
 
-            <ToggleButton
-                android:id="@+id/idtbvh"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/toggle_button"
-                android:textOff="横向"
-                android:textOn="竖向"
-                app:layout_constraintEnd_toStartOf="@id/idtbvp"
-                app:layout_constraintStart_toEndOf="@+id/idtbvolturn"
-                app:layout_constraintTop_toTopOf="@+id/idtbvolturn" />
+                <ToggleButton
+                    android:id="@+id/idtbvh"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/toggle_button"
+                    android:textOff="@string/horizontal"
+                    android:textOn="@string/vertical"
+                    app:layout_constraintEnd_toStartOf="@id/idtbvp"
+                    app:layout_constraintStart_toEndOf="@+id/idtbvolturn"
+                    app:layout_constraintTop_toTopOf="@+id/idtbvolturn" />
 
-            <ToggleButton
-                android:id="@+id/idtbvp"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/toggle_button"
-                android:textOff="动画开"
-                android:textOn="动画关"
-                app:layout_constraintEnd_toStartOf="@+id/idtblr"
-                app:layout_constraintStart_toEndOf="@id/idtbvh"
-                app:layout_constraintTop_toTopOf="@+id/idtbvolturn" />
+                <ToggleButton
+                    android:id="@+id/idtbvp"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/toggle_button"
+                    android:textOff="@string/animation_on"
+                    android:textOn="@string/animation_off"
+                    app:layout_constraintEnd_toStartOf="@+id/idtblr"
+                    app:layout_constraintStart_toEndOf="@id/idtbvh"
+                    app:layout_constraintTop_toTopOf="@+id/idtbvolturn" />
 
-            <ToggleButton
-                android:id="@+id/idtblr"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/toggle_button"
-                android:textOff="←前 后→"
-                android:textOn="←后 前→"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/idtbvp"
-                app:layout_constraintTop_toTopOf="@+id/idtbvolturn" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </androidx.cardview.widget.CardView>
-</androidx.constraintlayout.widget.ConstraintLayout>
+                <ToggleButton
+                    android:id="@+id/idtblr"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/toggle_button"
+                    android:textOff="@string/arrow_front_back"
+                    android:textOn="@string/arrow_back_front"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/idtbvp"
+                    app:layout_constraintTop_toTopOf="@+id/idtbvolturn" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.cardview.widget.CardView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

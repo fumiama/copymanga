@@ -2,9 +2,10 @@ package top.fumiama.copymangaweb.web
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.net.http.SslError
 import android.util.Log
-import android.webkit.*
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
+import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
 import top.fumiama.copymangaweb.R

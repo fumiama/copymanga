@@ -1,13 +1,14 @@
 package top.fumiama.copymangaweb.handler
 
 import android.animation.ObjectAnimator
+import android.app.Dialog
 import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import android.view.View
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.dialog_unzipping.*
+import android.widget.TextView
+import top.fumiama.copymangaweb.R
 import top.fumiama.copymangaweb.activity.DlActivity.Companion.json
 import top.fumiama.copymangaweb.activity.MainActivity.Companion.wm
 import top.fumiama.copymangaweb.activity.ViewMangaActivity
@@ -16,6 +17,7 @@ import top.fumiama.copymangaweb.tool.MangaDlTools.Companion.wmdlt
 class MainHandler(looper: Looper):Handler(looper) {
     var saveUrlsOnly = false
     var showDlList = false
+    private var dialog: Dialog? = null
 
     override fun handleMessage(msg: Message) {
         super.handleMessage(msg)
@@ -26,12 +28,27 @@ class MainHandler(looper: Looper):Handler(looper) {
             SET_FAB -> setFab(msg.obj as String)
             HIDE_FAB -> hideFab()
             SET_FAB_TO_DOWNLOAD_LIST -> setFab2DlList()
-            SHOW_LOADING_DIALOG -> wm?.get()?.dialog?.show()
-            HIDE_LOADING_DIALOG -> wm?.get()?.dialog?.hide()
-            SET_LOADING_DIALOG_TEXT -> wm?.get()?.dialog?.tunz?.text = msg.obj as String
+            SHOW_LOADING_DIALOG -> {
+                wm?.get()?.apply {
+                    (dialog?:Dialog(this).also {
+                        it.setContentView(R.layout.dialog_unzipping)
+                        dialog = it
+                    }).show()
+                }
+            }
+            HIDE_LOADING_DIALOG -> {
+                dialog?.dismiss()
+                dialog = null
+            }
+            SET_LOADING_DIALOG_TEXT -> {
+                val t = msg.obj as? String?:return
+                dialog?.findViewById<TextView>(R.id.tunz)?.apply { post {
+                    text = t
+                } }
+            }
         }
     }
-    private fun loadUrlInHiddenWebView(url: String) { wm?.get()?.wh?.apply { post { loadUrl(url) } } }
+    private fun loadUrlInHiddenWebView(url: String) { wm?.get()?.mBinding?.wh?.apply { post { loadUrl(url) } } }
     private fun callViewManga(content: String) = Thread{
         val listChapter = content.split('\n')
         if(!saveUrlsOnly) {
@@ -48,7 +65,7 @@ class MainHandler(looper: Looper):Handler(looper) {
         }
     }.start()
     private fun updateLoadProgress(p: Int) {
-        wm?.get()?.pw?.apply { post {
+        wm?.get()?.mBinding?.pw?.apply { post {
             if(progress == 100 && p < 100) {
                 progress = 0
                 visibility = View.VISIBLE
@@ -57,8 +74,8 @@ class MainHandler(looper: Looper):Handler(looper) {
             if(p == 100) postDelayed({ visibility = View.GONE }, 500)
         } }
     }
-    private fun showFab() { wm?.get()?.fab?.apply { post { visibility = View.VISIBLE } } }
-    private fun hideFab() { wm?.get()?.fab?.apply { post { visibility = View.GONE } } }
+    private fun showFab() { wm?.get()?.mBinding?.fab?.apply { post { visibility = View.VISIBLE } } }
+    private fun hideFab() { wm?.get()?.mBinding?.fab?.apply { post { visibility = View.GONE } } }
     private fun setFab(content: String) {
         //Log.d("MyMH", "Get chapter json: $content")
         showDlList = false

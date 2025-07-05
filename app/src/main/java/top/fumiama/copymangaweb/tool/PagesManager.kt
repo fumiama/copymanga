@@ -2,7 +2,6 @@ package top.fumiama.copymangaweb.tool
 
 import android.content.Intent
 import android.widget.Toast
-import kotlinx.android.synthetic.main.activity_main.*
 import top.fumiama.copymangaweb.activity.MainActivity.Companion.wm
 import top.fumiama.copymangaweb.activity.ViewMangaActivity
 import java.io.File
@@ -14,8 +13,8 @@ class PagesManager(w: WeakReference<ViewMangaActivity>) {
     private var isEndR = false
     fun toPreviousPage(){ toPage(v?.r2l==true) }
     fun toNextPage(){ toPage(v?.r2l!=true) }
-    private fun judgePrevious() = v?.pageNum?:0 > 1
-    private fun judgeNext() = v?.pageNum?:0 < v?.count?:0
+    private fun judgePrevious() = (v?.pageNum ?: 0) > 1
+    private fun judgeNext() = (v?.pageNum ?: 0) < (v?.count ?: 0)
     private fun toPage(goNext:Boolean){
         if (v?.clicked == false) {
             if (if(goNext)judgeNext() else judgePrevious()) {
@@ -31,13 +30,16 @@ class PagesManager(w: WeakReference<ViewMangaActivity>) {
                 if (chapterUrl != null) {
                     if (if(goNext)isEndR else isEndL) {
                         if(!goNext) ViewMangaActivity.pn = -2
-                        wm?.get()?.w?.loadUrl("javascript:invoke.clickClass(\"comicControlBottomTopClick\",${if(goNext)1 else 0});")
+                        wm?.get()?.mBinding?.w?.apply { post {
+                            loadUrl("javascript:invoke.clickClass(\"comicControlBottomTopClick\",${if(goNext)1 else 0});")
+                        } }
                         v.tt.canDo = false
                         v.finish()
                     } else doubleTapToast(goNext)
                 } else {
                     val newZipPosition = ViewMangaActivity.zipPosition + (if(goNext) 1 else -1)
-                    if(v.dlZip2View && newZipPosition >= 0 && newZipPosition < ViewMangaActivity.zipList?.size?:0){
+                    if(v.dlZip2View && newZipPosition >= 0 && newZipPosition <
+                        (ViewMangaActivity.zipList?.size ?: 0)){
                         if (if(goNext)isEndR else isEndL){
                             if(!goNext) ViewMangaActivity.pn = -2
                             ViewMangaActivity.zipPosition = newZipPosition

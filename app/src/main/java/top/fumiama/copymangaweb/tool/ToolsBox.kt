@@ -5,14 +5,15 @@ import android.app.AlertDialog
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.view.View
 import android.widget.Toast
 import top.fumiama.copymangaweb.R
 import java.lang.ref.WeakReference
 import java.util.Calendar
 import kotlin.math.sqrt
 
-class ToolsBox(w: WeakReference<Activity>) {
-    val zis = w.get()
+class ToolsBox(private val w: WeakReference<Activity>) {
+    val zis get () = w.get()
     val week: String
         get() {
             val cal = Calendar.getInstance()
@@ -43,6 +44,8 @@ class ToolsBox(w: WeakReference<Activity>) {
                 }
             } ?: "错误"
         }
+    val resolution = Resolution(Regex("c\\d+x\\."))
+
     fun toastError(s: String, willFinish: Boolean = true) {
         Toast.makeText(zis?.applicationContext, s, Toast.LENGTH_SHORT).show()
         if (willFinish) zis?.finish()
@@ -65,6 +68,26 @@ class ToolsBox(w: WeakReference<Activity>) {
         txtCancel?.let { info.setNegativeButton(it) { _, _ -> cancel?.let { it() } } }
         txtN?.let { info.setNeutralButton(it) { _, _ -> neutral?.let { it() } } }
         info.show()
+    }
+    fun buildAlertWithView(
+        title: String,
+        view: View,
+        txtOk: String? = null,
+        txtN: String? = null,
+        txtCancel: String? = null,
+        ok: (() -> Unit)? = null,
+        neutral: (() -> Unit)? = null,
+        cancel: (() -> Unit)? = null
+    ): AlertDialog {
+        val info = AlertDialog.Builder(zis)
+        info.setIcon(R.drawable.ic_launcher_foreground)
+        info.setTitle(title)
+
+        info.setView(view)
+        txtOk?.let { info.setPositiveButton(it) { _, _ -> ok?.let { it() } } }
+        txtCancel?.let { info.setNegativeButton(it) { _, _ -> cancel?.let { it() } } }
+        txtN?.let { info.setNeutralButton(it) { _, _ -> neutral?.let { it() } } }
+        return info.show()
     }
     fun dp2px(dp:Int):Int?{
         return zis?.resources?.displayMetrics?.density?.let { (dp * it + 0.5).toInt()}

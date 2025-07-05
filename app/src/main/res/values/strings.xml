@@ -7,4 +7,15 @@
     <string name="pc_ua">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.75 Safari/537.36 Edg/86.0.622.38</string>
 
     <string name="blocked_ad">已屏蔽其他网站页面</string>
+    <string name="loading">加载中…</string>
+    <string name="vol_turn_off">音量翻页关</string>
+    <string name="vol_turn_on">音量翻页开</string>
+    <string name="horizontal">横向</string>
+    <string name="vertical">竖向</string>
+    <string name="animation_on">动画开</string>
+    <string name="animation_off">动画关</string>
+    <string name="arrow_front_back">←前 后→</string>
+    <string name="arrow_back_front">←后 前→</string>
+    <string name="zero_per_zero">0/0</string>
+    <string name="hint_download_card">单击此处下载/暂停 长按此处全选/清空 长按某话删除</string>
 </resources>

@@ -1,7 +1,6 @@
 package top.fumiama.copymangaweb.activity
 
 import android.annotation.SuppressLint
-import android.app.Dialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -9,14 +8,17 @@ import android.os.Looper
 import android.view.View
 import android.webkit.ValueCallback
 import android.webkit.WebView
-import kotlinx.android.synthetic.main.activity_main.fab
-import kotlinx.android.synthetic.main.activity_main.w
-import kotlinx.android.synthetic.main.activity_main.wh
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import top.fumiama.copymangaweb.BuildConfig
 import top.fumiama.copymangaweb.R
 import top.fumiama.copymangaweb.activity.template.ToolsBoxActivity
 import top.fumiama.copymangaweb.databinding.ActivityMainBinding
 import top.fumiama.copymangaweb.handler.MainHandler
 import top.fumiama.copymangaweb.tool.SetDraggable
+import top.fumiama.copymangaweb.tool.Updater
 import top.fumiama.copymangaweb.web.JS
 import top.fumiama.copymangaweb.web.JSHidden
 import top.fumiama.copymangaweb.web.WebChromeClient
@@ -24,16 +26,13 @@ import java.lang.ref.WeakReference
 
 class MainActivity: ToolsBoxActivity() {
     var uploadMessageAboveL: ValueCallback<Array<Uri>>? = null
-    var dialog: Dialog? = null
+    lateinit var mBinding: ActivityMainBinding
 
     @SuppressLint("JavascriptInterface")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        dialog = Dialog(this)
-        dialog?.setContentView(R.layout.dialog_unzipping)
+        mBinding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(mBinding.root)
 
         wm = WeakReference(this)
         mh = MainHandler(Looper.myLooper()!!)
@@ -43,27 +42,33 @@ class MainActivity: ToolsBoxActivity() {
                 return@let
             }
 
+            lifecycleScope.launch {
+                withContext(Dispatchers.IO) {
+                    goCheckUpdate(false)
+                }
+            }
+
             WebView.setWebContentsDebuggingEnabled(true)
-            w.apply { post {
+            mBinding.w.apply { post {
                 setWebViewClient("i.js")
                 webChromeClient = WebChromeClient()
                 loadJSInterface(JS())
                 loadUrl(getString(R.string.web_home))
             } }
 
-            wh.apply { post {
+            mBinding.wh.apply { post {
                 settings.userAgentString = getString(R.string.pc_ua)
                 webChromeClient = WebChromeClient()
                 setWebViewClient("h.js")
                 loadJSInterface(JSHidden())
             } }
         }
-        SetDraggable().with(this).onto(fab)
+        SetDraggable().with(this).onto(mBinding.fab)
     }
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        if(w.canGoBack()) w.goBack()
+        if(mBinding.w.canGoBack()) mBinding.w.goBack()
         else super.onBackPressed()
     }
 
@@ -93,6 +98,15 @@ class MainActivity: ToolsBoxActivity() {
                 uploadMessageAboveL = null
             }
         }
+    }
+
+    private suspend fun goCheckUpdate(ignoreSkip: Boolean) {
+        Updater(
+            WeakReference(this),
+            toolsBox,
+            ignoreSkip,
+            getPreferences(MODE_PRIVATE).getInt("skipVersion", 0)
+        ).check(BuildConfig.VERSION_CODE)
     }
 
     fun onFabClicked(v: View){

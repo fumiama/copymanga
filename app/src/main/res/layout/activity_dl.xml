@@ -50,6 +50,7 @@
     </top.fumiama.copymangaweb.view.LazyScrollView>
 
     <include
+        android:id="@+id/dldlbar"
         layout="@layout/widget_downloadbar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

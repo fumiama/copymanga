@@ -7,12 +7,12 @@ import java.util.concurrent.Callable
 import java.util.concurrent.FutureTask
 
 class DownloadTools {
-    fun getHttpContent(Url: String, refer: String? = null, ua: String? = null): ByteArray? {
-        Log.d("Mydl", "getHttp: $Url")
+    fun getHttpContent(u: String, refer: String? = null, ua: String? = null): ByteArray? {
+        Log.d("Mydl", "getHttp: $u")
         var ret: ByteArray? = null
         val task = FutureTask(Callable {
             try {
-                val connection = URL(Url).openConnection() as HttpURLConnection
+                val connection = URL(u).openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
                 connection.connectTimeout = 10000
                 connection.readTimeout = 10000

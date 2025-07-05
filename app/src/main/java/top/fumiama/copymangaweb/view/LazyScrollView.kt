@@ -21,13 +21,11 @@ class LazyScrollView : ScrollView {
             when (event.action) {
                 MotionEvent.ACTION_UP -> this.postDelayed({
                     if (view != null && onScrollListener != null) {
-                        if (onScrollListener != null) {
-                            //Log.d("MyS", "view?.measuredHeight: ${view?.measuredHeight}, scrollY: $scrollY, height: $height")
-                            when {
-                                view?.measuredHeight?:0 <= scrollY + height -> onScrollListener?.onBottom()
-                                scrollY == 0 -> onScrollListener?.onTop()
-                                else -> onScrollListener?.onScroll()
-                            }
+                        //Log.d("MyS", "view?.measuredHeight: ${view?.measuredHeight}, scrollY: $scrollY, height: $height")
+                        when {
+                            (view?.measuredHeight ?: 0) <= scrollY + height -> onScrollListener?.onBottom()
+                            scrollY == 0 -> onScrollListener?.onTop()
+                            else -> onScrollListener?.onScroll()
                         }
                     }
                 }, 233)
