@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Looper
 import android.view.View
+import android.view.WindowManager
 import android.webkit.ValueCallback
 import android.webkit.WebView
 import androidx.lifecycle.lifecycleScope
@@ -14,9 +15,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymangaweb.BuildConfig
 import top.fumiama.copymangaweb.R
+import top.fumiama.copymangaweb.activity.DlActivity.Companion.json
 import top.fumiama.copymangaweb.activity.template.ToolsBoxActivity
+import top.fumiama.copymangaweb.activity.viewmodel.MainViewModel
 import top.fumiama.copymangaweb.databinding.ActivityMainBinding
 import top.fumiama.copymangaweb.handler.MainHandler
+import top.fumiama.copymangaweb.tool.MangaDlTools.Companion.wmdlt
 import top.fumiama.copymangaweb.tool.SetDraggable
 import top.fumiama.copymangaweb.tool.Updater
 import top.fumiama.copymangaweb.web.JS
@@ -26,19 +30,23 @@ import java.lang.ref.WeakReference
 
 class MainActivity: ToolsBoxActivity() {
     var uploadMessageAboveL: ValueCallback<Array<Uri>>? = null
+    var saveUrlsOnly = false
     lateinit var mBinding: ActivityMainBinding
+    private val mViewModel = MainViewModel()
 
     @SuppressLint("JavascriptInterface")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mBinding = ActivityMainBinding.inflate(layoutInflater)
+        mBinding.mainViewModel = mViewModel
+        mBinding.lifecycleOwner = this
         setContentView(mBinding.root)
 
         wm = WeakReference(this)
         mh = MainHandler(Looper.myLooper()!!)
         toolsBox.netInfo.let {
             if(it == "无网络" || it == "错误") {
-                mh?.sendEmptyMessage(MainHandler.SET_FAB_TO_DOWNLOAD_LIST)
+                setFab2DlList()
                 return@let
             }
 
@@ -109,10 +117,41 @@ class MainActivity: ToolsBoxActivity() {
         ).check(BuildConfig.VERSION_CODE)
     }
 
-    fun onFabClicked(v: View){
+    fun loadHiddenUrl(u: String) {
+        mBinding.wh.apply { post { loadUrl(u) } }
+    }
+
+    fun updateLoadProgress(p: Int) {
+        lifecycleScope.launch { mViewModel.updateLoadProgress(p) }
+    }
+
+    fun setFab(content: String) {
+        json = content
+        lifecycleScope.launch {
+            withContext(Dispatchers.Main) {
+                mViewModel.showDlList.value = false
+                mViewModel.setFabVisibility(true)
+            }
+        }
+    }
+
+    fun setFab2DlList() {
+        lifecycleScope.launch {
+            withContext(Dispatchers.Main) {
+                mViewModel.showDlList.value = true
+                mViewModel.setFabVisibility(true)
+            }
+        }
+    }
+
+    fun hideFab() {
+        lifecycleScope.launch { mViewModel.setFabVisibility(false) }
+    }
+
+    fun onFabClicked(v: View) {
         DlListActivity.currentDir = getExternalFilesDir("")
         startActivity(
-            Intent(this, (if(mh?.showDlList == true) DlListActivity::class else DlActivity::class).java)
+            Intent(this, (if(mViewModel.showDlList.value == true) DlListActivity::class else DlActivity::class).java)
                 .putExtra("title", "我的下载")
         )
     }
@@ -126,6 +165,26 @@ class MainActivity: ToolsBoxActivity() {
                     .setType("image/*"), "Image Chooser"
             ), FILE_CHOOSER_RESULT_CODE
         )
+    }
+
+    fun callViewManga(content: String) {
+        lifecycleScope.launch { withContext(Dispatchers.IO) {
+            val listChapter = content.split('\n')
+            if(!saveUrlsOnly) {
+                ViewMangaActivity.titleText = listChapter[0].substringBeforeLast(' ')
+                ViewMangaActivity.nextChapterUrl = listChapter[1].let { if(it == "null") null else it }
+                ViewMangaActivity.previousChapterUrl = listChapter[2].let { if(it == "null") null else it }
+                ViewMangaActivity.imgUrls = arrayOf()
+                for(i in 3 until listChapter.size) ViewMangaActivity.imgUrls += listChapter[i]
+                withContext(Dispatchers.Main) {
+                    startActivity(Intent(this@MainActivity, ViewMangaActivity::class.java))
+                }
+            } else {
+                var imgs = arrayOf<String>()
+                for(i in 3 until listChapter.size) imgs += listChapter[i]
+                wmdlt?.get()?.setChapterImages(listChapter[0].substringAfterLast(' '), imgs)
+            }
+        } }
     }
 
     companion object {

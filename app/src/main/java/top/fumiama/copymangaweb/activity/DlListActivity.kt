@@ -62,7 +62,7 @@ class DlListActivity: Activity() {
                         ViewMangaActivity.zipFile = chosenFile
                         ViewMangaActivity.titleText = it[position]
                         ViewMangaActivity.zipPosition = position
-                        ViewMangaActivity.zipList = it as Array<String>
+                        ViewMangaActivity.zipList = it.toList().toTypedArray()
                         ViewMangaActivity.cd = cd
                         startActivity(Intent(this, ViewMangaActivity::class.java))
                     }

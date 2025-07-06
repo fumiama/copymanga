@@ -14,7 +14,7 @@ import android.widget.Toast
 import android.widget.ToggleButton
 import com.google.gson.Gson
 import top.fumiama.copymangaweb.R
-import top.fumiama.copymangaweb.activity.MainActivity.Companion.mh
+import top.fumiama.copymangaweb.activity.MainActivity.Companion.wm
 import top.fumiama.copymangaweb.activity.template.ToolsBoxActivity
 import top.fumiama.copymangaweb.data.ComicStructure
 import top.fumiama.copymangaweb.databinding.ActivityDlBinding
@@ -51,7 +51,7 @@ class DlActivity : ToolsBoxActivity() {
         super.onCreate(savedInstanceState)
         mBinding = ActivityDlBinding.inflate(layoutInflater)
         setContentView(mBinding.root)
-        mh?.saveUrlsOnly = true
+        wm?.get()?.saveUrlsOnly = true
         mangaDlTools = MangaDlTools(this)
         mBinding.dwh.apply { post {
             settings.userAgentString = getString(R.string.pc_ua)
@@ -63,7 +63,7 @@ class DlActivity : ToolsBoxActivity() {
     }
 
     override fun onDestroy() {
-        mh?.saveUrlsOnly = false
+        wm?.get()?.saveUrlsOnly = false
         wmdlt?.get()?.exit = true
         handler.removeCallbacksAndMessages(null)
         super.onDestroy()

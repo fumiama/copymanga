@@ -1,17 +1,18 @@
 package top.fumiama.copymangaweb.web
 
 import android.net.Uri
-import android.webkit.*
+import android.webkit.JsPromptResult
+import android.webkit.JsResult
+import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
-import top.fumiama.copymangaweb.activity.MainActivity.Companion.mh
+import android.webkit.WebView
 import top.fumiama.copymangaweb.activity.MainActivity.Companion.wm
-import top.fumiama.copymangaweb.handler.MainHandler
 
 class WebChromeClient:WebChromeClient() {
     override fun onProgressChanged(view: WebView?, newProgress: Int) {
         super.onProgressChanged(view, newProgress)
         //Log.d("MyWCC", "W progress: $newProgress")
-        mh?.obtainMessage(MainHandler.UPDATE_LOAD_PROGRESS, newProgress, 0)?.sendToTarget()
+        wm?.get()?.updateLoadProgress(newProgress)
     }
 
     override fun onJsAlert(

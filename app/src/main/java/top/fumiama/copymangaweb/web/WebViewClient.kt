@@ -8,6 +8,11 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import top.fumiama.copymangaweb.R
 import top.fumiama.copymangaweb.activity.MainActivity.Companion.wm
 
@@ -25,19 +30,17 @@ class WebViewClient(private val context: Context, jsFileName: String):WebViewCli
     }
 
     override fun onPageFinished(view: WebView?, url: String?) {
-        Thread {
-            Thread.sleep(500)
-            wm?.get()?.runOnUiThread {
-                view?.loadUrl(js)
-                Log.d("MyWC", "Inject JS into: $url")
-                super.onPageFinished(view, url)
+        wm?.get()?.lifecycleScope?.launch {
+            withContext(Dispatchers.IO) {
+                delay(500)
+                withContext(Dispatchers.Main) {
+                    view?.loadUrl(js)
+                    Log.d("MyWC", "Inject JS into: $url")
+                    super.onPageFinished(view, url)
+                }
             }
-        }.start()
+        }
     }
-
-    /*override fun onReceivedSslError(view: WebView?, handler: SslErrorHandler?, error: SslError?) {
-        handler?.proceed() // ignore ssl errors
-    }*/
 
     override fun shouldInterceptRequest(
         view: WebView?,

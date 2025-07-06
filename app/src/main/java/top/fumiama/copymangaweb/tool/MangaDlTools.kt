@@ -41,7 +41,7 @@ class MangaDlTools(activity: DlActivity) {
         }
     }
 
-    fun setChapterImgs(hash: String, imgUrls: Array<String>){
+    fun setChapterImages(hash: String, imgUrls: Array<String>){
         imgUrlsList?.set(p[hash].toInt(), imgUrls)
         sem.release()
     }

@@ -4,12 +4,13 @@ import android.util.Log
 import android.webkit.JavascriptInterface
 import top.fumiama.copymangaweb.activity.DlActivity
 import top.fumiama.copymangaweb.activity.MainActivity.Companion.mh
+import top.fumiama.copymangaweb.activity.MainActivity.Companion.wm
 import top.fumiama.copymangaweb.handler.MainHandler
 
 class JSHidden {
     @JavascriptInterface
     fun loadChapter(listString: String){
-        mh?.obtainMessage(MainHandler.CALL_VIEW_MANGA, listString)?.sendToTarget()
+        wm?.get()?.callViewManga(listString)
     }
     @JavascriptInterface
     fun setTitle(title:String){
@@ -18,7 +19,7 @@ class JSHidden {
     }
     @JavascriptInterface
     fun setFab(content: String){
-        mh?.obtainMessage(MainHandler.SET_FAB, content)?.sendToTarget()
+        wm?.get()?.setFab(content)
     }
     @JavascriptInterface
     fun setLoadingDialog(display: Boolean) {
