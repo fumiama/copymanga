@@ -1,6 +1,6 @@
 package top.fumiama.copymanga.ui.cardflow.newest
 
-import top.fumiama.copymanga.view.template.InfoCardLoader
+import top.fumiama.copymanga.view.template.cardflow.InfoCardLoader
 import top.fumiama.copymanga.api.Config
 import top.fumiama.dmzj.copymanga.R
 

@@ -1,4 +1,4 @@
-package top.fumiama.copymanga.view.template
+package top.fumiama.copymanga.view.template.cardflow
 
 import android.os.Bundle
 import android.view.View

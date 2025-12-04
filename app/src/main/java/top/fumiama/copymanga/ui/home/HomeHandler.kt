@@ -44,14 +44,14 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
     IndexStructure::class.java,
     that.get()
 ) {
-    private val homeF get() = that.get()
-    var index: IndexStructure? = null
+    private val homeFragment get() = that.get()
+    var homeIndex: IndexStructure? = null
     private var fhib: Banner? = null
         get() {
             Log.d("MyHH", "Get fhib.")
             if (field == null) {
-                field = homeF?.layoutInflater?.inflate(R.layout.viewpage_banner, homeF?.fhl, false) as Banner
-                homeF?.homeHandler?.sendEmptyMessage(3)
+                field = homeFragment?.layoutInflater?.inflate(R.layout.viewpage_banner, homeFragment?.fhl, false) as Banner
+                homeFragment?.homeHandler?.sendEmptyMessage(3)
             }
             return field
         }
@@ -60,31 +60,31 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
         super.handleMessage(msg)
         when (msg.what) {
             -1 -> {
-                homeF?.apply {
+                homeFragment?.apply {
                     swiperefresh?.isRefreshing = msg.obj as Boolean
                     if(msg.obj as Boolean) showKanban() else hideKanban()
                 }
             }
             //0 -> setLayouts()
             1 -> inflateCardLines()
-            2 -> homeF?.swiperefresh?.let { setSwipe(it) }
+            2 -> homeFragment?.swiperefresh?.let { setSwipe(it) }
             3 -> setBanner(fhib!!)
             5 -> setBannerInfo(msg.obj as Banner)
             7 -> inflateBanner()
         }
     }
 
-    override fun getGsonItem() = index
+    override fun getGsonItem() = homeIndex
     override fun setGsonItem(gsonObj: Any) :Boolean {
         val pass = super.setGsonItem(gsonObj)
-        index = gsonObj as IndexStructure
+        homeIndex = gsonObj as IndexStructure
         var banners = arrayOf<IndexStructure.Results.Banners>()
-        index?.results?.banners?.forEach {
+        homeIndex?.results?.banners?.forEach {
             if(it.type == 1) {
                 banners += it
             }
         }
-        index?.results?.banners = banners
+        homeIndex?.results?.banners = banners
         return pass
     }
     override suspend fun onError() {
@@ -93,28 +93,28 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
         sendEmptyMessage(2)         //setSwipe
         obtainMessage(-1, false).sendToTarget()                 //closeLoad
         withContext(Dispatchers.Main) {
-            Toast.makeText(homeF?.context, R.string.web_error, Toast.LENGTH_SHORT).show()
+            Toast.makeText(homeFragment?.context, R.string.web_error, Toast.LENGTH_SHORT).show()
         }
     }
     override suspend fun doWhenFinishDownload(): Unit = withContext(Dispatchers.IO) {
         super.doWhenFinishDownload()
         raw?.let {
             Log.d("MyHFH", "save raw: $it")
-            homeF?.apply { activity?.runOnUiThread {
+            homeFragment?.apply { activity?.runOnUiThread {
                 vm.saveIndexStructure(it)
             } }
         }
     }
 
     private fun inflateBanner() {
-        homeF?.fhl?.let { it.post {
+        homeFragment?.fhl?.let { it.post {
             fhib = null
             it.addView(fhib)
         } }
     }
 
     private suspend fun inflateTopics() {
-        index?.results?.topics?.list?.let {
+        homeIndex?.results?.topics?.list?.let {
             var comics = arrayOf<ComicStructure>()
             for((i, topic) in it.withIndex()){
                 if(i > 2) break
@@ -124,19 +124,19 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
                 newComic.path_word = topic.path_word
                 comics += newComic
             }
-            if(comics.size == 3) allocateLine(homeF?.getString(R.string.topics_series)?:"", R.drawable.img_hot_serial, comics, isTopic = true)
+            if(comics.size == 3) allocateLine(homeFragment?.getString(R.string.topics_series)?:"", R.drawable.img_hot_serial, comics, isTopic = true)
         }
     }
 
     private suspend fun inflateRec() {
-        index?.results?.recComics?.list?.let {
+        homeIndex?.results?.recComics?.list?.let {
             var comics = arrayOf<ComicStructure>()
             for((i, rec) in it.withIndex()){
                 if(i > 2) break
                 comics += rec.comic
             }
-            if(comics.size == 3) allocateLine(homeF?.getString(R.string.manga_rec)?:"", R.drawable.img_master_work, comics) {
-                homeF?.findNavController()?.let { nav ->
+            if(comics.size == 3) allocateLine(homeFragment?.getString(R.string.manga_rec)?:"", R.drawable.img_master_work, comics) {
+                homeFragment?.findNavController()?.let { nav ->
                     Navigate.safeNavigateTo(nav, R.id.action_nav_home_to_nav_recommend)
                 }
             }
@@ -145,74 +145,74 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
 
     private suspend fun inflateRank(){
         var comics = arrayOf<ComicStructure>()
-        if (index?.results?.rankDayComics == null) {
+        if (homeIndex?.results?.rankDayComics == null) {
             // is in hotmanga
-            index?.results?.rankWeeklyFreeComics?.list?.let {
+            homeIndex?.results?.rankWeeklyFreeComics?.list?.let {
                 for((i, book) in it.withIndex()){
                     if(i > 2) break
                     comics += book.comic
                 }
             }
-            if(comics.size == 3) allocateLine(homeF?.getString(R.string.hot_rank_list)?:"", R.drawable.img_novel_bill, comics) {
-                homeF?.findNavController()?.navigate(R.id.nav_rank)
+            if(comics.size == 3) allocateLine(homeFragment?.getString(R.string.hot_rank_list)?:"", R.drawable.img_novel_bill, comics) {
+                homeFragment?.findNavController()?.navigate(R.id.nav_rank)
             }
             return
         }
-        index?.results?.rankDayComics?.list?.let {
+        homeIndex?.results?.rankDayComics?.list?.let {
             for((i, book) in it.withIndex()){
                 if(i > 2) break
                 comics += book.comic
             }
         }
-        index?.results?.rankWeekComics?.list?.let {
+        homeIndex?.results?.rankWeekComics?.list?.let {
             for((i, book) in it.withIndex()){
                 if(i > 2) break
                 comics += book.comic
             }
         }
-        index?.results?.rankMonthComics?.list?.let {
+        homeIndex?.results?.rankMonthComics?.list?.let {
             for((i, book) in it.withIndex()){
                 if(i > 2) break
                 comics += book.comic
             }
         }
-        if(comics.size == 9) allocateLine(homeF?.getString(R.string.rank_list)?:"", R.drawable.img_novel_bill, comics) {
-            homeF?.findNavController()?.navigate(R.id.nav_rank)
+        if(comics.size == 9) allocateLine(homeFragment?.getString(R.string.rank_list)?:"", R.drawable.img_novel_bill, comics) {
+            homeFragment?.findNavController()?.navigate(R.id.nav_rank)
         }
     }
 
     private suspend fun inflateHot(){
-        if (index?.results?.hotComics == null) {
+        if (homeIndex?.results?.hotComics == null) {
             // is in hotmanga
-            index?.results?.updateWeeklyFreeComics?.let {
+            homeIndex?.results?.updateWeeklyFreeComics?.let {
                 var comics = arrayOf<ComicStructure>()
                 for((i, rec) in it.list.withIndex()){
                     if(i > 5) break
                     comics += rec.comic
                 }
-                if(comics.size == 6) allocateLine(homeF?.getString(R.string.hot_list)?:"", R.drawable.img_hot, comics)
+                if(comics.size == 6) allocateLine(homeFragment?.getString(R.string.hot_list)?:"", R.drawable.img_hot, comics)
             }
             return
         }
-        index?.results?.hotComics?.let {
+        homeIndex?.results?.hotComics?.let {
             var comics = arrayOf<ComicStructure>()
             for((i, rec) in it.withIndex()){
                 if(i > 8) break
                 comics += rec.comic
             }
-            if(comics.size == 9) allocateLine(homeF?.getString(R.string.hot_list)?:"", R.drawable.img_hot, comics)
+            if(comics.size == 9) allocateLine(homeFragment?.getString(R.string.hot_list)?:"", R.drawable.img_hot, comics)
         }
     }
 
     private suspend fun inflateNew(){
-        index?.results?.newComics?.let {
+        homeIndex?.results?.newComics?.let {
             var comics = arrayOf<ComicStructure>()
             for((i, rec) in it.withIndex()){
                 if(i > 8) break
                 comics += rec.comic
             }
-            if(comics.size == 9) allocateLine(homeF?.getString(R.string.new_list)?:"", R.drawable.img_latest_pub, comics) {
-                homeF?.findNavController()?.let { nav ->
+            if(comics.size == 9) allocateLine(homeFragment?.getString(R.string.new_list)?:"", R.drawable.img_latest_pub, comics) {
+                homeFragment?.findNavController()?.let { nav ->
                     Navigate.safeNavigateTo(nav, R.id.action_nav_home_to_nav_newest)
                 }
             }
@@ -220,14 +220,14 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
     }
 
     private suspend fun inflateFinish(){
-        index?.results?.finishComics?.list?.let {
+        homeIndex?.results?.finishComics?.list?.let {
             var comics = arrayOf<ComicStructure>()
             for((i, rec) in it.withIndex()){
                 if(i > 5) break
                 comics += rec
             }
-            if(comics.size == 6) allocateLine(homeF?.getString(R.string.complete)?:"", R.drawable.img_novel_eye, comics, true) {
-                homeF?.findNavController()?.let { nav ->
+            if(comics.size == 6) allocateLine(homeFragment?.getString(R.string.complete)?:"", R.drawable.img_novel_eye, comics, true) {
+                homeFragment?.findNavController()?.let { nav ->
                     Navigate.safeNavigateTo(nav, R.id.action_nav_home_to_nav_finish)
                 }
             }
@@ -235,7 +235,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
     }
 
     private fun inflateCardLines() {
-        homeF?.lifecycleScope?.launch {
+        homeFragment?.lifecycleScope?.launch {
             withContext(Dispatchers.IO) {
                 inflateRec()
                 inflateTopics()
@@ -263,42 +263,42 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
     }
 
     private fun setBannerInfo(v: Banner){
-        homeF?.context?.let { UITools(it) }?.let {
+        homeFragment?.context?.let { UITools(it) }?.let {
             v
                 .addPageTransformer(ScaleInTransformer())
                 .setPageMargin(it.dp2px(20) ?: 0, it.dp2px(10) ?: 0)
                 .setIndicator(
-                    IndicatorView(homeF!!.context)
+                    IndicatorView(homeFragment!!.context)
                         .setIndicatorColor(Color.DKGRAY)
                         .setIndicatorSelectorColor(Color.WHITE)
                         .setIndicatorStyle(IndicatorView.IndicatorStyle.INDICATOR_BEZIER)
-                ).adapter = homeF?.ViewData(v)?.RecyclerViewAdapter()
+                ).adapter = homeFragment?.ViewData(v)?.RecyclerViewAdapter()
         }
         v.invalidate()
     }
 
     @SuppressLint("NotifyDataSetChanged")
     private fun setSwipe(sw: SwipeRefreshLayout) {
-        homeF?.fhov?.swipeRefreshLayout = sw
+        homeFragment?.fhov?.swipeRefreshLayout = sw
         sw.setOnRefreshListener {
             Log.d("MyHFH", "Refresh items.")
-            homeF?.lifecycleScope?.launch {
+            homeFragment?.lifecycleScope?.launch {
                 withContext(Dispatchers.IO) {
-                    homeF?.showKanban()
+                    homeFragment?.showKanban()
                     fhib?.let {
                         it.isAutoPlay = false
-                        index = null
+                        homeIndex = null
                         it.adapter?.notifyDataSetChanged()
                     }
                     fhib = null
                     delay(300)
                     withContext(Dispatchers.Main) {
-                        homeF?.fhl?.let {
+                        homeFragment?.fhl?.let {
                             val oa = ObjectAnimator.ofFloat(it, "alpha", 1f, 0f).setDuration(233)
                             oa.doOnEnd { _ ->
                                 it.removeAllViews()
                                 it.alpha = 1f
-                                homeF?.vm?.saveIndexStructure(null) // reload
+                                homeFragment?.vm?.saveIndexStructure(null) // reload
                             }
                             oa.start()
                         }
@@ -313,7 +313,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
         finish: Boolean = false, isTopic: Boolean = false, onClick: (() -> Unit)? = null
     ): Unit = withContext(Dispatchers.IO) {
         val c = comics.size / 3
-        homeF?.layoutInflater?.inflate(
+        homeFragment?.layoutInflater?.inflate(
             when(c){
                 1 -> R.layout.line_1bookline
                 2 -> R.layout.line_2bookline
@@ -329,7 +329,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
                     if(onClick != null) setOnClickListener { onClick() }
                 }
             }
-            homeF?.fhl?.let { it.post { it.addView(this) } }
+            homeFragment?.fhl?.let { it.post { it.addView(this) } }
         }
         return@withContext
     }
@@ -354,7 +354,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
 
     private fun setCards(cv: CardView, pw: String, name: String, img: String, isFinal: Boolean, isTopic: Boolean) {
         cv.tic.apply { post { text = name } }
-        homeF?.let {
+        homeFragment?.let {
             if(img.startsWith("http")) {
                 //Log.d("MyHH", "load card image: $img")
                 val waitMillis = cardLoadingWaits.getAndIncrement().toLong()*200
@@ -372,7 +372,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
             cv.setOnClickListener {
                 val bundle = Bundle()
                 bundle.putString("path", pw)
-                homeF?.findNavController()?.let { nav ->
+                homeFragment?.findNavController()?.let { nav ->
                     Navigate.safeNavigateTo(nav, if(isTopic) R.id.action_nav_home_to_nav_topic else R.id.action_nav_home_to_nav_book, bundle)
                 }
             }
@@ -383,7 +383,7 @@ class HomeHandler(private val that: WeakReference<HomeFragment>) : AutoDownloadH
         v.viewTreeObserver.addOnGlobalLayoutListener(object :
             ViewTreeObserver.OnGlobalLayoutListener {
             override fun onGlobalLayout() {
-                homeF?.context?.let { UITools(it) }?.let {
+                homeFragment?.context?.let { UITools(it) }?.let {
                     val spaceTitle = it.dp2px(49)!!
                     val cardSpace = it.dp2px(16)!!
                     v.layoutParams.height =

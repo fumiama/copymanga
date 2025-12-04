@@ -1,4 +1,4 @@
-package top.fumiama.copymanga.view.template
+package top.fumiama.copymanga.view.template.component
 
 import android.annotation.SuppressLint
 import android.net.Uri

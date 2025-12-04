@@ -54,7 +54,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.api.Config
-import top.fumiama.copymanga.view.template.TitleActivityTemplate
+import top.fumiama.copymanga.view.template.activity.TitleActivityTemplate
 import top.fumiama.copymanga.net.template.PausableDownloader
 import top.fumiama.copymanga.net.DownloadTools
 import top.fumiama.copymanga.view.interaction.TimeThread
@@ -339,14 +339,15 @@ class ViewMangaActivity : TitleActivityTemplate() {
     suspend fun countZipEntries(doWhenFinish : suspend (count: Int) -> Unit) = withContext(Dispatchers.IO) {
         if (zipFile != null) try {
             Log.d("MyVM", "zip: $zipFile")
-            val zip = ZipFile(zipFile)
-            count = zip.size()
-            if(cut) zip.entries().toList().sortedBy{ it.name.substringBefore('.').toInt()}.forEachIndexed { i, it ->
-                val useCut = canCut(zip.getInputStream(it))
-                isCut += useCut
-                indexMap += i + 1
-                if (useCut) indexMap += -(i + 1)
-                Log.d("MyVM", "[$i] 分析: ${it.name}, cut: $useCut")
+            ZipFile(zipFile).use { zip ->
+                count = zip.size()
+                if(cut) zip.entries().toList().sortedBy{ it.name.substringBefore('.').toInt()}.forEachIndexed { i, it ->
+                    val useCut = canCut(zip.getInputStream(it))
+                    isCut += useCut
+                    indexMap += i + 1
+                    if (useCut) indexMap += -(i + 1)
+                    Log.d("MyVM", "[$i] 分析: ${it.name}, cut: $useCut")
+                }
             }
         } catch (e: Exception) {
             toolsBox.toastErrorAndFinish(R.string.count_zip_entries_error)

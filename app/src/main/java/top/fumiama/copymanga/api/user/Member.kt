@@ -69,7 +69,7 @@ class Member(private val getString: (Int) -> String) {
                     username,
                     Charset.defaultCharset().name()
                 )
-            }&password=$pwdEncoded&salt=$salt&platform=${Config.platform.value}&authorization=Token+&version=${Config.app_ver.value}&source=copyApp&region=$r&webp=1".encodeToByteArray(),
+            }&password=$pwdEncoded&salt=$salt&platform=${Config.platform.value}&version=${Config.version.value}&source=Official".encodeToByteArray(),
                 "POST", "application/x-www-form-urlencoded;charset=utf-8")
         }.encodeToByteArray()
 }

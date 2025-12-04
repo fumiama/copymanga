@@ -1,4 +1,4 @@
-package top.fumiama.copymanga.view.template
+package top.fumiama.copymanga.view.template.activity
 
 import android.os.Bundle
 import android.view.View

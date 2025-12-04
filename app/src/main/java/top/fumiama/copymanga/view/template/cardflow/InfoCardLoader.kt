@@ -1,4 +1,4 @@
-package top.fumiama.copymanga.view.template
+package top.fumiama.copymanga.view.template.cardflow
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -22,6 +22,8 @@ import top.fumiama.copymanga.json.TypeBookListStructure
 import top.fumiama.copymanga.net.template.PausableDownloader
 import top.fumiama.copymanga.strings.Chinese
 import top.fumiama.copymanga.view.interaction.Navigate
+import top.fumiama.copymanga.view.template.fragment.MangaPagesFragmentTemplate
+import top.fumiama.copymanga.view.template.component.CardList
 import top.fumiama.dmzj.copymanga.R
 import java.lang.ref.WeakReference
 

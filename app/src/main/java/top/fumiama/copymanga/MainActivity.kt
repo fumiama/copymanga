@@ -59,7 +59,7 @@ import top.fumiama.copymanga.ui.cardflow.rank.RankFragment
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment
 import top.fumiama.copymanga.ui.download.DownloadFragment
 import top.fumiama.copymanga.ui.download.NewDownloadFragment
-import top.fumiama.copymanga.api.update.Update
+import top.fumiama.copymanga.api.update.Updater
 import top.fumiama.copymanga.api.user.Member
 import top.fumiama.copymanga.lib.Comancry
 import top.fumiama.copymanga.lib.Comandy
@@ -140,7 +140,7 @@ class MainActivity : AppCompatActivity() {
             override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
             override fun onDrawerStateChanged(newState: Int) {}
         })
-        goCheckUpdate(false)
+        lifecycleScope.launch { goCheckUpdate(false) }
 
         ime = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
 
@@ -459,9 +459,14 @@ class MainActivity : AppCompatActivity() {
             .getIntent(this))
     }
 
-    private fun goCheckUpdate(ignoreSkip: Boolean) {
-        lifecycleScope.launch {
-            Update.checkUpdate(this@MainActivity, toolsBox, ignoreSkip)
+    private suspend fun goCheckUpdate(ignoreSkip: Boolean) {
+        withContext(Dispatchers.IO) {
+            Updater(
+                WeakReference(this@MainActivity),
+                toolsBox,
+                ignoreSkip,
+                getPreferences(MODE_PRIVATE).getInt("skipVersion", 0)
+            ).check(BuildConfig.VERSION_CODE)
         }
     }
 
@@ -477,7 +482,7 @@ class MainActivity : AppCompatActivity() {
         dl.setIcon(R.mipmap.ic_launcher)
         dl.setPositiveButton(android.R.string.ok) { _, _ -> }
         dl.setNeutralButton(R.string.check_update) {_, _ ->
-            goCheckUpdate(true)
+            lifecycleScope.launch { goCheckUpdate(true) }
         }
         dl.show()
     }

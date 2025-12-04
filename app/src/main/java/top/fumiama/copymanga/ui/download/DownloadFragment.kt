@@ -16,7 +16,7 @@ import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.api.manga.Downloader
 import top.fumiama.copymanga.api.manga.Reader
-import top.fumiama.copymanga.view.template.NoBackRefreshFragment
+import top.fumiama.copymanga.view.template.fragment.NoBackRefreshFragment
 import top.fumiama.copymanga.storage.FileUtils
 import top.fumiama.copymanga.view.interaction.Navigate
 import top.fumiama.dmzj.copymanga.R

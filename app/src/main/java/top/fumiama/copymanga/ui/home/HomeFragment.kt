@@ -34,19 +34,21 @@ import top.fumiama.copymanga.json.BookListStructure
 import top.fumiama.copymanga.net.template.PausableDownloader
 import top.fumiama.copymanga.view.interaction.Navigate
 import top.fumiama.copymanga.view.operation.GlideHideLottieViewListener
-import top.fumiama.copymanga.view.template.NoBackRefreshFragment
+import top.fumiama.copymanga.view.template.fragment.NoBackRefreshFragment
 import top.fumiama.dmzj.copymanga.R
 import java.lang.ref.WeakReference
 import java.net.URLEncoder
 import java.nio.charset.Charset
 
-class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home, true) {
+class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home) {
     lateinit var homeHandler: HomeHandler
     val vm: HomeViewModel by viewModels()
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        if (!isFirstInflate) return
 
         val theme = resources.newTheme()
         swiperefresh?.setColorSchemeColors(
@@ -233,7 +235,7 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home, true) {
             }
 
             override fun onBindViewHolder(holder: ViewData, position: Int) {
-                val thisBanner = homeHandler.index?.results?.banners?.get(position)
+                val thisBanner = homeHandler.homeIndex?.results?.banners?.get(position)
                 thisBanner?.cover?.let {
                     if(it.isEmpty()) return@let
                     //Log.d("MyHomeFVP", "Load img: $it")
@@ -246,12 +248,12 @@ class HomeFragment : NoBackRefreshFragment(R.layout.fragment_home, true) {
                 holder.itemView.vpt.text = thisBanner?.brief
                 holder.itemView.vpc.setOnClickListener {
                     val bundle = Bundle()
-                    homeHandler.index?.results?.banners?.get(position)?.comic?.path_word?.let { it1 -> bundle.putString("path", it1) }
+                    homeHandler.homeIndex?.results?.banners?.get(position)?.comic?.path_word?.let { it1 -> bundle.putString("path", it1) }
                     Navigate.safeNavigateTo(findNavController(), R.id.action_nav_home_to_nav_book, bundle)
                 }
             }
 
-            override fun getItemCount(): Int = homeHandler.index?.results?.banners?.size?:0
+            override fun getItemCount(): Int = homeHandler.homeIndex?.results?.banners?.size?:0
         }
     }
 

@@ -25,7 +25,7 @@ import top.fumiama.copymanga.api.Config
 import top.fumiama.copymanga.api.manga.Book
 import top.fumiama.copymanga.api.manga.Reader
 import top.fumiama.copymanga.strings.Chinese
-import top.fumiama.copymanga.view.template.NoBackRefreshFragment
+import top.fumiama.copymanga.view.template.fragment.NoBackRefreshFragment
 import top.fumiama.copymanga.view.interaction.Navigate
 import top.fumiama.copymanga.ui.comicdl.ComicDlFragment
 import top.fumiama.dmzj.copymanga.R

@@ -26,8 +26,8 @@ import top.fumiama.copymanga.storage.FileUtils
 import top.fumiama.copymanga.storage.FileUtils.compressToUserFile
 import top.fumiama.copymanga.view.interaction.Navigate
 import top.fumiama.copymanga.view.interaction.UITools
-import top.fumiama.copymanga.view.template.CardList
-import top.fumiama.copymanga.view.template.MangaPagesFragmentTemplate
+import top.fumiama.copymanga.view.template.component.CardList
+import top.fumiama.copymanga.view.template.fragment.MangaPagesFragmentTemplate
 import top.fumiama.dmzj.copymanga.R
 import java.io.File
 import java.lang.ref.WeakReference

@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.fumiama.copymanga.json.TopicStructure
 import top.fumiama.copymanga.net.template.PausableDownloader
-import top.fumiama.copymanga.view.template.InfoCardLoader
+import top.fumiama.copymanga.view.template.cardflow.InfoCardLoader
 import top.fumiama.copymanga.api.Config
 import top.fumiama.dmzj.copymanga.R
 

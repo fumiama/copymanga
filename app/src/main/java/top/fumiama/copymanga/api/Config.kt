@@ -42,24 +42,15 @@ object Config {
         get() {
             if (field === null)
                 field = LazyHeaders.Builder()
-                    .addHeader("referer", referer)
                     .addHeader("User-Agent", pc_ua)
-                    .addHeader("source", net_source.value)
-                    .addHeader("webp", "1")
-                    .addHeader("version", app_ver.value)
-                    .addHeader(
-                        "region",
-                        if (net_use_foreign.value) "1" else "0"
-                    )
-                    .addHeader("platform", platform.value)
                     .build()
             return field
         }
 
     val proxyUrl = MainActivity.mainWeakReference?.get()?.getString(R.string.proxyUrl)!!
-    val pc_ua get() = MainActivity.mainWeakReference?.get()?.getString(R.string.pc_ua)?.format(app_ver.value)?:""
+    val pc_ua get() = MainActivity.mainWeakReference?.get()?.getString(R.string.pc_ua)?:""
     val default_ua get() = MainActivity.mainWeakReference?.get()?.getString(R.string.default_ua)?:""
-    val referer get() = MainActivity.mainWeakReference?.get()?.getString(R.string.referer)?.format(app_ver.value)?:""
+    val requested get() = MainActivity.mainWeakReference?.get()?.getString(R.string.requested)?:""
 
     val navTextInfo = UserPreferenceString("navTextInfo", R.string.navTextInfo)
     val token = UserPreferenceString("token", "", null)
@@ -70,7 +61,7 @@ object Config {
     val nickname = UserPreferenceString("nickname")
     val avatar = UserPreferenceString("avatar")
 
-    val app_ver = PreferenceString("settings_cat_general_et_app_version", R.string.app_ver)
+    val version = PreferenceString("settings_cat_general_et_app_version", R.string.version)
     val platform = PreferenceString("settings_cat_general_et_platform", R.string.platform)
     val general_enable_transparent_system_bar = PreferenceBoolean("settings_cat_general_sw_enable_transparent_systembar", false)
     val general_disable_kanban_animation = PreferenceBoolean("settings_cat_general_sw_disable_kanban_animation", false)
@@ -82,11 +73,11 @@ object Config {
     val reverseProxyUrl = PreferenceString(R.string.reverseProxyKeyID)
     val networkApiUrl = PreferenceString("settings_cat_net_et_api_url", R.string.hostUrl)
     val proxy_key = PreferenceString(R.string.imgProxyCodeKeyID)
-    val net_use_gzip = PreferenceBoolean("settings_cat_net_sw_use_gzip", false)
-    val net_use_json = PreferenceBoolean("settings_cat_net_sw_use_json", false)
-    val net_platform = PreferenceBoolean("settings_cat_net_sw_platform", false)
+    val net_use_gzip = PreferenceBoolean("settings_cat_net_sw_use_gzip", true)
+    val net_use_json = PreferenceBoolean("settings_cat_net_sw_use_json", true)
+    val net_platform = PreferenceBoolean("settings_cat_net_sw_platform", true)
     val net_referer = PreferenceBoolean("settings_cat_net_sw_referer", false)
-    val net_version = PreferenceBoolean("settings_cat_net_sw_version", false)
+    val net_version = PreferenceBoolean("settings_cat_net_sw_version", true)
     val net_region = PreferenceBoolean("settings_cat_net_sw_region", false)
     val net_no_webp = PreferenceBoolean("settings_cat_net_no_webp", false)
     val net_use_comandy = PreferenceBoolean("settings_cat_net_sw_use_comandy", false)
@@ -95,7 +86,7 @@ object Config {
     val net_use_api_proxy = PreferenceBoolean("settings_cat_net_sw_use_api_proxy", false)
     val net_img_resolution = PreferenceString(R.string.imgResolutionKeyID)
     val net_umstring = PreferenceString("settings_cat_net_et_umstring")
-    val net_source = PreferenceString("settings_cat_net_et_source", R.string.source)
+    val net_source = PreferenceString("settings_cat_net_et_source", R.string.requested)
     val net_ua = PreferenceString("settings_cat_net_et_ua", R.string.default_ua)
 
     val view_manga_inverse_chapters = PreferenceBoolean("settings_cat_vm_sw_inverse_chapters", false)

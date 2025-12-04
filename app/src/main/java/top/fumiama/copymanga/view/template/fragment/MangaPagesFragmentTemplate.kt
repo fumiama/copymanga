@@ -1,10 +1,7 @@
-package top.fumiama.copymanga.view.template
+package top.fumiama.copymanga.view.template.fragment
 
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
-import android.content.Context
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -19,52 +16,32 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import top.fumiama.copymanga.MainActivity
 import top.fumiama.copymanga.view.interaction.UITools
-import top.fumiama.dmzj.copymanga.R
+import top.fumiama.copymanga.view.template.component.CardList
 import java.lang.ref.WeakReference
 
-open class MangaPagesFragmentTemplate(inflateRes:Int, private val isLazy: Boolean = true, val forceLoad: Boolean = false) : NoBackRefreshFragment(inflateRes) {
+open class MangaPagesFragmentTemplate(
+    inflateRes:Int, private val isLazy: Boolean = true,
+    val forceLoad: Boolean = false
+) : NoBackRefreshFragment(inflateRes) {
     var cardPerRow = 3
     var cardWidth = 0
     var cardHeight = 0
     var cardList: CardList? = null
-    //var row: View? = null
     var isEnd = false
-    //var jsonReaderNow: JsonReader? = null
     var page = 0
 
     var isRefresh = false
-
-    private val transportStringNull = context?.getString(R.string.TRANSPORT_NULL) ?: "TRANSPORT_NULL"
-    private val transportStringError = context?.getString(R.string.TRANSPORT_ERROR) ?: "TRANSPORT_ERROR"
-    private val netInfo: String
-        get() {
-            val cm: ConnectivityManager =
-                context?.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            return cm.getNetworkCapabilities(cm.activeNetwork)?.let {
-                when {
-                    it.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> return@let context?.getString(
-                        R.string.TRANSPORT_WIFI)
-                    it.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> return@let context?.getString(
-                        R.string.TRANSPORT_CELLULAR)
-                    it.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> return@let context?.getString(
-                        R.string.TRANSPORT_BLUETOOTH)
-                    it.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> return@let context?.getString(
-                        R.string.TRANSPORT_ETHERNET)
-                    it.hasTransport(NetworkCapabilities.TRANSPORT_LOWPAN) -> return@let context?.getString(
-                        R.string.TRANSPORT_LOWPAN)
-                    it.hasTransport(NetworkCapabilities.TRANSPORT_VPN) -> return@let "VPN"
-                    else -> return@let transportStringNull
-                }
-            } ?: transportStringError
-        }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         if(isFirstInflate) {
-            if (!forceLoad && (netInfo == transportStringNull || netInfo == transportStringError)) {
+            val tb = (activity as MainActivity).toolsBox
+            val netInfo = tb.netInfo
+            if (!forceLoad && (netInfo == tb.transportStringNull || netInfo == tb.transportStringError)) {
                 findNavController().popBackStack()
                 return
             }
@@ -81,8 +58,6 @@ open class MangaPagesFragmentTemplate(inflateRes:Int, private val isLazy: Boolea
     override fun onDestroy() {
         super.onDestroy()
         cardList?.exitCardList = true
-        //row = null
-        //jsonReaderNow = null
     }
 
     private suspend fun setLayouts() = withContext(Dispatchers.IO) {
@@ -100,37 +75,31 @@ open class MangaPagesFragmentTemplate(inflateRes:Int, private val isLazy: Boolea
         Log.d("MyMPAT", "Card per row: $cardPerRow")
         Log.d("MyMPAT", "Card width: $cardWidth")
         initCardList(WeakReference(this@MangaPagesFragmentTemplate))
-        managePage()
+
+        addPage()
+        if (isLazy) { mysp.apply { post {
+            setListener(object : SpringView.OnFreshListener {
+                override fun onLoadmore() {
+                    lifecycleScope.launch {
+                        addPage()
+                    }
+                }
+                override fun onRefresh() {
+                    lifecycleScope.launch {
+                        withContext(Dispatchers.IO) {
+                            showKanban()
+                            reset()
+                            delay(600)
+                            addPage()
+                            hideKanban()
+                        }
+                    }
+                }
+            })
+        } } }
+
         setListeners()
         hideKanban()
-    }
-
-    private suspend fun managePage() {
-        addPage()
-        if (isLazy) {
-            mysp.apply {
-                post {
-                    setListener(object : SpringView.OnFreshListener {
-                        override fun onLoadmore() {
-                            lifecycleScope.launch {
-                                addPage()
-                            }
-                        }
-                        override fun onRefresh() {
-                            lifecycleScope.launch {
-                                withContext(Dispatchers.IO) {
-                                    showKanban()
-                                    reset()
-                                    delay(600)
-                                    addPage()
-                                    hideKanban()
-                                }
-                            }
-                        }
-                    })
-                }
-            }
-        }
     }
 
     open suspend fun addPage() {}

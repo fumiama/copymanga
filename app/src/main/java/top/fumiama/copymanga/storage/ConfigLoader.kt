@@ -45,7 +45,7 @@ class ConfigLoader {
         var viewMangaHideInfo: Boolean,
     ) {
         fun export() {
-            Config.app_ver.value = appVer
+            Config.version.value = appVer
             Config.platform.value = platform
             Config.general_enable_transparent_system_bar.value = generalEnableTransparentSystemBar
             Config.general_disable_kanban_animation.value = generalDisableKanbanAnimation
@@ -88,7 +88,7 @@ class ConfigLoader {
     val settings: Settings
 
     constructor(): this(Settings(
-        appVer = Config.app_ver.value,
+        appVer = Config.version.value,
         platform = Config.platform.value,
         generalEnableTransparentSystemBar = Config.general_enable_transparent_system_bar.value,
         generalDisableKanbanAnimation = Config.general_disable_kanban_animation.value,
