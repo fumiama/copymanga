@@ -20,6 +20,7 @@ import top.fumiama.copymangaweb.activity.template.ToolsBoxActivity
 import top.fumiama.copymangaweb.activity.viewmodel.MainViewModel
 import top.fumiama.copymangaweb.databinding.ActivityMainBinding
 import top.fumiama.copymangaweb.handler.MainHandler
+import top.fumiama.copymangaweb.tool.InsetsTools
 import top.fumiama.copymangaweb.tool.MangaDlTools.Companion.wmdlt
 import top.fumiama.copymangaweb.tool.SetDraggable
 import top.fumiama.copymangaweb.tool.Updater
@@ -41,6 +42,7 @@ class MainActivity: ToolsBoxActivity() {
         mBinding.mainViewModel = mViewModel
         mBinding.lifecycleOwner = this
         setContentView(mBinding.root)
+        InsetsTools.applySafeContentInsets(this, mBinding.root)
 
         wm = WeakReference(this)
         mh = MainHandler(Looper.myLooper()!!)
@@ -123,6 +125,16 @@ class MainActivity: ToolsBoxActivity() {
 
     fun updateLoadProgress(p: Int) {
         lifecycleScope.launch { mViewModel.updateLoadProgress(p) }
+    }
+
+    fun openStreamingManga(url: String) {
+        ViewMangaActivity.streamChapterUrl = url
+        ViewMangaActivity.titleText = "加载中..."
+        ViewMangaActivity.nextChapterUrl = null
+        ViewMangaActivity.previousChapterUrl = null
+        ViewMangaActivity.imgUrls = arrayOf()
+        ViewMangaActivity.zipFile = null
+        startActivity(Intent(this, ViewMangaActivity::class.java))
     }
 
     fun setFab(content: String) {

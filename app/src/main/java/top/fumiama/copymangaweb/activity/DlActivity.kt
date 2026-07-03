@@ -19,6 +19,7 @@ import top.fumiama.copymangaweb.activity.template.ToolsBoxActivity
 import top.fumiama.copymangaweb.data.ComicStructure
 import top.fumiama.copymangaweb.databinding.ActivityDlBinding
 import top.fumiama.copymangaweb.handler.DlHandler
+import top.fumiama.copymangaweb.tool.InsetsTools
 import top.fumiama.copymangaweb.tool.MangaDlTools
 import top.fumiama.copymangaweb.tool.MangaDlTools.Companion.wmdlt
 import top.fumiama.copymangaweb.view.ChapterToggleButton
@@ -51,13 +52,14 @@ class DlActivity : ToolsBoxActivity() {
         super.onCreate(savedInstanceState)
         mBinding = ActivityDlBinding.inflate(layoutInflater)
         setContentView(mBinding.root)
+        InsetsTools.applySafeContentInsets(this, mBinding.root)
         wm?.get()?.saveUrlsOnly = true
         mangaDlTools = MangaDlTools(this)
         mBinding.dwh.apply { post {
             settings.userAgentString = getString(R.string.pc_ua)
             webChromeClient = WebChromeClient()
             setWebViewClient("h.js")
-            loadJSInterface(JSHidden())
+            loadJSInterface(JSHidden(onLoadChapter = { onHiddenChapterLoaded(it) }))
         } }
         handler.sendEmptyMessage(-2)        //setLayouts
     }
@@ -91,11 +93,16 @@ class DlActivity : ToolsBoxActivity() {
         ).start()
     }
 
-    private fun fillChapters() {
+    private fun fillChapters(): Boolean {
         mangaDlTools.allocateChapterUrls(checkedChapter)
+        var ok = true
         for (i in tbtnlist) {
-            if (i.isChecked) mangaDlTools.dlChapterUrl(i.url.toString())
+            if (i.isChecked && !mangaDlTools.dlChapterUrl(i.url.toString())) {
+                ok = false
+                handler.obtainMessage(-1, i.index, 0).sendToTarget()
+            }
         }
+        return ok && mangaDlTools.waitChapterUrlsReady()
     }
 
     private fun dlThread(dlMethod: (i: ChapterToggleButton) -> Unit) {
@@ -146,8 +153,13 @@ class DlActivity : ToolsBoxActivity() {
                         handler.sendEmptyMessage(9)     //set dl card color to red
                         Toast.makeText(this@DlActivity, "请耐心等待加载...", Toast.LENGTH_SHORT).show()
                         Thread {
-                            fillChapters()
-                            dlThread { downloadChapterPages(it) }
+                            if (fillChapters()) {
+                                dlThread { downloadChapterPages(it) }
+                            } else {
+                                canDl = false
+                                haveDlStarted = false
+                                handler.sendEmptyMessage(8)
+                            }
                         }.start()
                     }
                 }
@@ -198,6 +210,14 @@ class DlActivity : ToolsBoxActivity() {
         val jsonFile = File(mangaHome, "info.bin")
         if(!mangaHome.exists()) mangaHome.mkdirs()
         if(!(jsonFile.exists() && intent.getBooleanExtra("callFromDlList", false))) json?.let { jsonFile.writeText(it) }
+    }
+
+    private fun onHiddenChapterLoaded(content: String) {
+        val listChapter = content.split('\n')
+        val hash = listChapter.getOrNull(0)?.substringAfterLast(' ')
+        if (hash.isNullOrBlank()) return
+        val imgs = listChapter.drop(3).filter { it.isNotBlank() }.toTypedArray()
+        mangaDlTools.setChapterImages(hash, imgs)
     }
 
     private fun downloadChapterPages(i: ChapterToggleButton) {

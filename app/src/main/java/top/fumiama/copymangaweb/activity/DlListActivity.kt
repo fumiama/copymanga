@@ -10,6 +10,7 @@ import android.widget.Toast
 import top.fumiama.copymangaweb.R
 import top.fumiama.copymangaweb.databinding.ActivityDlistBinding
 import top.fumiama.copymangaweb.handler.DlLHandler
+import top.fumiama.copymangaweb.tool.InsetsTools
 import java.io.File
 import java.util.regex.Pattern
 import java.util.zip.ZipInputStream
@@ -23,6 +24,7 @@ class DlListActivity: Activity() {
         super.onCreate(savedInstanceState)
         mBinding = ActivityDlistBinding.inflate(layoutInflater)
         setContentView(mBinding.root)
+        InsetsTools.applySafeContentInsets(this, mBinding.root)
         mBinding.myt.ttitle.text = intent.getStringExtra("title")
         handler = DlLHandler(Looper.myLooper()!!, this)
         handler?.obtainMessage(3, currentDir)?.sendToTarget()       //call scanFile

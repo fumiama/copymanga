@@ -14,7 +14,8 @@ class JS {
             else -> ""
         }
         Log.d("MyJS", "Load comic: $u")
-        wm?.get()?.loadHiddenUrl(u)
+        if (u.contains("/chapter/")) wm?.get()?.openStreamingManga(u)
+        else wm?.get()?.loadHiddenUrl(u)
     }
     @JavascriptInterface
     fun hideFab() {
