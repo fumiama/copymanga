@@ -22,7 +22,6 @@ import top.fumiama.copymangaweb.R
 import top.fumiama.copymangaweb.activity.reader.ContinuousMangaAdapter
 import top.fumiama.copymangaweb.activity.reader.PagedMangaAdapter
 import top.fumiama.copymangaweb.activity.reader.ReaderOverlayController
-import top.fumiama.copymangaweb.activity.MainActivity.Companion.wm
 import top.fumiama.copymangaweb.activity.template.ToolsBoxActivity
 import top.fumiama.copymangaweb.databinding.ActivityViewmangaBinding
 import top.fumiama.copymangaweb.tool.PropertiesTools
@@ -57,7 +56,6 @@ class ViewMangaActivity : ToolsBoxActivity() {
     private var readerPrepared = false
     private var streamFinished = false
     private var streamDeclaredCount = 0
-    private var userRequestedExit = false
     private var backInvokedCallback: OnBackInvokedCallback? = null
     private val streamSeenUrls = LinkedHashSet<String>()
     private var pagedAdapter: PagedMangaAdapter? = null
@@ -357,7 +355,6 @@ class ViewMangaActivity : ToolsBoxActivity() {
     }
 
     private fun exitByUserRequest() {
-        userRequestedExit = true
         finishAfterTransition()
     }
 
@@ -692,7 +689,6 @@ class ViewMangaActivity : ToolsBoxActivity() {
         dialog?.dismiss()
         dialog = null
         mBinding.wcollector.destroy()
-        if (userRequestedExit && !dlZip2View) wm?.get()?.mBinding?.w?.goBack()
         if (streamUrl != null) streamChapterUrl = null
         if (va?.get() === this) va = null
         super.onDestroy()
